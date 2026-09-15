@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Panel principal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Portal Actor</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link active">Panel principal</a>
+<a href="calendario.html" class="nav-link text-white-50">Calendario y disponibilidad</a>
+<a href="simulaciones.html" class="nav-link text-white-50">Mis simulaciones</a>
+<a href="perfil.html" class="nav-link text-white-50">Mi perfil</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../cliente/dashboard.html">Portal Cliente</a> | <a href="../admin/dashboard.html">Panel Administrador</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Panel principal</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Jefry Goleath (Actor)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="row mb-4 g-3">
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">Proximas simulaciones</div><div class="fs-3 fw-bold">3</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">Por confirmar</div><div class="fs-3 fw-bold">1</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">Completadas</div><div class="fs-3 fw-bold">14</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">Horas este mes</div><div class="fs-3 fw-bold">24.5</div></div></div></div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        Tus proximas simulaciones
+        <a href="simulaciones.html" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+      </div>
+      <table class="table mb-0">
+        <thead><tr><th>Simulacion</th><th>Fecha</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Manejo de Crisis (CRM)</td><td>18 ago 2026</td><td>Paciente</td><td><span class="badge bg-warning text-dark">Por confirmar</span></td><td><a href="simulaciones.html" class="btn btn-sm btn-outline-secondary">Responder</a></td></tr>
+          <tr><td>Comunicacion SPIKES</td><td>22 ago 2026</td><td>Familiar</td><td><span class="badge bg-success">Confirmada</span></td><td><a href="simulaciones.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+          <tr><td>Examen ECOE - Estacion 4</td><td>29 ago 2026</td><td>Paciente</td><td><span class="badge bg-success">Confirmada</span></td><td><a href="simulaciones.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <h6>Accesos rapidos</h6>
+      <a href="calendario.html" class="btn btn-outline-secondary w-100 mb-2">Mi calendario</a>
+      <a href="simulaciones.html" class="btn btn-outline-secondary w-100 mb-2">Mis simulaciones</a>
+      <a href="perfil.html" class="btn btn-outline-secondary w-100">Mi perfil</a>
+      <hr>
+      <div class="alert alert-warning small mb-0">Nueva asignacion: Manejo de Crisis (CRM), 18 ago. Responde antes del 15 ago.</div>
+    </div></div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

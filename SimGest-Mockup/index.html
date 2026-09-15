@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Iniciar sesion</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="./shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="./shared/style.css">
+</head>
+<body>
+<div class="container" style="max-width:420px; margin-top:80px;">
+
+  <h3 class="mb-1 text-center">SimGest</h3>
+  <p class="text-muted text-center mb-4">Sistema de gestion de simulaciones - Simulactores</p>
+
+  <div id="panelLogin" class="card">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Iniciar sesion</h5>
+      <form>
+        <div class="mb-3">
+          <label class="form-label">Correo electronico</label>
+          <input type="email" class="form-control" value="cliente@hospitalsanjose.cr">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contrasena</label>
+          <input type="password" class="form-control" value="12345678">
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" checked id="recordarme">
+          <label class="form-check-label" for="recordarme">Recordarme</label>
+        </div>
+        <a href="cliente/dashboard.html" class="btn btn-primary w-100 mb-2">Iniciar sesion</a>
+      </form>
+
+      <div class="text-center small mb-3">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modalRecuperar">Olvidaste tu contrasena?</a>
+      </div>
+
+      <hr>
+      <p class="small text-muted mb-2">Ver el sistema con otro rol (demo):</p>
+      <div class="d-flex gap-2 mb-3">
+        <a href="cliente/dashboard.html" class="btn btn-outline-secondary btn-sm w-100">Cliente</a>
+        <a href="admin/dashboard.html" class="btn btn-outline-secondary btn-sm w-100">Admin</a>
+        <a href="actor/dashboard.html" class="btn btn-outline-secondary btn-sm w-100">Actor</a>
+      </div>
+
+      <p class="text-center small mb-0">No tienes cuenta? <a href="#" onclick="document.getElementById('panelLogin').classList.add('d-none'); document.getElementById('panelRegistro').classList.remove('d-none'); return false;">Registrate como cliente</a></p>
+    </div>
+  </div>
+
+  <div id="panelRegistro" class="card d-none">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Crear cuenta de cliente</h5>
+      <form>
+        <div class="mb-3">
+          <label class="form-label">Nombre completo</label>
+          <input type="text" class="form-control" placeholder="Nombre y apellidos">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Organizacion</label>
+          <input type="text" class="form-control" placeholder="Empresa, hospital o universidad">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Correo electronico</label>
+          <input type="email" class="form-control" placeholder="nombre@correo.com">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contrasena</label>
+          <input type="password" class="form-control" placeholder="Minimo 8 caracteres">
+        </div>
+        <a href="cliente/dashboard.html" class="btn btn-primary w-100">Crear cuenta</a>
+      </form>
+      <p class="text-center small mt-3 mb-0"><a href="#" onclick="document.getElementById('panelRegistro').classList.add('d-none'); document.getElementById('panelLogin').classList.remove('d-none'); return false;">Volver a inicio de sesion</a></p>
+    </div>
+  </div>
+
+  <div class="alert alert-secondary small mt-3">
+    Nota: solo los clientes se registran de forma publica. Las cuentas de Actor y Administrador las crea un administrador desde el modulo de usuarios.
+  </div>
+
+</div>
+
+<div class="modal fade" id="modalRecuperar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Recuperar contrasena</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">Te enviamos un enlace de un solo uso, valido por 30 minutos.</p>
+        <div class="mb-3">
+          <label class="form-label">Correo electronico</label>
+          <input type="email" class="form-control" placeholder="nombre@correo.com">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-bs-dismiss="modal" onclick="alert('Si el correo existe, enviamos un enlace de restablecimiento.')">Enviar enlace</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

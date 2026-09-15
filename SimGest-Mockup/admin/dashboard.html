@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Panel principal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Panel Administrador</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link active">Panel principal</a>
+<a href="solicitudes.html" class="nav-link text-white-50">Solicitudes</a>
+<a href="escenarios.html" class="nav-link text-white-50">Biblioteca de escenarios</a>
+<a href="actores.html" class="nav-link text-white-50">Actores y asignacion</a>
+<a href="reportes.html" class="nav-link text-white-50">Reportes y pagos</a>
+<a href="usuarios.html" class="nav-link text-white-50">Usuarios y accesos</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../cliente/dashboard.html">Portal Cliente</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Panel principal</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Allison Gonzalez (Administradora)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="row mb-4 g-3">
+  <div class="col-md-3"><div class="card"><div class="card-body">
+    <div class="text-muted small">Solicitudes pendientes</div><div class="fs-3 fw-bold">5</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body">
+    <div class="text-muted small">Actores disponibles hoy</div><div class="fs-3 fw-bold">9</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body">
+    <div class="text-muted small">Simulaciones esta semana</div><div class="fs-3 fw-bold">11</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body">
+    <div class="text-muted small">Pagos pendientes (jul)</div><div class="fs-3 fw-bold">282,500 colones</div>
+  </div></div></div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        Solicitudes que requieren atencion
+        <a href="solicitudes.html" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+      </div>
+      <table class="table mb-0">
+        <thead><tr><th>N. Solicitud</th><th>Cliente</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>SIM-2026-0154</td><td>Clinica Biblica</td><td>Examen ECOE</td><td>02 sep 2026</td><td><span class="badge bg-warning text-dark">Pendiente</span></td><td><a href="solicitudes.html" class="btn btn-sm btn-outline-secondary">Asignar</a></td></tr>
+          <tr><td>SIM-2026-0150</td><td>Universidad La Salle</td><td>Simulacion corporativa</td><td>20 ago 2026</td><td><span class="badge bg-warning text-dark">Pendiente</span></td><td><a href="solicitudes.html" class="btn btn-sm btn-outline-secondary">Asignar</a></td></tr>
+          <tr><td>SIM-2026-0146</td><td>Aldeas SOS</td><td>Comunicacion SPIKES</td><td>17 ago 2026</td><td><span class="badge bg-info text-dark">En Revision</span></td><td><a href="actores.html" class="btn btn-sm btn-outline-secondary">Asignar actor</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <h6>Accesos rapidos</h6>
+      <a href="escenarios.html" class="btn btn-outline-secondary w-100 mb-2">Biblioteca de escenarios</a>
+      <a href="actores.html" class="btn btn-outline-secondary w-100 mb-2">Asignar actores</a>
+      <a href="reportes.html" class="btn btn-outline-secondary w-100 mb-2">Generar reporte mensual</a>
+      <a href="usuarios.html" class="btn btn-outline-secondary w-100">Gestion de usuarios</a>
+    </div></div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

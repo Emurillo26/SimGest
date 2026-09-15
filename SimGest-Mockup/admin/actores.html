@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Actores y asignacion</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Panel Administrador</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="solicitudes.html" class="nav-link text-white-50">Solicitudes</a>
+<a href="escenarios.html" class="nav-link text-white-50">Biblioteca de escenarios</a>
+<a href="actores.html" class="nav-link active">Actores y asignacion</a>
+<a href="reportes.html" class="nav-link text-white-50">Reportes y pagos</a>
+<a href="usuarios.html" class="nav-link text-white-50">Usuarios y accesos</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../cliente/dashboard.html">Portal Cliente</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Actores y asignacion</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Allison Gonzalez (Administradora)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabAsignacion">Asignacion a solicitudes</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabPerfiles">Perfiles operativos</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="tabAsignacion">
+    <div class="card mb-3">
+      <div class="card-header">SIM-2026-0146 - Comunicacion SPIKES (Aldeas SOS, 17 ago 2026, requiere 1 actor)</div>
+      <table class="table mb-0">
+        <thead><tr><th>Actor</th><th>Edad</th><th>Habilidades</th><th>Tarifa/hora</th><th>Disponibilidad</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Jefry Goleath</td><td>45-55</td><td>Moulage, improvisacion</td><td>8,500</td><td><span class="badge bg-success">Disponible</span></td><td><button class="btn btn-sm btn-primary" onclick="alert('Actor asignado. Se notifico al actor y al cliente.')">Asignar</button></td></tr>
+          <tr><td>Dayana Castillo</td><td>30-40</td><td>Improvisacion, llanto en escena</td><td>8,000</td><td><span class="badge bg-success">Disponible</span></td><td><button class="btn btn-sm btn-primary" onclick="alert('Actor asignado. Se notifico al actor y al cliente.')">Asignar</button></td></tr>
+          <tr class="text-muted"><td>Engel Garcia</td><td>50-60</td><td>Moulage avanzado</td><td>9,000</td><td><span class="badge bg-danger">Ocupado</span></td><td><button class="btn btn-sm btn-outline-secondary" disabled>No disponible</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Reasignacion por cancelacion</div>
+      <div class="card-body">
+        <div class="alert alert-danger small mb-3">Allison Gonzalez cancelo su participacion en SIM-2026-0130 (25 ago). Selecciona un reemplazo.</div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalReasignar">Buscar reemplazo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tabPerfiles">
+    <div class="card">
+      <table class="table mb-0">
+        <thead><tr><th>Actor</th><th>Edad</th><th>Habilidades</th><th>Tarifa</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Jefry Goleath</td><td>45-55</td><td>Moulage, improvisacion</td><td>8,500/h</td><td><span class="badge bg-success">Activo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPerfilActor">Editar</button></td></tr>
+          <tr><td>Dayana Castillo</td><td>30-40</td><td>Improvisacion, llanto</td><td>8,000/h</td><td><span class="badge bg-success">Activo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPerfilActor">Editar</button></td></tr>
+          <tr><td>Engel Garcia</td><td>50-60</td><td>Moulage avanzado</td><td>9,000/h</td><td><span class="badge bg-success">Activo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPerfilActor">Editar</button></td></tr>
+          <tr><td>Allison Gonzalez</td><td>25-35</td><td>Improvisacion</td><td>7,500/h</td><td><span class="badge bg-secondary">Inactivo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPerfilActor">Editar</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalPerfilActor" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Perfil operativo - Jefry Goleath</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-6 mb-3"><label class="form-label">Rango de edad</label><input type="text" class="form-control" value="45-55 anos"></div>
+          <div class="col-6 mb-3"><label class="form-label">Tarifa por hora</label><input type="number" class="form-control" value="8500"></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Habilidades</label><input type="text" class="form-control" value="Moulage, improvisacion clinica"></div>
+        <div class="mb-3"><label class="form-label">Estado</label><select class="form-select"><option selected>Activo</option><option>Inactivo</option></select></div>
+        <hr>
+        <p class="small text-muted mb-1">Historial de asignaciones</p>
+        <ul class="small">
+          <li>SIM-2026-0148 - Manejo de Crisis (Confirmada)</li>
+          <li>SIM-2026-0122 - Examen ECOE (Completada)</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" data-bs-dismiss="modal" onclick="alert('Perfil operativo actualizado.')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalReasignar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Reasignar actor - SIM-2026-0130</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="list-group">
+          <div class="list-group-item d-flex justify-content-between align-items-center">Dayana Castillo (Disponible) <button class="btn btn-sm btn-primary" data-bs-dismiss="modal" onclick="alert('Reemplazo confirmado.')">Asignar</button></div>
+          <div class="list-group-item d-flex justify-content-between align-items-center">Engel Garcia (Disponible) <button class="btn btn-sm btn-primary" data-bs-dismiss="modal" onclick="alert('Reemplazo confirmado.')">Asignar</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

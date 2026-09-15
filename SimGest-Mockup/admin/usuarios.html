@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Usuarios y accesos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Panel Administrador</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="solicitudes.html" class="nav-link text-white-50">Solicitudes</a>
+<a href="escenarios.html" class="nav-link text-white-50">Biblioteca de escenarios</a>
+<a href="actores.html" class="nav-link text-white-50">Actores y asignacion</a>
+<a href="reportes.html" class="nav-link text-white-50">Reportes y pagos</a>
+<a href="usuarios.html" class="nav-link active">Usuarios y accesos</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../cliente/dashboard.html">Portal Cliente</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Usuarios y accesos</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Allison Gonzalez (Administradora)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabUsuarios">Usuarios y roles</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabAccesos">Historial de accesos</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="tabUsuarios">
+    <div class="d-flex justify-content-between mb-3">
+      <input type="text" class="form-control" style="max-width:260px;" placeholder="Buscar por nombre o correo...">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuario">Crear usuario (Actor/Admin)</button>
+    </div>
+    <div class="card">
+      <table class="table mb-0">
+        <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Maria Fernandez</td><td>cliente@hospitalsanjose.cr</td><td><span class="badge bg-primary">Cliente</span></td><td><span class="badge bg-success">Activo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalRol">Gestionar</button></td></tr>
+          <tr><td>Jefry Goleath</td><td>jefry.goleath@simulactores.cr</td><td><span class="badge bg-warning text-dark">Actor</span></td><td><span class="badge bg-success">Activo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalRol">Gestionar</button></td></tr>
+          <tr><td>Allison Gonzalez</td><td>allison.gonzalez@simulactores.cr</td><td><span class="badge bg-danger">Administrador</span></td><td><span class="badge bg-success">Activo</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalRol">Gestionar</button></td></tr>
+          <tr><td>Roberto Chaves</td><td>roberto.chaves@correo.cr</td><td><span class="badge bg-primary">Cliente</span></td><td><span class="badge bg-secondary">Desactivado</span></td><td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalRol">Gestionar</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tabAccesos">
+    <div class="card">
+      <table class="table mb-0">
+        <thead><tr><th>Fecha / hora</th><th>Usuario</th><th>Rol</th><th>Resultado</th><th>IP</th></tr></thead>
+        <tbody>
+          <tr><td>12 ago 2026, 08:14 a.m.</td><td>Maria Fernandez</td><td>Cliente</td><td><span class="badge bg-success">Exitoso</span></td><td>190.113.45.2</td></tr>
+          <tr><td>12 ago 2026, 07:58 a.m.</td><td>Allison Gonzalez</td><td>Administrador</td><td><span class="badge bg-success">Exitoso</span></td><td>190.113.45.9</td></tr>
+          <tr><td>11 ago 2026, 09:41 p.m.</td><td>Roberto Chaves</td><td>Cliente</td><td><span class="badge bg-danger">Fallido - cuenta desactivada</span></td><td>201.204.11.3</td></tr>
+          <tr><td>11 ago 2026, 06:20 p.m.</td><td>Jefry Goleath</td><td>Actor</td><td><span class="badge bg-success">Exitoso</span></td><td>190.113.45.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalRol" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Gestionar usuario</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Rol asignado</label><select class="form-select"><option>Cliente</option><option selected>Actor</option><option>Administrador</option></select></div>
+        <div class="mb-3"><label class="form-label">Estado de la cuenta</label><select class="form-select"><option selected>Activo</option><option>Desactivado</option></select></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" data-bs-dismiss="modal" onclick="alert('Cambios guardados y registrados en el historial.')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalNuevoUsuario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Crear usuario controlado</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Nombre completo</label><input type="text" class="form-control"></div>
+        <div class="mb-3"><label class="form-label">Correo electronico</label><input type="email" class="form-control"></div>
+        <div class="mb-3"><label class="form-label">Rol</label><select class="form-select"><option>Actor</option><option>Administrador</option></select></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" data-bs-dismiss="modal" onclick="alert('Cuenta creada. Se envio la contrasena temporal al correo.')">Crear cuenta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

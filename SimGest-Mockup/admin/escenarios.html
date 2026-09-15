@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Biblioteca de escenarios</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Panel Administrador</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="solicitudes.html" class="nav-link text-white-50">Solicitudes</a>
+<a href="escenarios.html" class="nav-link active">Biblioteca de escenarios</a>
+<a href="actores.html" class="nav-link text-white-50">Actores y asignacion</a>
+<a href="reportes.html" class="nav-link text-white-50">Reportes y pagos</a>
+<a href="usuarios.html" class="nav-link text-white-50">Usuarios y accesos</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../cliente/dashboard.html">Portal Cliente</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Biblioteca de escenarios</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Allison Gonzalez (Administradora)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="btn-group">
+    <button class="btn btn-sm btn-secondary">Todas</button>
+    <button class="btn btn-sm btn-outline-secondary">Medico</button>
+    <button class="btn btn-sm btn-outline-secondary">Corporativo</button>
+    <button class="btn btn-sm btn-outline-secondary">Legal</button>
+  </div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoEscenario">Nuevo escenario</button>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4"><div class="card h-100"><div class="card-body">
+    <span class="badge bg-success mb-2">Activo</span>
+    <h6>Examen ECOE - Estacion 4: Dolor abdominal</h6>
+    <p class="small text-muted">Medico. Evaluacion clinica objetiva estructurada.</p>
+    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalEditarEscenario">Editar</button>
+    <button class="btn btn-sm btn-outline-secondary" onclick="alert('Escenario archivado.')">Archivar</button>
+  </div></div></div>
+
+  <div class="col-md-4"><div class="card h-100"><div class="card-body">
+    <span class="badge bg-success mb-2">Activo</span>
+    <h6>Manejo de Crisis en Quirofano - CRM</h6>
+    <p class="small text-muted">Medico. Coordinacion de equipo bajo presion.</p>
+    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalEditarEscenario">Editar</button>
+    <button class="btn btn-sm btn-outline-secondary" onclick="alert('Escenario archivado.')">Archivar</button>
+  </div></div></div>
+
+  <div class="col-md-4"><div class="card h-100"><div class="card-body">
+    <span class="badge bg-success mb-2">Activo</span>
+    <h6>Comunicacion de Malas Noticias - SPIKES</h6>
+    <p class="small text-muted">Medico. Protocolo SPIKES de comunicacion clinica.</p>
+    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalEditarEscenario">Editar</button>
+    <button class="btn btn-sm btn-outline-secondary" onclick="alert('Escenario archivado.')">Archivar</button>
+  </div></div></div>
+
+  <div class="col-md-4"><div class="card h-100"><div class="card-body">
+    <span class="badge bg-success mb-2">Activo</span>
+    <h6>Feedback 360 - Evaluacion de desempeno</h6>
+    <p class="small text-muted">Corporativo. Recursos Humanos.</p>
+    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalEditarEscenario">Editar</button>
+    <button class="btn btn-sm btn-outline-secondary" onclick="alert('Escenario archivado.')">Archivar</button>
+  </div></div></div>
+
+  <div class="col-md-4"><div class="card h-100 text-muted"><div class="card-body">
+    <span class="badge bg-secondary mb-2">Archivado</span>
+    <h6>Simulacion de audiencia - Testigo hostil</h6>
+    <p class="small">Legal. Oculto de la biblioteca disponible.</p>
+    <button class="btn btn-sm btn-outline-secondary" onclick="alert('Escenario reactivado.')">Reactivar</button>
+  </div></div></div>
+</div>
+
+<div class="modal fade" id="modalNuevoEscenario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Nuevo escenario</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" placeholder="Ej. Examen ECOE - Estacion 5"></div>
+        <div class="mb-3"><label class="form-label">Tipo de simulacion</label><select class="form-select"><option>Examen ECOE</option><option>Manejo de Crisis</option><option>Comunicacion SPIKES</option><option>Corporativo</option></select></div>
+        <div class="mb-3"><label class="form-label">Categoria</label><select class="form-select"><option>Medico</option><option>Corporativo</option><option>Legal</option><option>Educativo</option></select></div>
+        <div class="mb-3"><label class="form-label">Guion / descripcion</label><textarea class="form-control" rows="3"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" data-bs-dismiss="modal" onclick="alert('Escenario creado con estado Activo.')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEditarEscenario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Editar escenario</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="alert alert-warning small">Este escenario esta asignado a 2 solicitudes activas.</div>
+        <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" value="Manejo de Crisis en Quirofano - CRM"></div>
+        <div class="mb-3"><label class="form-label">Guion / descripcion</label><textarea class="form-control" rows="3">Deterioro subito post-operatorio orientado a coordinacion de equipo bajo presion.</textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" data-bs-dismiss="modal" onclick="alert('Escenario actualizado.')">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

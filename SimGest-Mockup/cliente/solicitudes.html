@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Mis solicitudes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Portal Cliente</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="solicitudes.html" class="nav-link active">Mis solicitudes</a>
+<a href="nueva-solicitud.html" class="nav-link text-white-50">Nueva solicitud</a>
+<a href="perfil.html" class="nav-link text-white-50">Mi perfil</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../admin/dashboard.html">Panel Administrador</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Mis solicitudes</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Maria Fernandez (Hospital San Jose)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="btn-group">
+    <button class="btn btn-sm btn-secondary">Todas (16)</button>
+    <button class="btn btn-sm btn-outline-secondary">Pendiente (2)</button>
+    <button class="btn btn-sm btn-outline-secondary">En Revision (1)</button>
+    <button class="btn btn-sm btn-outline-secondary">Confirmada (1)</button>
+    <button class="btn btn-sm btn-outline-secondary">Completada (11)</button>
+    <button class="btn btn-sm btn-outline-secondary">Cancelada (1)</button>
+  </div>
+  <a href="nueva-solicitud.html" class="btn btn-primary">Nueva solicitud</a>
+</div>
+
+<div class="card">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>N. Solicitud</th><th>Tipo</th><th>Fecha</th><th>Interpretes</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>SIM-2026-0153</td><td>Examen ECOE - Estacion 4</td><td>29 ago 2026</td><td>2</td><td><span class="badge bg-warning text-dark">Pendiente</span></td><td><a href="detalle-solicitud.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+      <tr><td>SIM-2026-0151</td><td>Comunicacion SPIKES</td><td>22 ago 2026</td><td>1</td><td><span class="badge bg-success">Confirmada</span></td><td><a href="detalle-solicitud.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+      <tr><td>SIM-2026-0148</td><td>Manejo de Crisis (CRM)</td><td>18 ago 2026</td><td>3</td><td><span class="badge bg-info text-dark">En Revision</span></td><td><a href="detalle-solicitud.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+      <tr><td>SIM-2026-0139</td><td>Seguridad del Paciente</td><td>02 ago 2026</td><td>2</td><td><span class="badge bg-secondary">Completada</span></td><td><a href="detalle-solicitud.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+      <tr><td>SIM-2026-0122</td><td>Examen ECOE - Estacion 2</td><td>14 jul 2026</td><td>4</td><td><span class="badge bg-secondary">Completada</span></td><td><a href="detalle-solicitud.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+      <tr><td>SIM-2026-0107</td><td>Manejo de Crisis (CRM)</td><td>30 jun 2026</td><td>1</td><td><span class="badge bg-danger">Cancelada</span></td><td><a href="detalle-solicitud.html" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+    </tbody>
+  </table>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

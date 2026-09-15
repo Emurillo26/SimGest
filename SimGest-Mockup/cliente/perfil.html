@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Mi perfil</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Portal Cliente</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="solicitudes.html" class="nav-link text-white-50">Mis solicitudes</a>
+<a href="nueva-solicitud.html" class="nav-link text-white-50">Nueva solicitud</a>
+<a href="perfil.html" class="nav-link active">Mi perfil</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../admin/dashboard.html">Panel Administrador</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Mi perfil</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Maria Fernandez (Hospital San Jose)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="card" style="max-width:600px;">
+  <div class="card-body">
+    <form>
+      <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Nombre completo</label><input type="text" class="form-control" value="Maria Fernandez Solano"></div>
+        <div class="col-md-6 mb-3"><label class="form-label">Organizacion</label><input type="text" class="form-control" value="Hospital San Jose"></div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Correo electronico</label><input type="email" class="form-control" value="cliente@hospitalsanjose.cr"></div>
+        <div class="col-md-6 mb-3"><label class="form-label">Telefono</label><input type="text" class="form-control" value="8888-1234"></div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label">Nueva contrasena</label><input type="password" class="form-control" placeholder="Dejar en blanco para no cambiar"></div>
+        <div class="col-md-6 mb-3"><label class="form-label">Confirmar contrasena</label><input type="password" class="form-control"></div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="alert('Perfil actualizado correctamente')">Guardar cambios</button>
+    </form>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

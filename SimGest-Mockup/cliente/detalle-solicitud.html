@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Detalle de solicitud</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Portal Cliente</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="solicitudes.html" class="nav-link text-white-50">Mis solicitudes</a>
+<a href="nueva-solicitud.html" class="nav-link text-white-50">Nueva solicitud</a>
+<a href="perfil.html" class="nav-link text-white-50">Mi perfil</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../admin/dashboard.html">Panel Administrador</a> | <a href="../actor/dashboard.html">Portal Actor</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Detalle de solicitud</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Maria Fernandez (Hospital San Jose)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="m-0">SIM-2026-0148 - Manejo de Crisis (CRM)</h5>
+  <span class="badge bg-info text-dark">En Revision</span>
+</div>
+
+<ul class="list-group list-group-horizontal mb-4 small">
+  <li class="list-group-item flex-fill text-center bg-success text-white">1. Pendiente</li>
+  <li class="list-group-item flex-fill text-center bg-info text-dark">2. En Revision</li>
+  <li class="list-group-item flex-fill text-center">3. Aprobada</li>
+  <li class="list-group-item flex-fill text-center">4. Confirmada</li>
+  <li class="list-group-item flex-fill text-center">5. Completada</li>
+</ul>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header">Escenario propuesto</div>
+      <div class="card-body">
+        <p><strong>Escenario:</strong> Manejo de Crisis en Sala de Emergencias - CRM</p>
+        <p><strong>Categoria:</strong> Medico - Crisis Resource Management</p>
+        <p><strong>Fecha y hora:</strong> 18 ago 2026, 9:00 a.m.</p>
+        <p><strong>Interpretes:</strong> 3 actores</p>
+        <p>Escenario de deterioro subito de paciente post-operatorio, orientado a evaluar coordinacion de equipo y priorizacion bajo presion.</p>
+        <div class="alert alert-warning small">Plazo de revision: hasta el 15 de agosto, 11:59 p.m.</div>
+        <button class="btn btn-primary" onclick="alert('Escenario aprobado. La solicitud paso a estado Aprobada.')">Aprobar escenario</button>
+        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRechazar">Rechazar / solicitar ajustes</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Actor asignado</div>
+      <div class="card-body">
+        <strong>Jefry Goleath</strong> - Rol: Paciente<br>
+        <span class="text-muted small">Perfil: adulto, 45-55 anos. Habilidades: moulage, improvisacion clinica</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-body">
+        <p class="small text-muted mb-1">Cliente</p>
+        <p>Maria Fernandez - Hospital San Jose</p>
+        <p class="small text-muted mb-1">Creada el</p>
+        <p>10 ago 2026</p>
+        <p class="small text-muted mb-1">Observaciones</p>
+        <p class="mb-0">Sala habilitada desde las 8:00 a.m., requiere carne institucional.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <p class="small text-muted">Disponible mientras la solicitud no tenga actor confirmado.</p>
+        <button class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar solicitud</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalRechazar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Rechazar escenario</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <label class="form-label">Cuentanos que ajustes necesitas</label>
+        <textarea class="form-control" rows="3" placeholder="Ej. el actor asignado no coincide con el perfil solicitado"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" data-bs-dismiss="modal" onclick="alert('Rechazo enviado. La solicitud regreso a estado Pendiente.')">Enviar rechazo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Cancelar esta solicitud?</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body"><p>Esta accion liberara la fecha y notificara al administrador.</p></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+        <button class="btn btn-danger" data-bs-dismiss="modal" onclick="alert('Solicitud cancelada y fecha liberada.')">Si, cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

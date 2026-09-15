@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SimGest - Mis simulaciones</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../shared/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="d-flex">
+
+  <nav class="bg-dark sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-3">Portal Actor</div>
+    <div class="nav flex-column">
+      <a href="dashboard.html" class="nav-link text-white-50">Panel principal</a>
+<a href="calendario.html" class="nav-link text-white-50">Calendario y disponibilidad</a>
+<a href="simulaciones.html" class="nav-link active">Mis simulaciones</a>
+<a href="perfil.html" class="nav-link text-white-50">Mi perfil</a>
+    </div>
+    <hr class="text-white-50">
+    <div class="small text-white-50">Cambiar vista de demo:<br><a href="../cliente/dashboard.html">Portal Cliente</a> | <a href="../admin/dashboard.html">Panel Administrador</a></div>
+  </nav>
+
+  <div class="flex-fill">
+    <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+      <h4 class="m-0">Mis simulaciones</h4>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Jefry Goleath (Actor)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Mi perfil</a></li>
+          <li><a class="dropdown-item" href="../index.html">Cerrar sesion</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-4">
+      
+<div class="btn-group mb-3">
+  <button class="btn btn-sm btn-secondary">Todas</button>
+  <button class="btn btn-sm btn-outline-secondary">Por confirmar</button>
+  <button class="btn btn-sm btn-outline-secondary">Confirmadas</button>
+  <button class="btn btn-sm btn-outline-secondary">Completadas</button>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between">
+    Manejo de Crisis (CRM) - 18 ago 2026, 9:00 a.m., Hospital San Jose
+    <span class="badge bg-warning text-dark">Por confirmar</span>
+  </div>
+  <div class="card-body">
+    <p><strong>Rol a interpretar:</strong> Paciente post-operatorio</p>
+    <p><strong>Escenario:</strong> Deterioro subito en sala de emergencias</p>
+    <p><strong>Plazo de respuesta:</strong> 15 de agosto</p>
+    <p class="small text-muted">Presentarse 30 minutos antes para maquillaje (moulage). Traer carne de identificacion.</p>
+    <button class="btn btn-primary" onclick="alert('Participacion confirmada. Se notifico al administrador.')">Confirmar participacion</button>
+    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRechazarPart">Rechazar</button>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between">
+    Comunicacion SPIKES - 22 ago 2026, 2:00 p.m., Aldeas SOS
+    <span class="badge bg-success">Confirmada</span>
+  </div>
+  <div class="card-body">
+    <p class="mb-0"><strong>Rol:</strong> Familiar del paciente. <strong>Escenario:</strong> Protocolo SPIKES.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between">
+    Seguridad del Paciente - 02 ago 2026
+    <span class="badge bg-secondary">Completada</span>
+  </div>
+  <div class="card-body">
+    <p class="small text-muted mb-0">Sus horas fueron incluidas en el reporte mensual de agosto.</p>
+  </div>
+</div>
+
+<div class="modal fade" id="modalRechazarPart" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Rechazar participacion</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <label class="form-label">Motivo</label>
+        <textarea class="form-control" rows="3" placeholder="Cuentanos por que no puedes participar..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+        <button class="btn btn-danger" data-bs-dismiss="modal" onclick="alert('Rechazo registrado. Se notifico al administrador.')">Confirmar rechazo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+<script src="../shared/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
