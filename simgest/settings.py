@@ -27,6 +27,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Correo de confirmación de cuenta (HU registro de clientes)
+# En desarrollo, los correos se imprimen en la consola donde corre runserver.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'no-reply@simulactores.com'
+# Producción: cambiar EMAIL_BACKEND a smtp y agregar EMAIL_HOST, EMAIL_PORT,
+# EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS (idealmente vía decouple.config,
+# igual que ya hacen con las variables de la base de datos).
+
 
 # Application definition
 

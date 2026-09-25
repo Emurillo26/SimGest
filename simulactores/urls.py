@@ -4,6 +4,8 @@ from . import views
 app_name = 'simulactores'
 
 urlpatterns = [
+    path('registro/', views.registro_view, name='registro'),
+    path('confirmar/<str:token>/', views.confirmar_correo_view, name='confirmar_correo'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('perfil/', views.perfil_view, name='perfil'),

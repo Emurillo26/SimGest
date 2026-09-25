@@ -1,0 +1,298 @@
+diff --git a/simgest/settings.py b/simgest/settings.py
+index bfaf418..2756289 100644
+--- a/simgest/settings.py
++++ b/simgest/settings.py
+@@ -27,6 +27,14 @@ DEBUG = True
+ 
+ ALLOWED_HOSTS = []
+ 
++# Correo de confirmación de cuenta (HU registro de clientes)
++# En desarrollo, los correos se imprimen en la consola donde corre runserver.
++EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
++DEFAULT_FROM_EMAIL = 'no-reply@simulactores.com'
++# Producción: cambiar EMAIL_BACKEND a smtp y agregar EMAIL_HOST, EMAIL_PORT,
++# EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_USE_TLS (idealmente vía decouple.config,
++# igual que ya hacen con las variables de la base de datos).
++
+ 
+ # Application definition
+ 
+diff --git a/simulactores/forms.py b/simulactores/forms.py
+new file mode 100644
+index 0000000..ae46ca5
+--- /dev/null
++++ b/simulactores/forms.py
+@@ -0,0 +1,48 @@
++from django import forms
++
++from .models import Usuario
++
++
++class RegistroClienteForm(forms.Form):
++    """
++    Formulario público de registro (HU: Registro de clientes).
++    Solo crea usuarios con rol Cliente. Actor/Administrador se
++    gestionan aparte, desde el módulo de administración
++    (ver simulactores/views.py: listado_usuarios / actualizar_rol).
++    """
++
++    nombre = forms.CharField(
++        max_length=150, label="Nombre completo",
++        widget=forms.TextInput(attrs={"class": "form-control"}),
++    )
++    email = forms.EmailField(
++        label="Correo electrónico",
++        widget=forms.EmailInput(attrs={"class": "form-control"}),
++    )
++    telefono = forms.CharField(
++        max_length=20, required=False, label="Teléfono (opcional)",
++        widget=forms.TextInput(attrs={"class": "form-control"}),
++    )
++    password = forms.CharField(
++        widget=forms.PasswordInput(attrs={"class": "form-control"}),
++        min_length=8, label="Contraseña",
++    )
++    password2 = forms.CharField(
++        widget=forms.PasswordInput(attrs={"class": "form-control"}),
++        label="Confirmar contraseña",
++    )
++
++    def clean_email(self):
++        email = self.cleaned_data["email"].strip().lower()
++        # Regla de negocio: correo duplicado -> error explícito
++        if Usuario.objects.filter(email__iexact=email).exists():
++            raise forms.ValidationError("Este correo ya está en uso.")
++        return email
++
++    def clean(self):
++        cleaned = super().clean()
++        password = cleaned.get("password")
++        password2 = cleaned.get("password2")
++        if password and password2 and password != password2:
++            self.add_error("password2", "Las contraseñas no coinciden.")
++        return cleaned
+diff --git a/simulactores/templates/simulactores/confirmacion_exitosa.html b/simulactores/templates/simulactores/confirmacion_exitosa.html
+new file mode 100644
+index 0000000..1b9c726
+--- /dev/null
++++ b/simulactores/templates/simulactores/confirmacion_exitosa.html
+@@ -0,0 +1,20 @@
++<!DOCTYPE html>
++<html lang="es">
++<head>
++  <meta charset="UTF-8">
++  <title>SimGest - Cuenta confirmada</title>
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
++  <style>
++    body { background-color: #0E2A3C; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
++    .card-box { max-width: 420px; border-radius: 12px; border: none; }
++  </style>
++</head>
++<body>
++  <div class="card card-box p-4 text-center">
++    <h4 style="color:#0E2A3C;">¡Cuenta confirmada!</h4>
++    <p class="text-muted">Ya podés iniciar sesión con tu correo y contraseña.</p>
++    <a href="{% url 'simulactores:login' %}" class="btn btn-outline-dark mt-2">Ir a iniciar sesión</a>
++  </div>
++</body>
++</html>
+diff --git a/simulactores/templates/simulactores/confirmacion_invalida.html b/simulactores/templates/simulactores/confirmacion_invalida.html
+new file mode 100644
+index 0000000..518caeb
+--- /dev/null
++++ b/simulactores/templates/simulactores/confirmacion_invalida.html
+@@ -0,0 +1,20 @@
++<!DOCTYPE html>
++<html lang="es">
++<head>
++  <meta charset="UTF-8">
++  <title>SimGest - Enlace inválido</title>
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
++  <style>
++    body { background-color: #0E2A3C; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
++    .card-box { max-width: 420px; border-radius: 12px; border: none; }
++  </style>
++</head>
++<body>
++  <div class="card card-box p-4 text-center">
++    <h4 style="color:#B71C3C;">Enlace inválido o vencido</h4>
++    <p class="text-muted">Este enlace de confirmación ya no es válido. Contacta a soporte para reenviarlo.</p>
++    <a href="{% url 'simulactores:login' %}" class="btn btn-outline-dark mt-2">Volver</a>
++  </div>
++</body>
++</html>
+diff --git a/simulactores/templates/simulactores/registro.html b/simulactores/templates/simulactores/registro.html
+new file mode 100644
+index 0000000..2628a1d
+--- /dev/null
++++ b/simulactores/templates/simulactores/registro.html
+@@ -0,0 +1,74 @@
++<!DOCTYPE html>
++<html lang="es">
++<head>
++  <meta charset="UTF-8">
++  <title>SimGest - Registro</title>
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
++  <style>
++    :root {
++      --granate: #B71C3C;
++      --azul-petroleo: #0E2A3C;
++    }
++    body {
++      background-color: var(--azul-petroleo);
++      min-height: 100vh;
++      display: flex;
++      align-items: center;
++      justify-content: center;
++      padding: 24px 0;
++    }
++    .registro-card { max-width: 420px; width: 100%; border-radius: 12px; border: none; }
++    .btn-granate { background-color: var(--granate); color: #fff; border: none; width: 100%; }
++    .btn-granate:hover { background-color: #97162f; color: #fff; }
++  </style>
++</head>
++<body>
++  <div class="card registro-card p-4">
++    <h4 class="text-center mb-1" style="color: var(--azul-petroleo);">SimGest</h4>
++    <p class="text-center text-muted small mb-4">Crea tu cuenta de cliente</p>
++
++    {% if messages %}
++      {% for message in messages %}
++        <div class="alert alert-success py-2">{{ message }}</div>
++      {% endfor %}
++    {% endif %}
++
++    {% if form.non_field_errors %}
++      <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
++    {% endif %}
++
++    <form method="post">
++      {% csrf_token %}
++      <div class="mb-3">
++        <label class="form-label">{{ form.nombre.label }}</label>
++        {{ form.nombre }}
++        {% for error in form.nombre.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
++      </div>
++      <div class="mb-3">
++        <label class="form-label">{{ form.email.label }}</label>
++        {{ form.email }}
++        {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
++      </div>
++      <div class="mb-3">
++        <label class="form-label">{{ form.telefono.label }}</label>
++        {{ form.telefono }}
++      </div>
++      <div class="mb-3">
++        <label class="form-label">{{ form.password.label }}</label>
++        {{ form.password }}
++        {% for error in form.password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
++      </div>
++      <div class="mb-3">
++        <label class="form-label">{{ form.password2.label }}</label>
++        {{ form.password2 }}
++        {% for error in form.password2.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
++      </div>
++      <button type="submit" class="btn btn-granate mt-2">Crear cuenta</button>
++      <p class="text-center small mt-3 mb-0">
++        <a href="{% url 'simulactores:login' %}">Ya tengo cuenta</a>
++      </p>
++    </form>
++  </div>
++</body>
++</html>
+diff --git a/simulactores/urls.py b/simulactores/urls.py
+index 27d0b36..370d41a 100644
+--- a/simulactores/urls.py
++++ b/simulactores/urls.py
+@@ -4,6 +4,8 @@ from . import views
+ app_name = 'simulactores'
+ 
+ urlpatterns = [
++    path('registro/', views.registro_view, name='registro'),
++    path('confirmar/<str:token>/', views.confirmar_correo_view, name='confirmar_correo'),
+     path('login/', views.login_view, name='login'),
+     path('logout/', views.logout_view, name='logout'),
+     path('perfil/', views.perfil_view, name='perfil'),
+diff --git a/simulactores/views.py b/simulactores/views.py
+index 21cef5d..72478a4 100644
+--- a/simulactores/views.py
++++ b/simulactores/views.py
+@@ -1,7 +1,66 @@
++from django.conf import settings
++from django.contrib.auth.hashers import check_password, make_password
++from django.core.mail import send_mail
++from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+ from django.shortcuts import render, redirect, get_object_or_404
++from django.urls import reverse
+ from django.contrib import messages
++from .forms import RegistroClienteForm
+ from .models import Usuario, Rol, Bitacora
+ 
++# Token firmado para el enlace de confirmación de correo (sin migraciones nuevas)
++_signer = TimestampSigner()
++CONFIRMACION_MAX_AGE = 60 * 60 * 48  # 48 horas
++
++
++def registro_view(request):
++    if request.method == 'POST':
++        form = RegistroClienteForm(request.POST)
++        if form.is_valid():
++            rol_cliente = Rol.objects.get(nombre='Cliente')
++            usuario = Usuario.objects.create(
++                nombre=form.cleaned_data['nombre'],
++                email=form.cleaned_data['email'],
++                telefono=form.cleaned_data.get('telefono') or None,
++                password_hash=make_password(form.cleaned_data['password']),
++                id_rol=rol_cliente,
++                estado='Pendiente',  # se activa al confirmar el correo
++            )
++            _enviar_correo_confirmacion(request, usuario)
++            messages.success(request, 'Cuenta creada. Revisa tu correo para confirmarla.')
++            return redirect('simulactores:login')
++        return render(request, 'simulactores/registro.html', {'form': form})
++
++    return render(request, 'simulactores/registro.html', {'form': RegistroClienteForm()})
++
++
++def _enviar_correo_confirmacion(request, usuario):
++    token = _signer.sign(usuario.pk)
++    enlace = request.build_absolute_uri(
++        reverse('simulactores:confirmar_correo', kwargs={'token': token})
++    )
++    send_mail(
++        'Confirma tu cuenta en Simulactores',
++        f'Hola {usuario.nombre},\n\nConfirma tu cuenta haciendo clic aquí:\n{enlace}\n\n'
++        f'Este enlace vence en 48 horas.',
++        settings.DEFAULT_FROM_EMAIL,
++        [usuario.email],
++        fail_silently=False,
++    )
++
++
++def confirmar_correo_view(request, token):
++    try:
++        usuario_id = _signer.unsign(token, max_age=CONFIRMACION_MAX_AGE)
++        usuario = Usuario.objects.get(pk=usuario_id)
++    except (BadSignature, SignatureExpired, Usuario.DoesNotExist):
++        return render(request, 'simulactores/confirmacion_invalida.html')
++
++    if usuario.estado == 'Pendiente':
++        usuario.estado = 'Activo'
++        usuario.save(update_fields=['estado'])
++    return render(request, 'simulactores/confirmacion_exitosa.html')
++
+ 
+ def login_view(request):
+     if request.method == 'POST':
+@@ -14,7 +73,7 @@ def login_view(request):
+             messages.error(request, 'Correo o contraseña incorrectos.')
+             return render(request, 'simulactores/login.html')
+ 
+-        if usuario.password_hash != password:
++        if not check_password(password, usuario.password_hash):
+             messages.error(request, 'Correo o contraseña incorrectos.')
+             return render(request, 'simulactores/login.html')
+ 

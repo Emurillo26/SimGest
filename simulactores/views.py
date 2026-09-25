@@ -1,6 +1,65 @@
+from django.conf import settings
+from django.contrib.auth.hashers import check_password, make_password
+from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
+from .forms import RegistroClienteForm
 from .models import Usuario, Rol, Bitacora
+
+# Token firmado para el enlace de confirmación de correo (sin migraciones nuevas)
+_signer = TimestampSigner()
+CONFIRMACION_MAX_AGE = 60 * 60 * 48  # 48 horas
+
+
+def registro_view(request):
+    if request.method == 'POST':
+        form = RegistroClienteForm(request.POST)
+        if form.is_valid():
+            rol_cliente = Rol.objects.get(nombre='Cliente')
+            usuario = Usuario.objects.create(
+                nombre=form.cleaned_data['nombre'],
+                email=form.cleaned_data['email'],
+                telefono=form.cleaned_data.get('telefono') or None,
+                password_hash=make_password(form.cleaned_data['password']),
+                id_rol=rol_cliente,
+                estado='Pendiente',  # se activa al confirmar el correo
+            )
+            _enviar_correo_confirmacion(request, usuario)
+            messages.success(request, 'Cuenta creada. Revisa tu correo para confirmarla.')
+            return redirect('simulactores:login')
+        return render(request, 'simulactores/registro.html', {'form': form})
+
+    return render(request, 'simulactores/registro.html', {'form': RegistroClienteForm()})
+
+
+def _enviar_correo_confirmacion(request, usuario):
+    token = _signer.sign(usuario.pk)
+    enlace = request.build_absolute_uri(
+        reverse('simulactores:confirmar_correo', kwargs={'token': token})
+    )
+    send_mail(
+        'Confirma tu cuenta en Simulactores',
+        f'Hola {usuario.nombre},\n\nConfirma tu cuenta haciendo clic aquí:\n{enlace}\n\n'
+        f'Este enlace vence en 48 horas.',
+        settings.DEFAULT_FROM_EMAIL,
+        [usuario.email],
+        fail_silently=False,
+    )
+
+
+def confirmar_correo_view(request, token):
+    try:
+        usuario_id = _signer.unsign(token, max_age=CONFIRMACION_MAX_AGE)
+        usuario = Usuario.objects.get(pk=usuario_id)
+    except (BadSignature, SignatureExpired, Usuario.DoesNotExist):
+        return render(request, 'simulactores/confirmacion_invalida.html')
+
+    if usuario.estado == 'Pendiente':
+        usuario.estado = 'Activo'
+        usuario.save(update_fields=['estado'])
+    return render(request, 'simulactores/confirmacion_exitosa.html')
 
 
 def login_view(request):
@@ -14,7 +73,7 @@ def login_view(request):
             messages.error(request, 'Correo o contraseña incorrectos.')
             return render(request, 'simulactores/login.html')
 
-        if usuario.password_hash != password:
+        if not check_password(password, usuario.password_hash):
             messages.error(request, 'Correo o contraseña incorrectos.')
             return render(request, 'simulactores/login.html')
 
