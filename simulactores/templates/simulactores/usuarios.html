@@ -27,6 +27,7 @@
     <div class="text-white-50 small mb-4">Panel Administrador</div>
     <div class="nav flex-column gap-1">
       <a href="{% url 'simulactores:listado_usuarios' %}" class="nav-link active">Usuarios y accesos</a>
+      <a href="{% url 'simulactores:historial_accesos' %}" class="nav-link text-white-50">Historial de accesos</a>
       <a href="{% url 'simulactores:perfil' %}" class="nav-link text-white-50">Mi perfil</a>
       <a href="{% url 'simulactores:logout' %}" class="nav-link text-white-50">Cerrar sesión</a>
     </div>
@@ -46,7 +47,7 @@
             <tr>
               <td class="fw-semibold">{{ usuario.nombre }}</td>
               <td>{{ usuario.email }}</td>
-              <td><span class="badge badge-rol">{{ usuario.id_rol.nombre }}</span></td>
+              <td><span class="badge badge-rol">{{ usuario.rol.nombre }}</span></td>
               <td>
                 {% if usuario.estado == 'Activo' %}
                   <span class="badge bg-success">Activo</span>
@@ -75,7 +76,7 @@
                       <label class="form-label">Rol asignado</label>
                       <select name="id_rol" class="form-select mb-3">
                         {% for rol in roles %}
-                          <option value="{{ rol.id_rol }}" {% if rol.id_rol == usuario.id_rol.id_rol %}selected{% endif %}>
+                          <option value="{{ rol.id_rol }}" {% if rol.id_rol == usuario.rol.id_rol %}selected{% endif %}>
                             {{ rol.nombre }}
                           </option>
                         {% endfor %}

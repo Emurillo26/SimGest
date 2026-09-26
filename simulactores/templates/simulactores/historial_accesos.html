@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SimGest - Historial de accesos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --granate: #B71C3C; --azul-petroleo: #0E2A3C; }
+    body { background-color: #f4f6f8; }
+    .sidebar { background-color: var(--azul-petroleo) !important; }
+    .sidebar .nav-link.active { background-color: var(--granate); color: #fff !important; border-radius: 6px; }
+    .topbar { background-color: #fff; border-bottom: 3px solid var(--granate); }
+    .card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .table thead { background-color: var(--azul-petroleo); }
+    .table thead th { color: #fff; border: none; font-weight: 500; }
+    .table td { vertical-align: middle; }
+    .btn-granate { background-color: var(--granate); color: #fff; border: none; }
+    .btn-granate:hover { background-color: #97162f; color: #fff; }
+  </style>
+</head>
+<body>
+<div class="d-flex">
+  <nav class="sidebar p-3" style="width:230px; min-height:100vh;">
+    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+    <div class="text-white-50 small mb-4">Panel Administrador</div>
+    <div class="nav flex-column gap-1">
+      <a href="{% url 'simulactores:listado_usuarios' %}" class="nav-link text-white-50">Usuarios y accesos</a>
+      <a href="{% url 'simulactores:historial_accesos' %}" class="nav-link active">Historial de accesos</a>
+      <a href="{% url 'simulactores:perfil' %}" class="nav-link text-white-50">Mi perfil</a>
+      <a href="{% url 'simulactores:logout' %}" class="nav-link text-white-50">Cerrar sesión</a>
+    </div>
+  </nav>
+  <div class="flex-fill">
+    <div class="topbar d-flex justify-content-between align-items-center p-3">
+      <h4 class="m-0" style="color: var(--azul-petroleo);">Historial de accesos</h4>
+    </div>
+    <div class="p-4">
+
+      <div class="card p-3 mb-3">
+        <form method="get" class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label small">Usuario</label>
+            <select name="usuario" class="form-select">
+              <option value="">Todos</option>
+              {% for u in usuarios %}
+                <option value="{{ u.id_usuario }}" {% if filtro_usuario == u.id_usuario|stringformat:"s" %}selected{% endif %}>
+                  {{ u.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small">Rol</label>
+            <select name="rol" class="form-select">
+              <option value="">Todos</option>
+              {% for r in roles %}
+                <option value="{{ r.nombre }}" {% if filtro_rol == r.nombre %}selected{% endif %}>{{ r.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Desde</label>
+            <input type="date" name="desde" class="form-control" value="{{ filtro_desde|default:'' }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Hasta</label>
+            <input type="date" name="hasta" class="form-control" value="{{ filtro_hasta|default:'' }}">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-granate w-100">Filtrar</button>
+          </div>
+        </form>
+      </div>
+
+      {% if registros %}
+      <div class="card mb-3 p-3">
+        <span class="text-muted small">Intentos fallidos en el rango seleccionado: <strong>{{ total_fallidos }}</strong></span>
+      </div>
+      <div class="card">
+        <table class="table mb-0">
+          <thead>
+            <tr><th>Fecha</th><th>Hora</th><th>Usuario</th><th>Rol</th><th>Resultado</th><th>IP</th></tr>
+          </thead>
+          <tbody>
+            {% for r in registros %}
+            <tr>
+              <td>{{ r.fecha }}</td>
+              <td>{{ r.hora }}</td>
+              <td>{{ r.usuario.nombre|default:r.correo_intento }}</td>
+              <td>{{ r.rol|default:"—" }}</td>
+              <td>
+                {% if r.resultado == 'Exitoso' %}
+                  <span class="badge bg-success">Exitoso</span>
+                {% else %}
+                  <span class="badge bg-danger">Fallido</span>
+                {% endif %}
+              </td>
+              <td>{{ r.ip_origen|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="card p-4 text-center text-muted">
+          No existen registros para los criterios seleccionados.
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

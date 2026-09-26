@@ -11,4 +11,5 @@ urlpatterns = [
     path('perfil/', views.perfil_view, name='perfil'),
     path('usuarios/', views.listado_usuarios, name='listado_usuarios'),
     path('usuarios/<int:usuario_id>/rol/', views.actualizar_rol, name='actualizar_rol'),
+    path('historial-accesos/', views.historial_accesos_view, name='historial_accesos'),
 ]
