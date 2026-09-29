@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,12 +30,23 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+# -------------------------------------------------------------------
+# Correo
+# -------------------------------------------------------------------
+
+# En desarrollo los correos se imprimen en la terminal.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 DEFAULT_FROM_EMAIL = 'no-reply@simulactores.com'
 
+# HU-03:
+# El enlace para restablecer la contraseña vence después de 30 minutos.
+PASSWORD_RESET_TIMEOUT = 1800
 
 
-# Application definition
+# -------------------------------------------------------------------
+# Aplicaciones
+# -------------------------------------------------------------------
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,10 +56,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'simulactores'
+    'simulactores',
 ]
 
 AUTH_USER_MODEL = 'simulactores.Usuario'
+
+
+# -------------------------------------------------------------------
+# Middleware
+# -------------------------------------------------------------------
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,7 +76,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'simgest.urls'
+
+
+# -------------------------------------------------------------------
+# Templates
+# -------------------------------------------------------------------
 
 TEMPLATES = [
     {
@@ -76,13 +100,13 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'simgest.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-from decouple import config
+# -------------------------------------------------------------------
+# Base de datos PostgreSQL
+# -------------------------------------------------------------------
 
 DATABASES = {
     'default': {
@@ -96,8 +120,9 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+# -------------------------------------------------------------------
+# Validación de contraseñas
+# -------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -115,8 +140,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
+# -------------------------------------------------------------------
+# Internacionalización
+# -------------------------------------------------------------------
 
 LANGUAGE_CODE = 'en-us'
 
@@ -127,12 +153,15 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+# -------------------------------------------------------------------
+# Archivos estáticos
+# -------------------------------------------------------------------
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+# -------------------------------------------------------------------
+# Primary key por defecto
+# -------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
