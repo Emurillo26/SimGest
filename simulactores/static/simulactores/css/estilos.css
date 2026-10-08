@@ -1,0 +1,123 @@
+:root {
+  --granate: #B71C3C;
+  --granate-oscuro: #97162f;
+  --azul-petroleo: #0E2A3C;
+  --fondo-app: #f4f6f8;
+}
+
+body {
+  background-color: var(--fondo-app);
+}
+
+
+.sidebar {
+  background-color: var(--azul-petroleo) !important;
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--granate);
+  color: #fff !important;
+  border-radius: 6px;
+}
+
+.topbar {
+  background-color: #fff;
+  border-bottom: 3px solid var(--granate);
+}
+
+
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table thead {
+  background-color: var(--azul-petroleo);
+}
+
+.table thead th {
+  color: #fff;
+  border: none;
+  font-weight: 500;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge-rol {
+  background-color: var(--azul-petroleo);
+}
+
+.btn-granate {
+  background-color: var(--granate);
+  color: #fff;
+  border: none;
+}
+
+.btn-granate:hover {
+  background-color: var(--granate-oscuro);
+  color: #fff;
+}
+
+.campo-solo-lectura {
+  background-color: #e9ecef;
+}
+
+.tarjeta-resumen {
+  text-align: center;
+}
+
+.tarjeta-resumen .numero {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--azul-petroleo);
+}
+
+dl.dl-detalle dt {
+  color: #6c757d;
+  font-size: .85rem;
+}
+
+dl.dl-detalle dd {
+  font-weight: 600;
+  margin-bottom: .75rem;
+}
+
+.campo-password {
+  position: relative;
+}
+
+.btn-ojito {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+
+
+.pagina-acceso {
+  background-color: var(--azul-petroleo);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.tarjeta-acceso {
+  max-width: 420px;
+  width: 100%;
+  border-radius: 12px;
+  border: none;
+}
+
+.btn-granate.btn-ancho {
+  width: 100%;
+}

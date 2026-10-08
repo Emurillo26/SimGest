@@ -36,7 +36,12 @@ class UsuarioAdmin(BaseUserAdmin):
 
 @admin.register(Bitacora)
 class BitacoraAdmin(admin.ModelAdmin):
-    list_display = ('id_bitacora', 'usuario', 'accion', 'resultado', 'fecha', 'hora')
+    list_display = (
+        'id_bitacora', 'usuario', 'realizado_por', 'accion',
+        'campo_modificado', 'valor_anterior', 'valor_nuevo', 'resultado', 'fecha',
+    )
+    list_filter = ('accion', 'resultado')
+    search_fields = ('usuario__nombre', 'usuario__email', 'campo_modificado', 'accion')
 
 
 @admin.register(HistorialAcceso)
@@ -82,9 +87,14 @@ class EscenarioAdmin(admin.ModelAdmin):
 
 @admin.register(Solicitud)
 class SolicitudAdmin(admin.ModelAdmin):
-    list_display = ('numero_solicitud', 'cliente', 'tipo_simulacion', 'estado', 'fecha_evento')
+
+    list_display = (
+        'numero_solicitud', 'uuid', 'cliente', 'tipo_simulacion', 'estado',
+        'fecha_evento', 'escenario', 'fecha_limite_aprobacion',
+    )
     list_filter = ('estado', 'tipo_simulacion')
-    search_fields = ('numero_solicitud', 'cliente__nombre', 'cliente__email')
+    search_fields = ('numero_solicitud', 'cliente__nombre', 'cliente__email', 'uuid')
+    readonly_fields = ('uuid', 'numero_solicitud', 'fecha_limite_aprobacion')
 
 
 @admin.register(Asignacion)

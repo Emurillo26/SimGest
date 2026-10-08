@@ -1,0 +1,10 @@
+<nav class="sidebar p-3" style="width:230px; min-height:100vh;">
+  <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
+  <div class="text-white-50 small mb-4">{{ panel_nombre }}</div>
+  <div class="nav flex-column gap-1">
+    {% for item in menu_lateral %}
+      <a href="{% url item.url_name %}" class="nav-link {% if item.activo %}active{% else %}text-white-50{% endif %}">{{ item.etiqueta }}</a>
+    {% endfor %}
+    <a href="{% url 'simulactores:logout' %}" class="nav-link text-white-50">Cerrar sesión</a>
+  </div>
+</nav>

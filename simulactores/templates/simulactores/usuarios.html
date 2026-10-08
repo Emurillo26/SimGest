@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,105 +6,114 @@
   <title>SimGest - Usuarios y accesos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    :root { --granate: #B71C3C; --azul-petroleo: #0E2A3C; }
-    body { background-color: #f4f6f8; }
-    .sidebar { background-color: var(--azul-petroleo) !important; }
-    .sidebar .nav-link.active { background-color: var(--granate); color: #fff !important; border-radius: 6px; }
-    .topbar { background-color: #fff; border-bottom: 3px solid var(--granate); }
-    .card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .table thead { background-color: var(--azul-petroleo); }
-    .table thead th { color: #fff; border: none; font-weight: 500; }
-    .table td { vertical-align: middle; }
-    .badge-rol { background-color: var(--azul-petroleo); }
-    .btn-granate { background-color: var(--granate); color: #fff; border: none; }
-    .btn-granate:hover { background-color: #97162f; color: #fff; }
-  </style>
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
-  <nav class="sidebar p-3" style="width:230px; min-height:100vh;">
-    <div class="text-white fs-5 fw-bold mb-1">SimGest</div>
-    <div class="text-white-50 small mb-4">Panel Administrador</div>
-    <div class="nav flex-column gap-1">
-      <a href="{% url 'simulactores:listado_usuarios' %}" class="nav-link active">Usuarios y accesos</a>
-      <a href="{% url 'simulactores:historial_accesos' %}" class="nav-link text-white-50">Historial de accesos</a>
-      <a href="{% url 'simulactores:perfil' %}" class="nav-link text-white-50">Mi perfil</a>
-      <a href="{% url 'simulactores:logout' %}" class="nav-link text-white-50">Cerrar sesión</a>
-    </div>
-  </nav>
+  {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill">
     <div class="topbar d-flex justify-content-between align-items-center p-3">
       <h4 class="m-0" style="color: var(--azul-petroleo);">Usuarios y accesos</h4>
     </div>
     <div class="p-4">
+
+
+      <div class="card p-3 mb-3">
+        <form method="get" class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label small mb-1">Buscar por nombre o correo</label>
+            <input type="text" name="q" class="form-control" value="{{ busqueda }}" placeholder="Ej: María, maria@correo.com">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small mb-1">Rol</label>
+            <select name="rol" class="form-select">
+              <option value="">Todos</option>
+              {% for rol in roles %}
+                <option value="{{ rol.id_rol }}" {% if filtro_rol == rol.id_rol|stringformat:"s" %}selected{% endif %}>{{ rol.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small mb-1">Estado</label>
+            <select name="estado" class="form-select">
+              <option value="">Todos</option>
+              {% for valor, etiqueta in estados %}
+                <option value="{{ valor }}" {% if filtro_estado == valor %}selected{% endif %}>{{ etiqueta }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-granate flex-fill">Filtrar</button>
+            <a href="{% url 'simulactores:listado_usuarios' %}" class="btn btn-outline-secondary">Limpiar</a>
+          </div>
+        </form>
+      </div>
+
       <div class="card">
-        <table class="table mb-0">
+        <table class="table mb-0 align-middle">
           <thead>
             <tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr>
           </thead>
           <tbody>
             {% for usuario in usuarios %}
+            {% comment %}
+              Formulario "suelto": sus campos viven repartidos en las celdas
+              de la fila (vía el atributo form=), así se edita todo ahí
+              mismo, en la tabla, sin abrir ninguna ventana/modal.
+            {% endcomment %}
+            <form id="form-usuario-{{ usuario.id_usuario }}" method="post" action="{% url 'simulactores:actualizar_rol' usuario.id_usuario %}">{% csrf_token %}</form>
             <tr>
               <td class="fw-semibold">{{ usuario.nombre }}</td>
               <td>{{ usuario.email }}</td>
-              <td><span class="badge badge-rol">{{ usuario.rol.nombre }}</span></td>
               <td>
-                {% if usuario.estado == 'Activo' %}
-                  <span class="badge bg-success">Activo</span>
-                {% else %}
-                  <span class="badge bg-secondary">{{ usuario.estado }}</span>
-                {% endif %}
+                <select name="id_rol" form="form-usuario-{{ usuario.id_usuario }}" class="form-select form-select-sm" style="min-width: 150px;">
+                  {% for rol in roles %}
+                    <option value="{{ rol.id_rol }}" {% if rol.id_rol == usuario.rol.id_rol %}selected{% endif %}>
+                      {{ rol.nombre }}
+                    </option>
+                  {% endfor %}
+                </select>
               </td>
               <td>
-                <button class="btn btn-sm btn-granate" data-bs-toggle="modal" data-bs-target="#modalRol{{ usuario.id_usuario }}">
-                  Gestionar
+                <select name="estado" form="form-usuario-{{ usuario.id_usuario }}" class="form-select form-select-sm" style="min-width: 140px;">
+                  <option value="Activo" {% if usuario.estado == 'Activo' %}selected{% endif %}>Activo</option>
+                  <option value="Desactivado" {% if usuario.estado == 'Desactivado' %}selected{% endif %}>Desactivado</option>
+                </select>
+              </td>
+              <td>
+                <button type="submit" form="form-usuario-{{ usuario.id_usuario }}" class="btn btn-sm btn-granate">
+                  Guardar
                 </button>
               </td>
             </tr>
-            <div class="modal fade" id="modalRol{{ usuario.id_usuario }}" tabindex="-1">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <form method="post" action="{% url 'simulactores:actualizar_rol' usuario.id_usuario %}">
-                    {% csrf_token %}
-                    <div class="modal-header">
-                      <h5 class="modal-title">Gestionar usuario: {{ usuario.nombre }}</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                      <label class="form-label">Correo</label>
-                      <input type="email" name="email" class="form-control mb-3" value="{{ usuario.email }}" required>
-                      <label class="form-label">Rol asignado</label>
-                      <select name="id_rol" class="form-select mb-3">
-                        {% for rol in roles %}
-                          <option value="{{ rol.id_rol }}" {% if rol.id_rol == usuario.rol.id_rol %}selected{% endif %}>
-                            {{ rol.nombre }}
-                          </option>
-                        {% endfor %}
-                      </select>
-                      <label class="form-label">Estado de la cuenta</label>
-                      <select name="estado" class="form-select">
-                        <option value="Activo" {% if usuario.estado == 'Activo' %}selected{% endif %}>Activo</option>
-                        <option value="Desactivado" {% if usuario.estado == 'Desactivado' %}selected{% endif %}>Desactivado</option>
-                      </select>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                      <button type="submit" class="btn btn-granate">Guardar</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
             {% empty %}
-            <tr><td colspan="5" class="text-center text-muted py-4">No hay usuarios registrados todavía.</td></tr>
+            <tr><td colspan="5" class="text-center text-muted py-4">No hay usuarios que coincidan con el filtro.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
+
+
+      {% if usuarios.has_other_pages %}
+      <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+          {% if usuarios.has_previous %}
+            <li class="page-item"><a class="page-link" href="?pagina={{ usuarios.previous_page_number }}&q={{ busqueda }}&rol={{ filtro_rol }}&estado={{ filtro_estado }}">Anterior</a></li>
+          {% endif %}
+          {% for num in usuarios.paginator.page_range %}
+            <li class="page-item {% if num == usuarios.number %}active{% endif %}">
+              <a class="page-link" href="?pagina={{ num }}&q={{ busqueda }}&rol={{ filtro_rol }}&estado={{ filtro_estado }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+          {% if usuarios.has_next %}
+            <li class="page-item"><a class="page-link" href="?pagina={{ usuarios.next_page_number }}&q={{ busqueda }}&rol={{ filtro_rol }}&estado={{ filtro_estado }}">Siguiente</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

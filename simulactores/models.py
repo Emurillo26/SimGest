@@ -1,7 +1,11 @@
+import uuid as uuid_lib
+from datetime import timedelta
+
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Rol(models.Model):
@@ -55,6 +59,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     ]
 
     id_usuario = models.AutoField(primary_key=True)
+    uuid = models.UUIDField(
+        default=uuid_lib.uuid4, editable=False, unique=True,
+        help_text='Identificador único público, para no exponer el id interno secuencial.',
+    )
     email = models.EmailField(max_length=150, unique=True)
     nombre = models.CharField(max_length=150)
     telefono = models.CharField(max_length=20, null=True, blank=True)
@@ -88,8 +96,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
 MATRIZ_PERMISOS = {
     'Administrador': {
-        'listado_usuarios', 'actualizar_rol', 'historial_accesos',
-        'perfil', 'biblioteca_escenarios',
+        'dashboard_administrador', 'listado_usuarios', 'actualizar_rol',
+        'bitacora_actividad', 'perfil', 'biblioteca_escenarios',
+        'gestion_solicitudes',
     },
     'Actor': {'perfil', 'dashboard_actor'},
     'Cliente': {'perfil', 'dashboard_cliente'},
@@ -245,7 +254,14 @@ class Solicitud(models.Model):
         Estado.CANCELADA: set(),
     }
 
+
+    DIAS_PLAZO_APROBACION_ESCENARIO = 3
+
     id_solicitud = models.AutoField(primary_key=True)
+    uuid = models.UUIDField(
+        default=uuid_lib.uuid4, editable=False, unique=True,
+        help_text='Identificador público usado en las URLs, para no exponer el id secuencial ni permitir enumerar solicitudes de otros clientes.',
+    )
     numero_solicitud = models.CharField(max_length=20, unique=True, editable=False)
     cliente = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
@@ -265,6 +281,11 @@ class Solicitud(models.Model):
     observaciones = models.TextField(null=True, blank=True)
     motivo_cancelacion = models.TextField(null=True, blank=True)
     comentario_rechazo = models.TextField(null=True, blank=True)
+    # HU-14 escenario 3: plazo para aprobar/rechazar el escenario propuesto.
+    fecha_limite_aprobacion = models.DateTimeField(null=True, blank=True)
+
+
+    ESTADOS_CANCELABLES = {Estado.PENDIENTE, Estado.EN_REVISION, Estado.APROBADA}
 
     class Meta:
         db_table = 'solicitud'
@@ -280,10 +301,36 @@ class Solicitud(models.Model):
                 numero_solicitud__startswith=f'SIM-{anio}-'
             ).count() + 1
             self.numero_solicitud = f'SIM-{anio}-{consecutivo:04d}'
+
+
+        if self.escenario_id and not self.fecha_limite_aprobacion:
+            self.fecha_limite_aprobacion = timezone.now() + timedelta(
+                days=self.DIAS_PLAZO_APROBACION_ESCENARIO
+            )
+
         super().save(*args, **kwargs)
 
     def puede_transicionar_a(self, nuevo_estado):
         return nuevo_estado in self.TRANSICIONES_VALIDAS.get(self.estado, set())
+
+    def puede_cancelar(self):
+
+        return self.estado in self.ESTADOS_CANCELABLES
+
+    def plazo_aprobacion_vencido(self):
+
+        return bool(
+            self.fecha_limite_aprobacion
+            and timezone.now() > self.fecha_limite_aprobacion
+        )
+
+    def esperando_aprobacion_cliente(self):
+
+        return bool(
+            self.escenario_id
+            and self.estado == self.Estado.EN_REVISION
+            and not self.plazo_aprobacion_vencido()
+        )
 
 
 
@@ -365,16 +412,36 @@ class Notificacion(models.Model):
 
 
 class Bitacora(models.Model):
+ 
     id_bitacora = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='id_usuario', related_name='bitacoras')
-    fecha = models.DateField(auto_now_add=True)
-    hora = models.TimeField(auto_now_add=True)
-    accion = models.CharField(max_length=150)
-    resultado = models.CharField(max_length=50, null=True, blank=True)
+
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='id_usuario',
+        related_name='bitacoras',
+    )
+
+    realizado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='bitacoras_realizadas',
+    )
+
+    fecha = models.DateTimeField(auto_now_add=True)
+    accion = models.CharField(max_length=150, help_text="Categoría del cambio, p. ej. 'Edición por administrador'.")
+    campo_modificado = models.CharField(max_length=100, null=True, blank=True)
+    valor_anterior = models.TextField(null=True, blank=True)
+    valor_nuevo = models.TextField(null=True, blank=True)
+    resultado = models.CharField(max_length=50, null=True, blank=True, default='Exitoso')
     ip_origen = models.CharField(max_length=45, null=True, blank=True)
 
     class Meta:
         db_table = 'bitacora'
+        ordering = ['-fecha']
+
+    def __str__(self):
+        if self.campo_modificado:
+            return f'{self.accion} — {self.campo_modificado}: {self.valor_anterior} → {self.valor_nuevo}'
+        return self.accion
 
 
 class HistorialAcceso(models.Model):

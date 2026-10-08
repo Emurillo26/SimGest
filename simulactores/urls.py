@@ -9,6 +9,8 @@ app_name = 'simulactores'
 
 
 urlpatterns = [
+    path('', views.home_view, name='home'),
+
     path('registro/', views.registro_view, name='registro'),
 
     path(
@@ -67,8 +69,42 @@ urlpatterns = [
     ),
 
     path(
-        'historial-accesos/',
-        views.historial_accesos_view,
-        name='historial_accesos'
+        'bitacora-actividad/',
+        views.bitacora_actividad_view,
+        name='bitacora_actividad'
+    ),
+
+    path('dashboard/', views.dashboard_cliente_view, name='dashboard_cliente'),
+    path('dashboard/admin/', views.dashboard_administrador_view, name='dashboard_administrador'),
+    path('dashboard/actor/', views.dashboard_actor_view, name='dashboard_actor'),
+
+    path('solicitudes/nueva/', views.crear_solicitud_view, name='crear_solicitud'),
+    path(
+        'solicitudes/<uuid:solicitud_uuid>/',
+        views.detalle_solicitud_view,
+        name='detalle_solicitud'
+    ),
+    path(
+        'solicitudes/<uuid:solicitud_uuid>/aprobar/',
+        views.aprobar_escenario_view,
+        name='aprobar_escenario'
+    ),
+    path(
+        'solicitudes/<uuid:solicitud_uuid>/rechazar/',
+        views.rechazar_escenario_view,
+        name='rechazar_escenario'
+    ),
+    path(
+        'solicitudes/<uuid:solicitud_uuid>/cancelar/',
+        views.cancelar_solicitud_view,
+        name='cancelar_solicitud'
+    ),
+
+
+    path('gestion-solicitudes/', views.solicitudes_admin_view, name='solicitudes_admin'),
+    path(
+        'gestion-solicitudes/<uuid:solicitud_uuid>/',
+        views.solicitud_admin_detalle_view,
+        name='solicitud_admin_detalle'
     ),
 ]
