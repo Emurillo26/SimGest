@@ -3,65 +3,217 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>SimGest - Registro</title>
+  <title>SimGest - Crear cuenta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
 </head>
-<body class="pagina-acceso">
-  <div class="card tarjeta-acceso p-4">
-    <h4 class="text-center mb-1" style="color: var(--azul-petroleo);">SimGest</h4>
-    <p class="text-center text-muted small mb-4">Crea tu cuenta de cliente</p>
 
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-success py-2">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+<body class="auth-body">
 
-    {% if form.non_field_errors %}
-      <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
-    {% endif %}
+  <main class="auth-fondo">
+    <div class="auth-card">
 
-    <form method="post">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label class="form-label">{{ form.nombre.label }}</label>
-        {{ form.nombre }}
-        {% for error in form.nombre.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-      </div>
-      <div class="mb-3">
-        <label class="form-label">{{ form.email.label }}</label>
-        {{ form.email }}
-        {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-      </div>
-      <div class="mb-3">
-        <label class="form-label">{{ form.telefono.label }}</label>
-        {{ form.telefono }}
-      </div>
-      <div class="mb-3">
-        <label class="form-label">{{ form.password.label }}</label>
-        <div class="campo-password">
-          {{ form.password }}
-          <button type="button" class="btn-ojito" onclick="alternarPassword('id_password', this)">👁</button>
+      <!-- Panel izquierdo -->
+      <section class="auth-panel">
+        <div class="auth-marca">Sim<span class="gest">Gest</span></div>
+
+        <div class="auth-texto">
+          <h1>Crea tu cuenta y solicita tu primera simulación.</h1>
+          <p>Con tu cuenta de cliente puedes pedir simulaciones clínicas y ver el estado de cada solicitud.</p>
         </div>
-        <p class="form-text mb-0">{{ form.password.help_text }}</p>
-        {% for error in form.password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-      </div>
-      <div class="mb-3">
-        <label class="form-label">{{ form.password2.label }}</label>
-        <div class="campo-password">
-          {{ form.password2 }}
-          <button type="button" class="btn-ojito" onclick="alternarPassword('id_password2', this)">👁</button>
-        </div>
-        {% for error in form.password2.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-      </div>
-      <button type="submit" class="btn btn-granate btn-ancho mt-2">Crear cuenta</button>
-      <p class="text-center small mt-3 mb-0">
-        <a href="{% url 'simulactores:login' %}">Ya tengo cuenta</a>
-      </p>
-    </form>
-  </div>
-  <script src="{% static 'simulactores/js/ojito.js' %}"></script>
+
+        <svg class="auth-ecg" viewBox="0 0 520 64" aria-hidden="true" focusable="false">
+          <path pathLength="100"
+                d="M2 40 H140 L150 40 L160 6 L184 60 L196 26 L206 40 H352 L362 40 L372 24 L384 40 L392 46 L400 40 H518"/>
+        </svg>
+      </section>
+
+      <!-- Formulario -->
+      <section class="auth-lado auth-lado-compacto">
+        <h2 class="auth-titulo">Crear cuenta</h2>
+        <p class="auth-sub">Crea tu cuenta de cliente</p>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-success py-2" role="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- Nombre completo -->
+          <div class="form-floating">
+            <input
+              type="text"
+              name="nombre"
+              id="id_nombre"
+              class="form-control{% if form.nombre.errors %} is-invalid{% endif %}"
+              placeholder="Nombre completo"
+              value="{{ form.nombre.value|default_if_none:'' }}"
+              maxlength="150"
+              required
+              autocomplete="name"
+            >
+            <label for="id_nombre">Nombre completo</label>
+          </div>
+          {% for error in form.nombre.errors %}<div class="auth-error">{{ error }}</div>{% endfor %}
+
+          <!-- Correo -->
+          <div class="form-floating">
+            <input
+              type="email"
+              name="email"
+              id="id_email"
+              class="form-control{% if form.email.errors %} is-invalid{% endif %}"
+              placeholder="Correo electrónico"
+              value="{{ form.email.value|default_if_none:'' }}"
+              required
+              autocomplete="email"
+            >
+            <label for="id_email">Correo electrónico</label>
+          </div>
+          {% for error in form.email.errors %}<div class="auth-error">{{ error }}</div>{% endfor %}
+
+          <!-- Teléfono -->
+          <div class="form-floating">
+            <input
+              type="text"
+              name="telefono"
+              id="id_telefono"
+              class="form-control"
+              placeholder="Teléfono (opcional)"
+              value="{{ form.telefono.value|default_if_none:'' }}"
+              maxlength="20"
+              autocomplete="tel"
+            >
+            <label for="id_telefono">Teléfono (opcional)</label>
+          </div>
+
+          <!-- Contraseña -->
+          <div class="form-floating position-relative">
+            <input
+              type="password"
+              name="password"
+              id="id_password"
+              class="form-control con-ojo{% if form.password.errors %} is-invalid{% endif %}"
+              placeholder="Contraseña"
+              required
+              autocomplete="new-password"
+            >
+            <label for="id_password">Contraseña</label>
+
+            <button type="button" class="auth-ojo" data-objetivo="id_password"
+                    aria-label="Mostrar contraseña" aria-pressed="false">
+              <svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/>
+                <path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/>
+                <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
+                <path d="M1 1l22 22"/>
+              </svg>
+            </button>
+          </div>
+          {% for error in form.password.errors %}<div class="auth-error">{{ error }}</div>{% endfor %}
+
+          <!-- Requisitos de la contraseña (se marcan mientras escribe) -->
+          <div class="auth-reglas" id="reglas_password" aria-live="polite">
+            <p class="auth-reglas-titulo">Tu contraseña debe tener:</p>
+            <div class="auth-reglas-barra" id="barra_password"><span></span></div>
+            <div class="auth-regla" data-regla="longitud"><span class="punto"></span>Mínimo 8 caracteres</div>
+            <div class="auth-regla" data-regla="mayuscula"><span class="punto"></span>Al menos una letra mayúscula</div>
+            <div class="auth-regla" data-regla="numero"><span class="punto"></span>Al menos un número</div>
+          </div>
+
+          <!-- Confirmar contraseña -->
+          <div class="form-floating position-relative">
+            <input
+              type="password"
+              name="password2"
+              id="id_password2"
+              class="form-control con-ojo{% if form.password2.errors %} is-invalid{% endif %}"
+              placeholder="Confirmar contraseña"
+              required
+              autocomplete="new-password"
+            >
+            <label for="id_password2">Confirmar contraseña</label>
+
+            <button type="button" class="auth-ojo" data-objetivo="id_password2"
+                    aria-label="Mostrar contraseña" aria-pressed="false">
+              <svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/>
+                <path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/>
+                <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
+                <path d="M1 1l22 22"/>
+              </svg>
+            </button>
+          </div>
+          {% for error in form.password2.errors %}<div class="auth-error">{{ error }}</div>{% endfor %}
+
+          <button type="submit" class="auth-boton">Crear cuenta</button>
+        </form>
+
+        <p class="auth-pie-form">
+          ¿Ya tienes cuenta?
+          <a href="{% url 'simulactores:login' %}">Iniciar sesión</a>
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    /* Mostrar / ocultar contraseña (los dos campos) */
+    document.querySelectorAll('.auth-ojo').forEach(function (boton) {
+      boton.addEventListener('click', function () {
+        var campo = document.getElementById(boton.dataset.objetivo);
+        var visible = campo.type === 'text';
+        campo.type = visible ? 'password' : 'text';
+        boton.classList.toggle('visible', !visible);
+        boton.setAttribute('aria-pressed', String(!visible));
+        boton.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+      });
+    });
+
+    /* Requisitos de la contraseña en vivo */
+    (function () {
+      var campo = document.getElementById('id_password');
+      var barra = document.getElementById('barra_password');
+      var relleno = barra.querySelector('span');
+      var reglas = {
+        longitud:  function (v) { return v.length >= 8; },
+        mayuscula: function (v) { return /[A-ZÁÉÍÓÚÜÑ]/.test(v); },
+        numero:    function (v) { return /\d/.test(v); }
+      };
+
+      function revisar() {
+        var valor = campo.value;
+        var cumplidas = 0;
+        Object.keys(reglas).forEach(function (nombre) {
+          var ok = reglas[nombre](valor);
+          document.querySelector('[data-regla="' + nombre + '"]').classList.toggle('ok', ok);
+          if (ok) cumplidas++;
+        });
+        relleno.style.width = (cumplidas / 3 * 100) + '%';
+        barra.classList.toggle('completa', cumplidas === 3);
+      }
+
+      campo.addEventListener('input', revisar);
+      revisar();
+    })();
+  </script>
+
 </body>
 </html>

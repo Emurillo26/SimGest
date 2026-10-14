@@ -11,122 +11,125 @@
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
-  <div class="flex-fill">
-    <div class="topbar d-flex justify-content-between align-items-center p-3">
-      <h4 class="m-0" style="color: var(--azul-petroleo);">Bitácora de actividad</h4>
-    </div>
-    <div class="p-4">
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <h1>Bitácora de actividad</h1>
+          <p>Accesos y cambios realizados por los usuarios.</p>
+        </div>
+        {% if total_fallidos %}
+          <span class="estado estado-pe"><i></i>{{ total_fallidos }} intento{{ total_fallidos|pluralize }} de acceso fallido{{ total_fallidos|pluralize }} en el rango</span>
+        {% else %}
+          <span class="estado estado-ca"><i></i>Sin intentos de acceso fallidos en el rango</span>
+        {% endif %}
+      </header>
 
+      <nav class="tabs-filtro" aria-label="Tipo de evento">
+        <a class="tab-filtro{% if not filtro_tipo %} activa{% endif %}" href="?tipo=&usuario={{ filtro_usuario|default_if_none:'' }}&rol={{ filtro_rol|default_if_none:''|urlencode }}&desde={{ filtro_desde|default_if_none:'' }}&hasta={{ filtro_hasta|default_if_none:'' }}">Todos</a>
+        <a class="tab-filtro{% if filtro_tipo == 'acceso' %} activa{% endif %}" href="?tipo=acceso&usuario={{ filtro_usuario|default_if_none:'' }}&rol={{ filtro_rol|default_if_none:''|urlencode }}&desde={{ filtro_desde|default_if_none:'' }}&hasta={{ filtro_hasta|default_if_none:'' }}">Inicios de sesión</a>
+        <a class="tab-filtro{% if filtro_tipo == 'cambio' %} activa{% endif %}" href="?tipo=cambio&usuario={{ filtro_usuario|default_if_none:'' }}&rol={{ filtro_rol|default_if_none:''|urlencode }}&desde={{ filtro_desde|default_if_none:'' }}&hasta={{ filtro_hasta|default_if_none:'' }}">Cambios realizados</a>
+      </nav>
 
-      <div class="card p-3 mb-3">
-        <form method="get" class="row g-2 align-items-end">
-          <div class="col-md-3">
-            <label class="form-label small">Usuario</label>
+      <section class="panel-tabla">
+        <form method="get" class="barra-filtros">
+          <input type="hidden" name="tipo" value="{{ filtro_tipo|default_if_none:'' }}">
+          <label class="campo-filtro">Usuario
             <select name="usuario" class="form-select">
               <option value="">Todos</option>
               {% for u in usuarios %}
-                <option value="{{ u.id_usuario }}" {% if filtro_usuario == u.id_usuario|stringformat:"s" %}selected{% endif %}>
-                  {{ u.nombre }}
-                </option>
+                <option value="{{ u.id_usuario }}" {% if filtro_usuario == u.id_usuario|stringformat:"s" %}selected{% endif %}>{{ u.nombre }}</option>
               {% endfor %}
             </select>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small">Rol</label>
+          </label>
+          <label class="campo-filtro">Rol
             <select name="rol" class="form-select">
               <option value="">Todos</option>
               {% for r in roles %}
                 <option value="{{ r.nombre }}" {% if filtro_rol == r.nombre %}selected{% endif %}>{{ r.nombre }}</option>
               {% endfor %}
             </select>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small">Tipo de evento</label>
-            <select name="tipo" class="form-select">
-              <option value="" {% if filtro_tipo == '' %}selected{% endif %}>Todos</option>
-              <option value="acceso" {% if filtro_tipo == 'acceso' %}selected{% endif %}>Inicios de sesión</option>
-              <option value="cambio" {% if filtro_tipo == 'cambio' %}selected{% endif %}>Cambios realizados</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small">Desde</label>
+          </label>
+          <label class="campo-filtro">Desde
             <input type="date" name="desde" class="form-control" value="{{ filtro_desde|default:'' }}">
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small">Hasta</label>
+          </label>
+          <label class="campo-filtro">Hasta
             <input type="date" name="hasta" class="form-control" value="{{ filtro_hasta|default:'' }}">
-          </div>
-          <div class="col-md-1">
-            <button type="submit" class="btn btn-granate w-100">Filtrar</button>
-          </div>
+          </label>
+          <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
+          <a href="{% url 'simulactores:bitacora_actividad' %}" class="btn btn-claro btn-pildora">Limpiar</a>
         </form>
-      </div>
 
-      <div class="card mb-3 p-3">
-        <span class="text-muted small">Intentos de acceso fallidos en el rango seleccionado: <strong>{{ total_fallidos }}</strong></span>
-      </div>
-
-      {% if eventos %}
-      <div class="card">
-        <table class="table mb-0">
-          <thead>
-            <tr><th>Fecha</th><th>Usuario</th><th>Rol</th><th>Tipo de evento</th><th>Detalle</th><th>Resultado</th><th>IP</th></tr>
-          </thead>
-          <tbody>
-            {% for e in eventos %}
-            <tr>
-              <td class="text-nowrap">{{ e.fecha }}</td>
-              <td>
-                {{ e.usuario_label }}
-                {% if e.realizado_por_label %}
-                  <div class="form-text mb-0">por {{ e.realizado_por_label }}</div>
-                {% endif %}
-              </td>
-              <td>{{ e.rol|default:"—" }}</td>
-              <td>{{ e.tipo }}</td>
-              <td>{{ e.detalle }}</td>
-              <td>
-                {% if e.resultado == 'Exitoso' %}
-                  <span class="badge bg-success">Exitoso</span>
-                {% elif e.resultado == 'Fallido' %}
-                  <span class="badge bg-danger">Fallido</span>
-                {% else %}
-                  <span class="badge bg-secondary">{{ e.resultado|default:"—" }}</span>
-                {% endif %}
-              </td>
-              <td>{{ e.ip|default:"—" }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      {% if eventos.has_other_pages %}
-      <nav class="mt-3">
-        <ul class="pagination justify-content-center">
-          {% if eventos.has_previous %}
-            <li class="page-item"><a class="page-link" href="?pagina={{ eventos.previous_page_number }}&usuario={{ filtro_usuario }}&rol={{ filtro_rol }}&tipo={{ filtro_tipo }}&desde={{ filtro_desde }}&hasta={{ filtro_hasta }}">Anterior</a></li>
-          {% endif %}
-          {% for num in eventos.paginator.page_range %}
-            <li class="page-item {% if num == eventos.number %}active{% endif %}">
-              <a class="page-link" href="?pagina={{ num }}&usuario={{ filtro_usuario }}&rol={{ filtro_rol }}&tipo={{ filtro_tipo }}&desde={{ filtro_desde }}&hasta={{ filtro_hasta }}">{{ num }}</a>
-            </li>
-          {% endfor %}
-          {% if eventos.has_next %}
-            <li class="page-item"><a class="page-link" href="?pagina={{ eventos.next_page_number }}&usuario={{ filtro_usuario }}&rol={{ filtro_rol }}&tipo={{ filtro_tipo }}&desde={{ filtro_desde }}&hasta={{ filtro_hasta }}">Siguiente</a></li>
-          {% endif %}
-        </ul>
-      </nav>
-      {% endif %}
-
-      {% else %}
-        <div class="card p-4 text-center text-muted">
-          No existen registros para los criterios seleccionados.
+        {% if eventos %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr><th>Evento</th><th>Usuario</th><th>Rol</th><th>Resultado</th><th>Fecha</th><th>IP</th></tr>
+            </thead>
+            <tbody>
+              {% for e in eventos %}
+              <tr{% if e.resultado == 'Fallido' %} class="fila-fallida"{% endif %}>
+                <td>
+                  <div class="celda-usuario">
+                    <span class="icono-evento">{% if 'sesi' in e.tipo|lower or 'acceso' in e.tipo|lower %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h5v16h-5"/><path d="M4 12h11"/><path d="M11 8l4 4-4 4"/></svg>{% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13 7l4 4"/></svg>{% endif %}</span>
+                    <div><span class="fw-semibold">{{ e.tipo }}</span><div class="panel-sub">{{ e.detalle }}</div></div>
+                  </div>
+                </td>
+                <td>
+                  {{ e.usuario_label }}
+                  {% if e.realizado_por_label %}<div class="panel-sub">por {{ e.realizado_por_label }}</div>{% endif %}
+                </td>
+                <td>{{ e.rol|default:"—" }}</td>
+                <td>
+                  {% if e.resultado == 'Exitoso' %}
+                    <span class="estado estado-ok"><i></i>Exitoso</span>
+                  {% elif e.resultado == 'Fallido' %}
+                    <span class="estado estado-er"><i></i>Fallido</span>
+                  {% else %}
+                    <span class="estado estado-ca"><i></i>{{ e.resultado|default:"—" }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-nowrap">{{ e.fecha }}</td>
+                <td class="texto-ip">{{ e.ip|default:"—" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-      {% endif %}
 
-    </div>
+        <div class="tabla-pie">
+          <span>Mostrando {{ eventos|length }}{% if eventos.paginator %} de {{ eventos.paginator.count }}{% endif %} eventos</span>
+          {% if eventos.has_other_pages %}
+          <nav aria-label="Paginación">
+            <ul class="pagination">
+              {% if eventos.has_previous %}
+                <li class="page-item"><a class="page-link" href="?pagina={{ eventos.previous_page_number }}&usuario={{ filtro_usuario|default_if_none:'' }}&rol={{ filtro_rol|default_if_none:''|urlencode }}&tipo={{ filtro_tipo|default_if_none:'' }}&desde={{ filtro_desde|default_if_none:'' }}&hasta={{ filtro_hasta|default_if_none:'' }}">Anterior</a></li>
+              {% endif %}
+              {% for num in eventos.paginator.page_range %}
+                <li class="page-item {% if num == eventos.number %}active{% endif %}">
+                  <a class="page-link" href="?pagina={{ num }}&usuario={{ filtro_usuario|default_if_none:'' }}&rol={{ filtro_rol|default_if_none:''|urlencode }}&tipo={{ filtro_tipo|default_if_none:'' }}&desde={{ filtro_desde|default_if_none:'' }}&hasta={{ filtro_hasta|default_if_none:'' }}">{{ num }}</a>
+                </li>
+              {% endfor %}
+              {% if eventos.has_next %}
+                <li class="page-item"><a class="page-link" href="?pagina={{ eventos.next_page_number }}&usuario={{ filtro_usuario|default_if_none:'' }}&rol={{ filtro_rol|default_if_none:''|urlencode }}&tipo={{ filtro_tipo|default_if_none:'' }}&desde={{ filtro_desde|default_if_none:'' }}&hasta={{ filtro_hasta|default_if_none:'' }}">Siguiente</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+
+        {% else %}
+        <div class="panel-vacio">
+          <div class="panel-vacio-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></div>
+          <strong>No existen registros</strong>
+          <p>No hay actividad para los criterios seleccionados.</p>
+        </div>
+        {% endif %}
+      </section>
+
+    </main>
   </div>
 </div>
+
 </body>
 </html>

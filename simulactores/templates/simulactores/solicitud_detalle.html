@@ -11,92 +11,93 @@
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
-  <div class="flex-fill">
-    <div class="topbar d-flex justify-content-between align-items-center p-3">
-      <h4 class="m-0" style="color: var(--azul-petroleo);">Solicitud {{ solicitud.numero_solicitud }}</h4>
-      <a href="{% url 'simulactores:dashboard_cliente' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
-    </div>
-    <div class="p-4">
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <a href="{% url 'simulactores:dashboard_cliente' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mis solicitudes</a>
+          <h1>Solicitud {{ solicitud.numero_solicitud }} {% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</h1>
+        </div>
+      </header>
+
       {% if messages %}
         {% for message in messages %}
-          <div class="alert alert-success py-2">{{ message }}</div>
+          <div class="alert alert-success py-2 mb-0" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
-      <div class="card p-4 mb-3">
-        <dl class="dl-detalle row mb-0">
-          <div class="col-md-4"><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
-          <div class="col-md-4"><dt>Fecha del evento</dt><dd>{{ solicitud.fecha_evento }}</dd></div>
-          <div class="col-md-4"><dt>Horario</dt><dd>{{ solicitud.hora_inicio }} - {{ solicitud.hora_fin }}</dd></div>
-          <div class="col-md-4"><dt>Cantidad de intérpretes</dt><dd>{{ solicitud.cantidad_interpretes }}</dd></div>
-          <div class="col-md-4"><dt>Estado</dt><dd><span class="badge bg-secondary">{{ solicitud.estado }}</span></dd></div>
+      <section class="panel-tarjeta">
+        <dl class="dl-detalle detalle-grid">
+          <div><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
+          <div><dt>Fecha del evento</dt><dd>{{ solicitud.fecha_evento }}</dd></div>
+          <div><dt>Horario</dt><dd>{{ solicitud.hora_inicio }} - {{ solicitud.hora_fin }}</dd></div>
+          <div><dt>Cantidad de intérpretes</dt><dd>{{ solicitud.cantidad_interpretes }}</dd></div>
           {% if solicitud.observaciones %}
-            <div class="col-md-4"><dt>Observaciones</dt><dd class="fw-normal">{{ solicitud.observaciones }}</dd></div>
+            <div class="detalle-ancho"><dt>Observaciones</dt><dd class="fw-normal">{{ solicitud.observaciones }}</dd></div>
           {% endif %}
         </dl>
-      </div>
+      </section>
 
       {% if solicitud.escenario and solicitud.estado != 'Pendiente' %}
-        <div class="card p-4 mb-3">
-          <h6 class="mb-3" style="color: var(--azul-petroleo);">Escenario propuesto / asignado</h6>
-          <dl class="dl-detalle row mb-0">
-            <div class="col-md-4"><dt>Escenario</dt><dd>{{ solicitud.escenario.nombre }}</dd></div>
-            <div class="col-md-8"><dt>Descripción</dt><dd class="fw-normal">{{ solicitud.escenario.descripcion|default:"—" }}</dd></div>
+        <section class="panel-tarjeta">
+          <h2>Escenario propuesto / asignado</h2>
+          <dl class="dl-detalle detalle-grid">
+            <div><dt>Escenario</dt><dd>{{ solicitud.escenario.nombre }}</dd></div>
+            <div class="detalle-ancho"><dt>Descripción</dt><dd class="fw-normal">{{ solicitud.escenario.descripcion|default:"—" }}</dd></div>
+            {% for asignacion in solicitud.asignaciones.all %}
+              <div><dt>Perfil del actor asignado</dt><dd>{{ asignacion.actor.usuario.nombre }}</dd></div>
+              <div><dt>Estado de la asignación</dt><dd>{{ asignacion.estado }}</dd></div>
+            {% endfor %}
           </dl>
-          {% for asignacion in solicitud.asignaciones.all %}
-            <dl class="dl-detalle row mb-0">
-              <div class="col-md-4"><dt>Perfil del actor asignado</dt><dd>{{ asignacion.actor.usuario.nombre }}</dd></div>
-              <div class="col-md-4"><dt>Estado de la asignación</dt><dd>{{ asignacion.estado }}</dd></div>
-            </dl>
-          {% endfor %}
-        </div>
+        </section>
       {% elif solicitud.estado == 'Pendiente' %}
-        <div class="alert alert-info">Tu solicitud está Pendiente: será atendida próximamente por el equipo administrativo.</div>
+        <div class="alert alert-info mb-0">Tu solicitud está Pendiente: será atendida próximamente por el equipo administrativo.</div>
       {% endif %}
 
       {% if solicitud.esperando_aprobacion_cliente %}
-        <div class="card p-4 mb-3">
-          <h6 class="mb-2" style="color: var(--azul-petroleo);">Este escenario está esperando tu respuesta</h6>
-          <p class="text-muted small mb-3">Tienes hasta {{ solicitud.fecha_limite_aprobacion }} para aprobarlo o rechazarlo.</p>
-          <div class="d-flex gap-2">
+        <section class="panel-tarjeta panel-destacada">
+          <h2>Este escenario está esperando tu respuesta</h2>
+          <p class="text-muted mb-0">Tienes hasta {{ solicitud.fecha_limite_aprobacion }} para aprobarlo o rechazarlo.</p>
+          <div class="d-flex flex-wrap gap-2">
             <form method="post" action="{% url 'simulactores:aprobar_escenario' solicitud.uuid %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn-success">Aprobar escenario</button>
+              <button type="submit" class="btn btn-success btn-pildora">Aprobar escenario</button>
             </form>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRechazo">Rechazar escenario</button>
+            <button type="button" class="btn btn-outline-danger btn-pildora" data-bs-toggle="modal" data-bs-target="#modalRechazo">Rechazar escenario</button>
           </div>
-        </div>
+        </section>
       {% elif solicitud.plazo_aprobacion_vencido %}
-        <div class="alert alert-warning">El plazo para aprobar o rechazar este escenario venció. Por favor contacta al administrador.</div>
+        <div class="alert alert-warning mb-0">El plazo para aprobar o rechazar este escenario venció. Por favor contacta al administrador.</div>
       {% endif %}
 
       {% if solicitud.puede_cancelar %}
-        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar solicitud</button>
+        <div>
+          <button type="button" class="btn btn-outline-danger btn-pildora" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar solicitud</button>
+        </div>
       {% elif solicitud.estado == 'Confirmada' %}
-        <div class="alert alert-warning">Esta solicitud ya tiene un actor confirmado. Para cancelarla, contacta al administrador.</div>
+        <div class="alert alert-warning mb-0">Esta solicitud ya tiene un actor confirmado. Para cancelarla, contacta al administrador.</div>
       {% endif %}
 
-    </div>
+    </main>
   </div>
 </div>
-
 <div class="modal fade {% if mostrar_modal_rechazo %}show{% endif %}" id="modalRechazo" tabindex="-1" {% if mostrar_modal_rechazo %}style="display:block;"{% endif %}>
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form method="post" action="{% url 'simulactores:rechazar_escenario' solicitud.uuid %}">
         {% csrf_token %}
         <div class="modal-header">
           <h5 class="modal-title">Rechazar escenario propuesto</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <label class="form-label">{{ rechazar_form.comentario.label }}</label>
           {{ rechazar_form.comentario }}
-          {% for error in rechazar_form.comentario.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+          {% for error in rechazar_form.comentario.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-granate">Confirmar rechazo</button>
+          <button type="button" class="btn btn-claro btn-pildora" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-granate btn-pildora">Confirmar rechazo</button>
         </div>
       </form>
     </div>
@@ -104,13 +105,13 @@
 </div>
 
 <div class="modal fade" id="modalCancelar" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form method="post" action="{% url 'simulactores:cancelar_solicitud' solicitud.uuid %}">
         {% csrf_token %}
         <div class="modal-header">
           <h5 class="modal-title">¿Seguro que deseas cancelar esta solicitud?</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <p class="text-muted small">Esta acción liberará la fecha y no se puede deshacer.</p>
@@ -118,8 +119,8 @@
           {{ cancelar_form.motivo }}
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">No, mantener solicitud</button>
-          <button type="submit" class="btn btn-granate">Sí, cancelar solicitud</button>
+          <button type="button" class="btn btn-claro btn-pildora" data-bs-dismiss="modal">No, mantener solicitud</button>
+          <button type="submit" class="btn btn-granate btn-pildora">Sí, cancelar solicitud</button>
         </div>
       </form>
     </div>

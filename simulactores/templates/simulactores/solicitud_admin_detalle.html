@@ -11,53 +11,55 @@
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
-  <div class="flex-fill">
-    <div class="topbar d-flex justify-content-between align-items-center p-3">
-      <h4 class="m-0" style="color: var(--azul-petroleo);">Solicitud {{ solicitud.numero_solicitud }}</h4>
-      <a href="{% url 'simulactores:solicitudes_admin' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
-    </div>
-    <div class="p-4">
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <a href="{% url 'simulactores:solicitudes_admin' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Solicitudes</a>
+          <h1>Solicitud {{ solicitud.numero_solicitud }} {% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</h1>
+        </div>
+      </header>
+
       {% if messages %}
         {% for message in messages %}
-          <div class="alert alert-success py-2">{{ message }}</div>
+          <div class="alert alert-success py-2 mb-0" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
-      <div class="card p-4 mb-3">
-        <dl class="dl-detalle row mb-0">
-          <div class="col-md-4"><dt>Cliente</dt><dd>{{ solicitud.cliente.nombre }} ({{ solicitud.cliente.email }})</dd></div>
-          <div class="col-md-4"><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
-          <div class="col-md-4"><dt>Estado</dt><dd><span class="badge bg-secondary">{{ solicitud.estado }}</span></dd></div>
-          <div class="col-md-4"><dt>Fecha del evento</dt><dd>{{ solicitud.fecha_evento }}</dd></div>
-          <div class="col-md-4"><dt>Horario</dt><dd>{{ solicitud.hora_inicio }} - {{ solicitud.hora_fin }}</dd></div>
-          <div class="col-md-4"><dt>Cantidad de intérpretes</dt><dd>{{ solicitud.cantidad_interpretes }}</dd></div>
+      <section class="panel-tarjeta">
+        <dl class="dl-detalle detalle-grid">
+          <div><dt>Cliente</dt><dd>{{ solicitud.cliente.nombre }}<div class="panel-sub fw-normal">{{ solicitud.cliente.email }}</div></dd></div>
+          <div><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
+          <div><dt>Fecha del evento</dt><dd>{{ solicitud.fecha_evento }}</dd></div>
+          <div><dt>Horario</dt><dd>{{ solicitud.hora_inicio }} - {{ solicitud.hora_fin }}</dd></div>
+          <div><dt>Cantidad de intérpretes</dt><dd>{{ solicitud.cantidad_interpretes }}</dd></div>
           {% if solicitud.observaciones %}
-            <div class="col-md-8"><dt>Observaciones del cliente</dt><dd class="fw-normal">{{ solicitud.observaciones }}</dd></div>
+            <div class="detalle-ancho"><dt>Observaciones del cliente</dt><dd class="fw-normal">{{ solicitud.observaciones }}</dd></div>
           {% endif %}
           {% if solicitud.comentario_rechazo %}
-            <div class="col-md-8"><dt>Último comentario de rechazo del cliente</dt><dd class="fw-normal">{{ solicitud.comentario_rechazo }}</dd></div>
+            <div class="detalle-ancho"><dt>Último comentario de rechazo del cliente</dt><dd class="fw-normal">{{ solicitud.comentario_rechazo }}</dd></div>
           {% endif %}
         </dl>
-      </div>
+      </section>
 
-      <div class="card p-4 mb-3">
-        <h6 class="mb-3" style="color: var(--azul-petroleo);">Escenario propuesto</h6>
+      <section class="panel-tarjeta">
+        <h2>Escenario propuesto</h2>
         {% if solicitud.escenario %}
-          <p class="mb-3"><strong>{{ solicitud.escenario.nombre }}</strong> — en espera de que el cliente lo apruebe o lo rechace.</p>
+          <p class="mb-0"><strong>{{ solicitud.escenario.nombre }}</strong> — en espera de que el cliente lo apruebe o lo rechace.</p>
         {% else %}
-          <p class="text-muted mb-3">Todavía no se le ha propuesto un escenario a esta solicitud.</p>
+          <p class="text-muted mb-0">Todavía no se le ha propuesto un escenario a esta solicitud.</p>
         {% endif %}
 
         {% if solicitud.estado == 'Pendiente' or solicitud.estado == 'En Revisión' %}
-          <form method="post" class="row g-2 align-items-end">
+          <form method="post" class="row g-3 align-items-end">
             {% csrf_token %}
             <div class="col-md-8">
               <label class="form-label">{{ form.escenario.label }}</label>
               {{ form.escenario }}
-              {% for error in form.escenario.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+              {% for error in form.escenario.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
             </div>
             <div class="col-md-4">
-              <button type="submit" class="btn btn-granate w-100">
+              <button type="submit" class="btn btn-granate btn-pildora w-100">
                 {% if solicitud.escenario %}Cambiar escenario propuesto{% else %}Proponer escenario{% endif %}
               </button>
             </div>
@@ -68,10 +70,11 @@
             así que no se puede cambiar desde aquí.
           </div>
         {% endif %}
-      </div>
+      </section>
 
-    </div>
+    </main>
   </div>
 </div>
+
 </body>
 </html>

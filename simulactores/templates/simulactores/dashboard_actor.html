@@ -11,51 +11,92 @@
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
-  <div class="flex-fill">
-    <div class="topbar d-flex justify-content-between align-items-center p-3">
-      <h4 class="m-0" style="color: var(--azul-petroleo);">Mi panel</h4>
-    </div>
-    <div class="p-4">
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+
+      <!-- Bienvenida -->
+      <section class="panel-bienvenida">
+        <div class="panel-bienvenida-texto">
+          <h1>{% if request.user.nombre %}Hola, {{ request.user.nombre.split.0 }}{% else %}Hola de nuevo{% endif %}</h1>
+          <p>
+            {% if not actor %}
+              Tu perfil de actor todavía no está completo.
+            {% elif resumen.pendientes %}
+              Tienes {{ resumen.pendientes }} asignaci{{ resumen.pendientes|pluralize:"ón,ones" }} pendiente{{ resumen.pendientes|pluralize }} de respuesta.
+            {% else %}
+              No tienes asignaciones pendientes por ahora.
+            {% endif %}
+          </p>
+        </div>
+      </section>
 
       {% if not actor %}
-        <div class="alert alert-info">
+
+        <div class="alert alert-info mb-0">
           Todavía no tienes un perfil de Actor completo (habilidades, tarifa, etc.).
           Contacta a un administrador para que lo configure.
         </div>
-      {% else %}
-        <div class="row g-3 mb-4">
-          <div class="col-md-4">
-            <div class="card p-3 tarjeta-resumen"><div class="numero">{{ resumen.total }}</div><div class="text-muted small">Asignaciones totales</div></div>
-          </div>
-          <div class="col-md-4">
-            <div class="card p-3 tarjeta-resumen"><div class="numero">{{ resumen.pendientes }}</div><div class="text-muted small">Pendientes</div></div>
-          </div>
-          <div class="col-md-4">
-            <div class="card p-3 tarjeta-resumen"><div class="numero">{{ resumen.confirmadas }}</div><div class="text-muted small">Confirmadas</div></div>
-          </div>
-        </div>
 
-        <div class="card">
-          <table class="table mb-0">
-            <thead>
-              <tr><th>Solicitud</th><th>Estado de la asignación</th><th>Tarifa aplicada</th></tr>
-            </thead>
-            <tbody>
-              {% for asignacion in asignaciones %}
-              <tr>
-                <td class="fw-semibold">{{ asignacion.solicitud.numero_solicitud }}</td>
-                <td><span class="badge bg-secondary">{{ asignacion.estado }}</span></td>
-                <td>{{ asignacion.tarifa_aplicada|default:"—" }}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="3" class="text-center text-muted py-4">Todavía no tienes asignaciones.</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      {% else %}
+
+        <!-- Resumen -->
+        <section class="panel-resumen">
+          <article class="panel-tarjeta panel-tarjeta-ancha">
+            <h2>Mis asignaciones</h2>
+            <div class="panel-stats">
+              <div class="panel-stat">
+                <div class="panel-numero">{{ resumen.total }}</div>
+                <div class="panel-etiqueta">Totales</div>
+              </div>
+              <div class="panel-stat">
+                <div class="panel-numero">{{ resumen.pendientes }}</div>
+                <div class="panel-etiqueta">Pendientes</div>
+              </div>
+              <div class="panel-stat">
+                <div class="panel-numero">{{ resumen.confirmadas }}</div>
+                <div class="panel-etiqueta">Confirmadas</div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- Asignaciones -->
+        <section class="panel-tabla">
+          <div class="panel-tabla-cabecera">
+            <h2>Asignaciones</h2>
+          </div>
+
+          {% if asignaciones %}
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr><th>Solicitud</th><th>Estado de la asignación</th><th>Tarifa aplicada</th></tr>
+              </thead>
+              <tbody>
+                {% for asignacion in asignaciones %}
+                <tr>
+                  <td class="fw-semibold">{{ asignacion.solicitud.numero_solicitud }}</td>
+                  <td>{% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}</td>
+                  <td>{{ asignacion.tarifa_aplicada|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="panel-vacio">
+            <div class="panel-vacio-icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+            </div>
+            <strong>Todavía no tienes asignaciones</strong>
+            <p>Cuando te asignen a una simulación, aparecerá aquí.</p>
+          </div>
+          {% endif %}
+        </section>
+
       {% endif %}
 
-    </div>
+    </main>
   </div>
 </div>
 </body>

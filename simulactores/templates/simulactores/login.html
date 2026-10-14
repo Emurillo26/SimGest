@@ -9,84 +9,111 @@
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
 </head>
 
-<body class="pagina-acceso">
+<body class="auth-body">
 
-  <div class="card tarjeta-acceso p-4 shadow">
+  <main class="auth-fondo">
+    <div class="auth-card">
 
-    <h4 class="text-center mb-1" style="color: var(--azul-petroleo);">
-      SimGest
-    </h4>
+      <!-- Panel izquierdo -->
+      <section class="auth-panel">
+        <div class="auth-marca">Sim<span class="gest">Gest</span></div>
 
-    <p class="text-center text-muted small mb-4">
-      Iniciar sesión
-    </p>
-
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-danger py-2">
-          {{ message }}
+        <div class="auth-texto">
+          <h1>Cada simulación cuenta.</h1>
+          <p>Solicita, coordina y da seguimiento a las simulaciones clínicas de Simuladores Costa Rica.</p>
         </div>
-      {% endfor %}
-    {% endif %}
 
-    <form method="post">
+        <svg class="auth-ecg" viewBox="0 0 520 64" aria-hidden="true" focusable="false">
+          <path pathLength="100"
+                d="M2 40 H140 L150 40 L160 6 L184 60 L196 26 L206 40 H352 L362 40 L372 24 L384 40 L392 46 L400 40 H518"/>
+        </svg>
+      </section>
 
-      {% csrf_token %}
+      <!-- Formulario -->
+      <section class="auth-lado">
+        <h2 class="auth-titulo">Bienvenid@ a SimGest</h2>
+        <p class="auth-sub">Inicia sesión para continuar</p>
 
-      <div class="mb-3">
-        <label class="form-label">
-          Correo electrónico
-        </label>
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-danger py-2" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
 
-        <input
-          type="email"
-          name="email"
-          class="form-control"
-          required
-          autocomplete="email"
-        >
-      </div>
+        <form method="post">
+          {% csrf_token %}
 
-      <div class="mb-3">
-        <label class="form-label">
-          Contraseña
-        </label>
+          <div class="form-floating">
+            <input
+              type="email"
+              name="email"
+              id="id_email"
+              class="form-control"
+              placeholder="Correo electrónico"
+              required
+              autocomplete="email"
+            >
+            <label for="id_email">Correo electrónico</label>
+          </div>
 
-        <div class="campo-password">
-          <input
-            type="password"
-            name="password"
-            id="id_password"
-            class="form-control"
-            required
-            autocomplete="current-password"
-          >
-          <button type="button" class="btn-ojito" onclick="alternarPassword('id_password', this)">👁</button>
-        </div>
-      </div>
+          <div class="form-floating position-relative">
+            <input
+              type="password"
+              name="password"
+              id="id_password"
+              class="form-control con-ojo"
+              placeholder="Contraseña"
+              required
+              autocomplete="current-password"
+            >
+            <label for="id_password">Contraseña</label>
 
-      <div class="text-end mb-3">
-        <a href="{% url 'simulactores:password_reset' %}" class="small">
-          ¿Olvidaste tu contraseña?
-        </a>
-      </div>
+            <button type="button" class="auth-ojo" data-objetivo="id_password"
+                    aria-label="Mostrar contraseña" aria-pressed="false">
+              <svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/>
+                <path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/>
+                <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
+                <path d="M1 1l22 22"/>
+              </svg>
+            </button>
+          </div>
 
-      <button type="submit" class="btn btn-granate btn-ancho">
-        Ingresar
-      </button>
+          <div class="auth-fila auth-fila-derecha">
+            <a href="{% url 'simulactores:password_reset' %}">¿Olvidaste tu contraseña?</a>
+          </div>
 
-    </form>
+          <button type="submit" class="auth-boton">Iniciar sesión</button>
+        </form>
 
-    <p class="text-center text-muted small mt-3 mb-0">
-      ¿No tienes cuenta?
-      <a href="{% url 'simulactores:registro' %}">
-        Regístrate aquí
-      </a>
-    </p>
+        <p class="auth-pie-form">
+          ¿Eres cliente nuevo?
+          <a href="{% url 'simulactores:registro' %}">Crear cuenta</a>
+        </p>
+      </section>
 
-  </div>
+    </div>
+  </main>
 
-  <script src="{% static 'simulactores/js/ojito.js' %}"></script>
+  <script>
+    /* Mostrar / ocultar contraseña */
+    document.querySelectorAll('.auth-ojo').forEach(function (boton) {
+      boton.addEventListener('click', function () {
+        var campo = document.getElementById(boton.dataset.objetivo);
+        var visible = campo.type === 'text';
+        campo.type = visible ? 'password' : 'text';
+        boton.classList.toggle('visible', !visible);
+        boton.setAttribute('aria-pressed', String(!visible));
+        boton.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+      });
+    });
+  </script>
 
 </body>
 </html>

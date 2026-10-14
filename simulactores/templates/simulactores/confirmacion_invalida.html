@@ -8,11 +8,35 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
 </head>
-<body class="pagina-acceso">
-  <div class="card tarjeta-acceso p-4 text-center">
-    <h4 style="color: var(--granate);">Enlace inválido o vencido</h4>
-    <p class="text-muted">Este enlace de confirmación ya no es válido. Contacta a soporte para reenviarlo.</p>
-    <a href="{% url 'simulactores:login' %}" class="btn btn-granate mt-2">Volver</a>
-  </div>
+<body class="auth-body">
+
+  <main class="auth-fondo">
+    <div class="auth-card">
+
+      <section class="auth-panel">
+        <div class="auth-marca">Sim<span class="gest">Gest</span></div>
+
+        <div class="auth-texto">
+          <h1>Este enlace ya no funciona.</h1>
+          <p>Puede haber vencido o haberse usado antes.</p>
+        </div>
+
+        <svg class="auth-ecg" viewBox="0 0 520 64" aria-hidden="true" focusable="false"><path pathLength="100" d="M2 40 H140 L150 40 L160 6 L184 60 L196 26 L206 40 H352 L362 40 L372 24 L384 40 L392 46 L400 40 H518"/></svg>
+      </section>
+
+      <section class="auth-lado">
+        <div class="auth-icono error" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+
+        <h2 class="auth-titulo">Enlace inválido o vencido</h2>
+        <p class="auth-sub">Este enlace de confirmación ya no es válido. Contacta a soporte para reenviarlo.</p>
+
+        <a href="{% url 'simulactores:login' %}" class="auth-boton">Volver</a>
+      </section>
+
+    </div>
+  </main>
+
 </body>
 </html>
