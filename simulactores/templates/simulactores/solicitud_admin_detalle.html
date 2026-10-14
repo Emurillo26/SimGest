@@ -22,7 +22,7 @@
 
       {% if messages %}
         {% for message in messages %}
-          <div class="alert alert-success py-2 mb-0" role="alert">{{ message }}</div>
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
@@ -69,6 +69,45 @@
             Esta solicitud ya avanzó más allá de la propuesta de escenario (estado: {{ solicitud.estado }}),
             así que no se puede cambiar desde aquí.
           </div>
+        {% endif %}
+      </section>
+
+      <section class="panel-tarjeta">
+        <h2>Cambiar estado de la solicitud</h2>
+        {% if transiciones_permitidas %}
+          <form method="post" action="{% url 'simulactores:cambiar_estado_solicitud' solicitud.uuid %}" class="row g-3 align-items-end">
+            {% csrf_token %}
+            <div class="col-md-4">
+              <label class="form-label" for="id_estado">Nuevo estado</label>
+              <select name="estado" id="id_estado" class="form-select">
+                {% for valor, etiqueta in transiciones_permitidas %}
+                  <option value="{{ valor }}">{{ etiqueta }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-5" id="grupo-motivo" style="display:none">
+              <label class="form-label" for="id_motivo">Motivo de la cancelación (obligatorio)</label>
+              <textarea name="motivo" id="id_motivo" rows="2" class="form-control"></textarea>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-granate btn-pildora w-100">Cambiar estado</button>
+            </div>
+          </form>
+          <p class="panel-sub mb-0 mt-2">El cliente recibe una notificación con cada cambio de estado.</p>
+          <script>
+            (function () {
+              var sel = document.getElementById('id_estado');
+              var grupo = document.getElementById('grupo-motivo');
+              function actualizar() { grupo.style.display = sel.value === 'Cancelada' ? '' : 'none'; }
+              sel.addEventListener('change', actualizar);
+              actualizar();
+            })();
+          </script>
+        {% else %}
+          <p class="text-muted mb-0">Esta solicitud está en estado «{{ solicitud.estado }}» y ya no admite más cambios de estado.</p>
+        {% endif %}
+        {% if solicitud.motivo_cancelacion %}
+          <p class="mb-0 mt-2"><strong>Motivo de la cancelación:</strong> {{ solicitud.motivo_cancelacion }}</p>
         {% endif %}
       </section>
 

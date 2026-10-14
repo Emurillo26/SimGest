@@ -107,4 +107,16 @@ urlpatterns = [
         views.solicitud_admin_detalle_view,
         name='solicitud_admin_detalle'
     ),
+    # HU-19
+    path(
+        'gestion-solicitudes/<uuid:solicitud_uuid>/estado/',
+        views.cambiar_estado_solicitud_view,
+        name='cambiar_estado_solicitud'
+    ),
+
+    # Biblioteca de escenarios (HU-21; HU-22 a HU-25 la extienden)
+    path('escenarios/', views.biblioteca_escenarios_view, name='biblioteca_escenarios'),
+    path('escenarios/nuevo/', views.crear_escenario_view, name='crear_escenario'),
+    path('escenarios/<int:escenario_id>/', views.detalle_escenario_view, name='detalle_escenario'),
+    path('escenarios/<int:escenario_id>/editar/', views.editar_escenario_view, name='editar_escenario'),
 ]

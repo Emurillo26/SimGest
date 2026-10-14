@@ -22,14 +22,14 @@
 
       {% if messages %}
         {% for message in messages %}
-          <div class="alert alert-success py-2 mb-0" role="alert">{{ message }}</div>
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
       <nav class="tabs-filtro" aria-label="Filtrar por estado">
-        <a class="tab-filtro{% if not filtro_estado %} activa{% endif %}" href="?q={{ busqueda|default_if_none:''|urlencode }}">Todas</a>
+        <a class="tab-filtro{% if not filtro_estado %} activa{% endif %}" href="?{{ qs_sin_estado }}">Todas</a>
         {% for valor, etiqueta in estados %}
-          <a class="tab-filtro{% if filtro_estado == valor %} activa{% endif %}" href="?estado={{ valor|urlencode }}&q={{ busqueda|default_if_none:''|urlencode }}">{{ etiqueta }}</a>
+          <a class="tab-filtro{% if filtro_estado == valor %} activa{% endif %}" href="?estado={{ valor|urlencode }}{% if qs_sin_estado %}&{{ qs_sin_estado }}{% endif %}">{{ etiqueta }}</a>
         {% endfor %}
       </nav>
 
@@ -40,6 +40,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
             <input type="text" name="q" class="form-control" value="{{ busqueda|default_if_none:'' }}" placeholder="Buscar por número de solicitud o cliente" aria-label="Buscar solicitud">
           </div>
+          <label class="small text-muted mb-0" for="f-desde">Evento desde</label>
+          <input type="date" id="f-desde" name="desde" class="form-control" style="max-width:10.5rem" value="{{ filtro_desde }}">
+          <label class="small text-muted mb-0" for="f-hasta">hasta</label>
+          <input type="date" id="f-hasta" name="hasta" class="form-control" style="max-width:10.5rem" value="{{ filtro_hasta }}">
           <button type="submit" class="btn btn-granate btn-pildora">Buscar</button>
           <a href="{% url 'simulactores:solicitudes_admin' %}" class="btn btn-claro btn-pildora">Limpiar</a>
         </form>
@@ -78,15 +82,15 @@
           <nav aria-label="Paginación">
             <ul class="pagination">
               {% if solicitudes.has_previous %}
-                <li class="page-item"><a class="page-link" href="?pagina={{ solicitudes.previous_page_number }}&q={{ busqueda|default_if_none:''|urlencode }}&estado={{ filtro_estado|default_if_none:''|urlencode }}">Anterior</a></li>
+                <li class="page-item"><a class="page-link" href="?pagina={{ solicitudes.previous_page_number }}{% if qs_completo %}&{{ qs_completo }}{% endif %}">Anterior</a></li>
               {% endif %}
               {% for num in solicitudes.paginator.page_range %}
                 <li class="page-item {% if num == solicitudes.number %}active{% endif %}">
-                  <a class="page-link" href="?pagina={{ num }}&q={{ busqueda|default_if_none:''|urlencode }}&estado={{ filtro_estado|default_if_none:''|urlencode }}">{{ num }}</a>
+                  <a class="page-link" href="?pagina={{ num }}{% if qs_completo %}&{{ qs_completo }}{% endif %}">{{ num }}</a>
                 </li>
               {% endfor %}
               {% if solicitudes.has_next %}
-                <li class="page-item"><a class="page-link" href="?pagina={{ solicitudes.next_page_number }}&q={{ busqueda|default_if_none:''|urlencode }}&estado={{ filtro_estado|default_if_none:''|urlencode }}">Siguiente</a></li>
+                <li class="page-item"><a class="page-link" href="?pagina={{ solicitudes.next_page_number }}{% if qs_completo %}&{{ qs_completo }}{% endif %}">Siguiente</a></li>
               {% endif %}
             </ul>
           </nav>
@@ -96,8 +100,14 @@
         {% else %}
         <div class="panel-vacio">
           <div class="panel-vacio-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></div>
-          <strong>No hay solicitudes que coincidan</strong>
-          <p>Cambia la búsqueda o elige otro estado para ver más resultados.</p>
+          {% if hay_filtros %}
+            <strong>No se encontraron solicitudes con los criterios ingresados</strong>
+            <p>Prueba con otros criterios o limpia los filtros.</p>
+            <a href="{% url 'simulactores:solicitudes_admin' %}" class="btn btn-claro btn-pildora">Limpiar filtros</a>
+          {% else %}
+            <strong>Todavía no hay solicitudes</strong>
+            <p>Cuando los clientes envíen solicitudes aparecerán aquí.</p>
+          {% endif %}
         </div>
         {% endif %}
       </section>

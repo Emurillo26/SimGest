@@ -3,7 +3,7 @@ import re
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 
-from .models import Escenario, Solicitud, TipoSimulacion, Usuario
+from .models import Categoria, Escenario, Solicitud, TipoSimulacion, Usuario
 
 
 class RegistroClienteForm(forms.Form):
@@ -178,3 +178,79 @@ class AsignarEscenarioForm(forms.Form):
         label='Escenario a proponer',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
+
+
+class CambiarEstadoSolicitudForm(forms.Form):
+    """HU-19: cambio de estado de una solicitud por el administrador."""
+
+    estado = forms.ChoiceField(
+        choices=Solicitud.Estado.choices,
+        label='Nuevo estado',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    motivo = forms.CharField(
+        required=False,
+        label='Motivo de la cancelación',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+    )
+
+
+class EscenarioForm(forms.ModelForm):
+    """
+    HU-21: Crear escenario en la biblioteca.
+
+    Campos obligatorios: nombre, descripción, tipo de simulación,
+    categoría (al menos una) y guion.
+    El estado NO se pide en el formulario: todo escenario nuevo nace 'Activo'
+    (así lo define el modelo en Escenario.estado, default=ACTIVO).
+    """
+
+    categorias = forms.ModelMultipleChoiceField(
+        queryset=Categoria.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        label='Categoría',
+        error_messages={'required': 'Selecciona al menos una categoría.'},
+    )
+
+    class Meta:
+        model = Escenario
+        fields = ['nombre', 'descripcion', 'tipo', 'categorias', 'guion']
+        labels = {
+            'nombre': 'Nombre del escenario',
+            'descripcion': 'Descripción',
+            'tipo': 'Tipo de simulación',
+            'guion': 'Guion',
+        }
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'guion': forms.Textarea(attrs={'class': 'form-control', 'rows': 8}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # La consulta se arma aquí (y no arriba) para que siempre muestre
+        # las categorías que existen en la base de datos en ese momento.
+        self.fields['categorias'].queryset = Categoria.objects.order_by('nombre')
+
+        # En el modelo estos campos aceptan vacío (null/blank); en el
+        # formulario de creación son obligatorios según la HU-21.
+        for campo in ('nombre', 'descripcion', 'guion', 'tipo'):
+            self.fields[campo].required = True
+            self.fields[campo].error_messages['required'] = 'Este campo es obligatorio.'
+
+    def full_clean(self):
+        super().full_clean()
+        # Criterio 2: los campos con error se resaltan en rojo ('is-invalid' de Bootstrap).
+        for nombre_campo in self.errors:
+            if nombre_campo in self.fields and nombre_campo != 'categorias':
+                widget = self.fields[nombre_campo].widget
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' is-invalid'
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data['nombre'].strip()
+        # Criterio 3: nombre duplicado (sin distinguir mayúsculas).
+        if Escenario.objects.filter(nombre__iexact=nombre).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError('Ya existe un escenario con ese nombre')
+        return nombre

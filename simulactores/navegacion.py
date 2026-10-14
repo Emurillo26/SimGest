@@ -71,6 +71,9 @@ VISTA_A_SECCION = {
     'simulactores:solicitud_admin_detalle': 'gestion_solicitudes',
     'simulactores:bitacora_actividad': 'bitacora_actividad',
     'simulactores:biblioteca_escenarios': 'biblioteca_escenarios',
+    'simulactores:crear_escenario': 'biblioteca_escenarios',
+    'simulactores:editar_escenario': 'biblioteca_escenarios',
+    'simulactores:detalle_escenario': 'biblioteca_escenarios',
 
     'simulactores:dashboard_cliente': 'mis_solicitudes',
     'simulactores:detalle_solicitud': 'mis_solicitudes',
@@ -85,4 +88,4 @@ VISTA_A_SECCION = {
 }
 
 
-MODULOS_SIN_VISTA_TODAVIA = {'biblioteca_escenarios'}
+MODULOS_SIN_VISTA_TODAVIA = set()  # la biblioteca de escenarios ya tiene vista (HU-21)

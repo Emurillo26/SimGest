@@ -1,4 +1,5 @@
 from datetime import datetime
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -11,13 +12,19 @@ from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
+from django.db import transaction
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from .forms import (
-    AsignarEscenarioForm, CambiarPasswordForm, CancelarSolicitudForm,
-    RechazarEscenarioForm, RegistroClienteForm, SolicitudForm,
+    AsignarEscenarioForm, CambiarEstadoSolicitudForm, CambiarPasswordForm,
+    CancelarSolicitudForm, EscenarioForm, RechazarEscenarioForm,
+    RegistroClienteForm, SolicitudForm,
 )
-from .models import Actor, Bitacora, HistorialAcceso, Rol, Solicitud, Usuario
+from .models import (
+    Actor, Asignacion, Bitacora, Categoria, Escenario, HistorialAcceso, Rol,
+    Solicitud, TipoSimulacion, Usuario,
+)
 from .permisos import modulo_requerido
 from .utils import notificar, registrar_cambios
 
@@ -381,13 +388,38 @@ def dashboard_actor_view(request):
     })
 
 
+def _parse_fecha(texto):
+    """Convierte 'AAAA-MM-DD' en date; si viene vacío o mal escrito devuelve None."""
+    try:
+        return datetime.strptime(texto, '%Y-%m-%d').date()
+    except (TypeError, ValueError):
+        return None
+
+
+def _querystring(**parametros):
+    """Arma 'a=1&b=2' solo con los parámetros que tienen valor."""
+    return urlencode({clave: valor for clave, valor in parametros.items() if valor})
+
+
 @modulo_requerido('gestion_solicitudes')
 def solicitudes_admin_view(request):
+    """Listado de solicitudes con búsqueda (HU-20).
+
+    Filtros que se pueden combinar (se aplican todos a la vez):
+      q      -> número de solicitud, nombre o correo del cliente
+      estado -> estado de la solicitud
+      desde / hasta -> rango de la fecha del evento
+    Siempre ordenadas de la más reciente a la más antigua por fecha de creación.
+    """
 
     solicitudes = Solicitud.objects.select_related('cliente', 'escenario').all().order_by('-fecha_solicitud')
 
     filtro_estado = request.GET.get('estado', '')
     busqueda = request.GET.get('q', '').strip()
+    desde_txt = request.GET.get('desde', '').strip()
+    hasta_txt = request.GET.get('hasta', '').strip()
+    desde = _parse_fecha(desde_txt)
+    hasta = _parse_fecha(hasta_txt)
 
     if filtro_estado:
         solicitudes = solicitudes.filter(estado=filtro_estado)
@@ -397,6 +429,14 @@ def solicitudes_admin_view(request):
             | Q(cliente__nombre__icontains=busqueda)
             | Q(cliente__email__icontains=busqueda)
         )
+    if desde and hasta and desde > hasta:
+        messages.error(request, 'La fecha «Desde» no puede ser posterior a la fecha «Hasta». Se ignoró el rango de fechas.')
+        desde = hasta = None
+        desde_txt = hasta_txt = ''
+    if desde:
+        solicitudes = solicitudes.filter(fecha_evento__gte=desde)
+    if hasta:
+        solicitudes = solicitudes.filter(fecha_evento__lte=hasta)
 
     paginador = Paginator(solicitudes, 10)
     pagina = request.GET.get('pagina')
@@ -407,6 +447,15 @@ def solicitudes_admin_view(request):
         'busqueda': busqueda,
         'filtro_estado': filtro_estado,
         'estados': Solicitud.Estado.choices,
+        'filtro_desde': desde_txt if desde else '',
+        'filtro_hasta': hasta_txt if hasta else '',
+        'hay_filtros': bool(filtro_estado or busqueda or desde or hasta),
+        # Se usan en los enlaces de las pestañas y de la paginación para no perder filtros.
+        'qs_sin_estado': _querystring(q=busqueda, desde=desde_txt if desde else '', hasta=hasta_txt if hasta else ''),
+        'qs_completo': _querystring(
+            q=busqueda, estado=filtro_estado,
+            desde=desde_txt if desde else '', hasta=hasta_txt if hasta else '',
+        ),
     })
 
 
@@ -453,9 +502,174 @@ def solicitud_admin_detalle_view(request, solicitud_uuid):
     return render(request, 'simulactores/solicitud_admin_detalle.html', {
         'solicitud': solicitud,
         'form': form,
+        # HU-19: estados a los que se puede pasar desde el estado actual
+        'estado_form': CambiarEstadoSolicitudForm(initial={'estado': solicitud.estado}),
+        'transiciones_permitidas': [
+            (valor, etiqueta) for valor, etiqueta in Solicitud.Estado.choices
+            if solicitud.puede_transicionar_a(valor)
+        ],
     })
 
 
+@modulo_requerido('gestion_solicitudes')
+@require_POST
+def cambiar_estado_solicitud_view(request, solicitud_uuid):
+    """HU-19: el administrador cambia el estado de una solicitud.
+
+    Reglas:
+      - Solo se permiten las transiciones de Solicitud.TRANSICIONES_VALIDAS
+        (p. ej. Completada -> Pendiente se rechaza y el estado no cambia).
+      - Pasar a Cancelada exige el motivo; se guarda, se le explica al cliente
+        y se liberan las asignaciones de actores de esa solicitud.
+      - Pasar a En Revisión o Aprobada exige que la solicitud ya tenga escenario.
+      - En todos los casos se notifica al cliente y se escribe en la bitácora.
+    """
+    solicitud = get_object_or_404(Solicitud.objects.select_related('cliente', 'escenario'), uuid=solicitud_uuid)
+    destino = redirect('simulactores:solicitud_admin_detalle', solicitud_uuid=solicitud.uuid)
+
+    form = CambiarEstadoSolicitudForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, 'Selecciona un estado válido.')
+        return destino
+
+    nuevo_estado = form.cleaned_data['estado']
+    motivo = form.cleaned_data['motivo'].strip()
+    estado_anterior = solicitud.estado
+
+    if nuevo_estado == estado_anterior:
+        messages.error(request, f'La solicitud ya está en estado «{estado_anterior}».')
+        return destino
+
+    if not solicitud.puede_transicionar_a(nuevo_estado):
+        messages.error(
+            request,
+            f'No se permite cambiar de «{estado_anterior}» a «{nuevo_estado}». '
+            f'La solicitud se mantiene en «{estado_anterior}».',
+        )
+        return destino
+
+    es_cancelacion = nuevo_estado == Solicitud.Estado.CANCELADA
+    if es_cancelacion and not motivo:
+        messages.error(request, 'Para cancelar la solicitud debes escribir el motivo de la cancelación.')
+        return destino
+
+    if nuevo_estado in (Solicitud.Estado.EN_REVISION, Solicitud.Estado.APROBADA) and not solicitud.escenario_id:
+        messages.error(request, 'Primero propón un escenario: sin escenario la solicitud no puede pasar a ese estado.')
+        return destino
+
+    with transaction.atomic():
+        solicitud.estado = nuevo_estado
+        cambios = [('estado', estado_anterior, nuevo_estado)]
+
+        if es_cancelacion:
+            solicitud.motivo_cancelacion = motivo
+            cambios.append(('motivo_cancelacion', None, motivo))
+            # "Libera los recursos asignados": los actores asignados quedan liberados.
+            liberadas = solicitud.asignaciones.exclude(
+                estado__in=[Asignacion.Estado.EJECUTADA, Asignacion.Estado.CANCELADA]
+            ).update(estado=Asignacion.Estado.CANCELADA)
+            if liberadas:
+                cambios.append(('asignaciones_liberadas', None, liberadas))
+
+        solicitud.save()
+        registrar_cambios(
+            solicitud.cliente, 'Cambio de estado por administrador', cambios,
+            realizado_por=request.user, ip_origen=_ip_del_request(request),
+        )
+
+    if es_cancelacion:
+        mensaje = (
+            f'Tu solicitud {solicitud.numero_solicitud} fue cancelada por el equipo de Simulactores. '
+            f'Motivo: {motivo}'
+        )
+        asunto = 'Solicitud cancelada en SimGest'
+    else:
+        mensaje = (
+            f'El estado de tu solicitud {solicitud.numero_solicitud} cambió de '
+            f'«{estado_anterior}» a «{nuevo_estado}».'
+        )
+        asunto = 'Tu solicitud cambió de estado en SimGest'
+    notificar(solicitud.cliente, mensaje, asunto=asunto)
+
+    messages.success(request, f'Estado actualizado a «{nuevo_estado}». El cliente fue notificado.')
+    return destino
+
+
+# --------------------------------------------------------------------------
+# Biblioteca de escenarios
+# --------------------------------------------------------------------------
+
+@modulo_requerido('biblioteca_escenarios')
+def biblioteca_escenarios_view(request):
+    """HU-23: listado completo de la biblioteca de escenarios.
+
+    Muestra nombre, categorías, tipo, estado (Activo/Archivado) y acceso al detalle.
+    Se puede filtrar por categoría y/o tipo de simulación (los filtros se combinan).
+    Si no hay ningún escenario en la biblioteca se muestra 'No hay escenarios registrados'
+    con acceso directo para crear el primero; si hay pero ninguno coincide con el
+    filtro, se muestra un mensaje distinto.
+    """
+    escenarios = Escenario.objects.prefetch_related('categorias').order_by('nombre')
+
+    filtro_categoria = request.GET.get('categoria', '').strip()
+    filtro_tipo = request.GET.get('tipo', '').strip()
+
+    if filtro_categoria.isdigit():
+        escenarios = escenarios.filter(categorias__pk=int(filtro_categoria))
+    else:
+        filtro_categoria = ''
+    if filtro_tipo in TipoSimulacion.values:
+        escenarios = escenarios.filter(tipo=filtro_tipo)
+    else:
+        filtro_tipo = ''
+
+    return render(request, 'simulactores/escenarios.html', {
+        'escenarios': escenarios,
+        'categorias': Categoria.objects.order_by('nombre'),
+        'tipos': TipoSimulacion.choices,
+        'filtro_categoria': filtro_categoria,
+        'filtro_tipo': filtro_tipo,
+        'hay_filtros': bool(filtro_categoria or filtro_tipo),
+        'biblioteca_vacia': not Escenario.objects.exists(),
+    })
+
+
+@modulo_requerido('biblioteca_escenarios')
+def detalle_escenario_view(request, escenario_id):
+    """HU-23: detalle de un escenario (acceso desde el listado)."""
+    escenario = get_object_or_404(Escenario.objects.prefetch_related('categorias'), pk=escenario_id)
+    return render(request, 'simulactores/escenario_detalle.html', {
+        'escenario': escenario,
+        'solicitudes_activas': escenario.solicitudes.exclude(
+            estado__in=[Solicitud.Estado.COMPLETADA, Solicitud.Estado.CANCELADA]
+        ).count(),
+    })
+
+
+@modulo_requerido('biblioteca_escenarios')
+def crear_escenario_view(request):
+    """HU-21: el administrador crea un escenario nuevo.
+
+    - Campos obligatorios incompletos -> el formulario vuelve con los errores
+      resaltados y no se guarda nada (criterio 2).
+    - Nombre repetido -> "Ya existe un escenario con ese nombre" (criterio 3).
+    - Todo correcto -> se guarda con estado 'Activo' (criterio 1).
+    """
+    if request.method == 'POST':
+        form = EscenarioForm(request.POST)
+        if form.is_valid():
+            escenario = form.save()  # el estado queda 'Activo' por defecto del modelo
+            registrar_cambios(
+                request.user, 'Creación de escenario',
+                [('escenario', None, escenario.nombre)],
+                realizado_por=request.user, ip_origen=_ip_del_request(request),
+            )
+            messages.success(request, f'Escenario «{escenario.nombre}» creado correctamente.')
+            return redirect('simulactores:biblioteca_escenarios')
+    else:
+        form = EscenarioForm()
+
+    return render(request, 'simulactores/escenario_form.html', {'form': form})
 
 
 def _es_cliente(request):
@@ -653,3 +867,62 @@ def cancelar_solicitud_view(request, solicitud_uuid):
             return redirect('simulactores:dashboard_cliente')
 
     return redirect('simulactores:detalle_solicitud', solicitud_uuid=solicitud.uuid)
+
+
+@modulo_requerido('biblioteca_escenarios')
+def editar_escenario_view(request, escenario_id):
+    """HU-22: el administrador edita un escenario existente.
+
+    - Cambios válidos -> 'Escenario actualizado correctamente' (criterio 1).
+    - Si el escenario está en solicitudes activas, antes de guardar se muestra
+      una advertencia y se pide confirmación (criterio 2). La confirmación
+      viaja en el campo oculto 'confirmar_cambio' y se valida aquí en el servidor.
+    - Campo obligatorio vacío -> se resalta y no se guarda nada (criterio 3).
+    """
+    escenario = get_object_or_404(Escenario, pk=escenario_id)
+    estados_activos = [
+        Solicitud.Estado.PENDIENTE, Solicitud.Estado.EN_REVISION,
+        Solicitud.Estado.APROBADA, Solicitud.Estado.ACTOR_ASIGNADO,
+        Solicitud.Estado.CONFIRMADA,
+    ]
+    solicitudes_activas = escenario.solicitudes.filter(estado__in=estados_activos).count()
+    requiere_confirmacion = False
+
+    if request.method == 'POST':
+        form = EscenarioForm(request.POST, instance=escenario)
+        if form.is_valid():
+            if solicitudes_activas and request.POST.get('confirmar_cambio') != '1':
+                # Se vuelve a mostrar el formulario (con lo escrito) y la advertencia.
+                requiere_confirmacion = True
+            else:
+                anterior = Escenario.objects.get(pk=escenario.pk)
+                cats_antes = ', '.join(anterior.categorias.order_by('nombre').values_list('nombre', flat=True))
+                datos_antes = {
+                    'nombre': anterior.nombre, 'descripcion': anterior.descripcion,
+                    'tipo': anterior.tipo, 'guion': anterior.guion,
+                }
+                escenario = form.save()
+                cats_despues = ', '.join(escenario.categorias.order_by('nombre').values_list('nombre', flat=True))
+                cambios = [
+                    (campo, antes, getattr(escenario, campo))
+                    for campo, antes in datos_antes.items()
+                    if antes != getattr(escenario, campo)
+                ]
+                if cats_antes != cats_despues:
+                    cambios.append(('categorias', cats_antes, cats_despues))
+                if cambios:
+                    registrar_cambios(
+                        request.user, f'Edición de escenario: {escenario.nombre}'[:150], cambios,
+                        realizado_por=request.user, ip_origen=_ip_del_request(request),
+                    )
+                messages.success(request, 'Escenario actualizado correctamente')
+                return redirect('simulactores:biblioteca_escenarios')
+    else:
+        form = EscenarioForm(instance=escenario)
+
+    return render(request, 'simulactores/escenario_form.html', {
+        'form': form,
+        'escenario': escenario,
+        'solicitudes_activas': solicitudes_activas,
+        'requiere_confirmacion': requiere_confirmacion,
+    })
