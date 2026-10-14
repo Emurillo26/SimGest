@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 
@@ -49,6 +51,10 @@ class RegistroClienteForm(forms.Form):
             email=self.data.get("email", ""),
             nombre=self.data.get("nombre", ""),
         )
+        if password and not re.search(r"[A-ZÁÉÍÓÚÜÑ]", password):
+            raise forms.ValidationError("La contraseña debe tener al menos una letra mayúscula.")
+        if password and not re.search(r"\d", password):
+            raise forms.ValidationError("La contraseña debe tener al menos un número.")
         validate_password(password, user=usuario_temporal)
         return password
 
