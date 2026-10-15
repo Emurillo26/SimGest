@@ -16,6 +16,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from .filtros import FiltroSolicitudesForm
 from .forms import (
     AsignarEscenarioForm, CambiarEstadoSolicitudForm, CambiarPasswordForm,
     CancelarSolicitudForm, EscenarioForm, PerfilForm, RechazarEscenarioForm,
@@ -481,10 +482,22 @@ def solicitudes_admin_view(request):
 
 @modulo_requerido('gestion_solicitudes')
 def solicitud_admin_detalle_view(request, solicitud_uuid):
+    """HU-18: el administrador asigna (o reemplaza) el escenario de una solicitud."""
 
     solicitud = get_object_or_404(
         Solicitud.objects.select_related('cliente', 'escenario'), uuid=solicitud_uuid
     )
+
+    # Escenarios que ofrece el selector: activos, del mismo tipo que la solicitud
+    # o de tipo "Otro" (generales). El escenario actual siempre se conserva.
+    disponibles = Escenario.objects.filter(
+        estado=Escenario.Estado.ACTIVO,
+        tipo__in=[solicitud.tipo_simulacion, TipoSimulacion.OTRO],
+    ).exclude(pk=solicitud.escenario_id)
+    sin_escenarios = not disponibles.exists()
+    opciones = Escenario.objects.filter(
+        Q(pk__in=disponibles.values('pk')) | Q(pk=solicitud.escenario_id)
+    ).order_by('nombre')
 
     form = AsignarEscenarioForm(initial={'escenario': solicitud.escenario_id})
 
@@ -492,13 +505,28 @@ def solicitud_admin_detalle_view(request, solicitud_uuid):
         form = AsignarEscenarioForm(request.POST)
         if form.is_valid():
             if solicitud.estado not in (Solicitud.Estado.PENDIENTE, Solicitud.Estado.EN_REVISION):
-                messages.error(request, 'Esta solicitud ya no está en un estado donde se pueda proponer un escenario.')
+                messages.error(request, 'Esta solicitud ya no está en un estado donde se pueda asignar un escenario.')
                 return redirect('simulactores:solicitud_admin_detalle', solicitud_uuid=solicitud.uuid)
 
-            escenario_anterior = solicitud.escenario.nombre if solicitud.escenario else None
+            nuevo = form.cleaned_data['escenario']
+            actual = solicitud.escenario
+
+            if actual and actual.pk == nuevo.pk:
+                messages.info(request, 'Esta solicitud ya tiene ese escenario asignado, así que no hay nada que cambiar.')
+                return redirect('simulactores:solicitud_admin_detalle', solicitud_uuid=solicitud.uuid)
+
+            # Reemplazar un escenario ya asignado exige confirmación (el modal la envía).
+            if actual and request.POST.get('confirmar_reemplazo') != '1':
+                messages.warning(
+                    request,
+                    f'Esta solicitud ya tiene el escenario «{actual.nombre}». Confirma el reemplazo para continuar.',
+                )
+                return redirect('simulactores:solicitud_admin_detalle', solicitud_uuid=solicitud.uuid)
+
+            escenario_anterior = actual.nombre if actual else None
             estado_anterior = solicitud.estado
 
-            solicitud.escenario = form.cleaned_data['escenario']
+            solicitud.escenario = nuevo
             if solicitud.estado == Solicitud.Estado.PENDIENTE:
                 solicitud.estado = Solicitud.Estado.EN_REVISION
             solicitud.save()
@@ -508,20 +536,34 @@ def solicitud_admin_detalle_view(request, solicitud_uuid):
                 cambios.append(('estado', estado_anterior, solicitud.estado))
 
             registrar_cambios(
-                solicitud.cliente, 'Escenario propuesto por administrador', cambios,
+                solicitud.cliente,
+                'Escenario reemplazado por administrador' if actual else 'Escenario asignado por administrador',
+                cambios,
                 realizado_por=request.user, ip_origen=_ip_del_request(request),
             )
-            notificar(
-                solicitud.cliente,
-                f'Te propusimos un escenario para tu solicitud {solicitud.numero_solicitud}. Revísalo y apruébalo o recházalo.',
-                asunto='Escenario propuesto en SimGest',
-            )
-            messages.success(request, 'Escenario propuesto correctamente. El cliente fue notificado.')
+            if actual:
+                notificar(
+                    solicitud.cliente,
+                    f'Cambiamos el escenario propuesto para tu solicitud {solicitud.numero_solicitud}. Revisa el nuevo y apruébalo o recházalo.',
+                    asunto='Escenario actualizado en SimGest',
+                )
+                messages.success(request, 'Escenario reemplazado correctamente. El cliente fue notificado.')
+            else:
+                notificar(
+                    solicitud.cliente,
+                    f'Te propusimos un escenario para tu solicitud {solicitud.numero_solicitud}. Revísalo y apruébalo o recházalo.',
+                    asunto='Escenario propuesto en SimGest',
+                )
+                messages.success(request, 'Escenario asignado correctamente. El cliente fue notificado.')
             return redirect('simulactores:solicitud_admin_detalle', solicitud_uuid=solicitud.uuid)
+
+    # Solo para mostrar: el selector ofrece los escenarios compatibles.
+    form.fields['escenario'].queryset = opciones
 
     return render(request, 'simulactores/solicitud_admin_detalle.html', {
         'solicitud': solicitud,
         'form': form,
+        'sin_escenarios': sin_escenarios,
         # HU-19: estados a los que se puede pasar desde el estado actual
         'estado_form': CambiarEstadoSolicitudForm(initial={'estado': solicitud.estado}),
         'transiciones_permitidas': [
@@ -752,6 +794,61 @@ def dashboard_cliente_view(request):
         'solicitudes': activas,
         'resumen': resumen,
         'indicador': indicador,
+    })
+
+
+@modulo_requerido('dashboard_cliente')
+def mis_solicitudes_view(request):
+    """HU 17 - Listado completo de las solicitudes del cliente, con filtros."""
+
+    todas = Solicitud.objects.filter(cliente=request.user)
+
+    # Contador por estado para las pestañas (una sola consulta, sin filtros de fecha).
+    conteo = {
+        fila['estado']: fila['n']
+        for fila in todas.values('estado').annotate(n=Count('pk')).order_by()
+    }
+    total = sum(conteo.values())
+
+    filtro = FiltroSolicitudesForm(request.GET or None)
+    datos = filtro.cleaned_data if filtro.is_valid() else {}
+
+    estado_activo = datos.get('estado') or ''
+    desde = datos.get('desde')
+    hasta = datos.get('hasta')
+
+    solicitudes = todas.select_related('escenario').order_by('-fecha_solicitud')
+    if estado_activo:
+        solicitudes = solicitudes.filter(estado=estado_activo)
+    if desde:
+        solicitudes = solicitudes.filter(fecha_evento__gte=desde)
+    if hasta:
+        solicitudes = solicitudes.filter(fecha_evento__lte=hasta)
+
+    # Solo se muestran las pestañas de estados que el cliente realmente tiene
+    # (más la que esté seleccionada).
+    pestanas = [
+        {
+            'valor': estado.value,
+            'etiqueta': estado.label,
+            'cantidad': conteo.get(estado.value, 0),
+        }
+        for estado in Solicitud.Estado
+        if conteo.get(estado.value, 0) or estado.value == estado_activo
+    ]
+
+    paginador = Paginator(solicitudes, 10)
+    solicitudes_pagina = paginador.get_page(request.GET.get('pagina'))
+
+    return render(request, 'simulactores/mis_solicitudes.html', {
+        'solicitudes': solicitudes_pagina,
+        'pestanas': pestanas,
+        'total': total,
+        'filtro': filtro,
+        'estado_activo': estado_activo,
+        'desde': desde.isoformat() if desde else '',
+        'hasta': hasta.isoformat() if hasta else '',
+        'hay_filtros': bool(estado_activo or desde or hasta),
     })
 
 

@@ -15,7 +15,7 @@
     <main class="panel-contenido">
       <header class="panel-encabezado">
         <div>
-          <a href="{% url 'simulactores:dashboard_cliente' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mis solicitudes</a>
+          <a href="{% url 'simulactores:mis_solicitudes' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mis solicitudes</a>
           <h1>Nueva solicitud</h1>
           <p>Cuéntanos qué simulación necesitas y cuándo.</p>
         </div>
@@ -61,7 +61,7 @@
           </div>
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-granate btn-pildora">Crear solicitud</button>
-            <a href="{% url 'simulactores:dashboard_cliente' %}" class="btn btn-claro btn-pildora">Cancelar</a>
+            <a href="{% url 'simulactores:mis_solicitudes' %}" class="btn btn-claro btn-pildora">Cancelar</a>
           </div>
         </form>
       </section>

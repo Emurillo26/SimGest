@@ -78,6 +78,7 @@ urlpatterns = [
     path('dashboard/admin/', views.dashboard_administrador_view, name='dashboard_administrador'),
     path('dashboard/actor/', views.dashboard_actor_view, name='dashboard_actor'),
 
+    path('solicitudes/', views.mis_solicitudes_view, name='mis_solicitudes'),
     path('solicitudes/nueva/', views.crear_solicitud_view, name='crear_solicitud'),
     path(
         'solicitudes/historial/',

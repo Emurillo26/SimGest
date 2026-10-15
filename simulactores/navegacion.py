@@ -34,9 +34,15 @@ MENU_LATERAL = [
     # --- Cliente ---
     {
         'modulo': 'dashboard_cliente',
+        'seccion': 'dashboard_cliente',
+        'etiqueta': 'Panel',
+        'url_name': 'simulactores:dashboard_cliente',
+    },
+    {
+        'modulo': 'dashboard_cliente',
         'seccion': 'mis_solicitudes',
         'etiqueta': 'Mis solicitudes',
-        'url_name': 'simulactores:dashboard_cliente',
+        'url_name': 'simulactores:mis_solicitudes',
     },
     {
         'modulo': 'dashboard_cliente',
@@ -75,7 +81,9 @@ VISTA_A_SECCION = {
     'simulactores:editar_escenario': 'biblioteca_escenarios',
     'simulactores:detalle_escenario': 'biblioteca_escenarios',
 
-    'simulactores:dashboard_cliente': 'mis_solicitudes',
+    'simulactores:dashboard_cliente': 'dashboard_cliente',
+    'simulactores:mis_solicitudes': 'mis_solicitudes',
+    'simulactores:historial_solicitudes': 'mis_solicitudes',
     'simulactores:detalle_solicitud': 'mis_solicitudes',
     'simulactores:aprobar_escenario': 'mis_solicitudes',
     'simulactores:rechazar_escenario': 'mis_solicitudes',

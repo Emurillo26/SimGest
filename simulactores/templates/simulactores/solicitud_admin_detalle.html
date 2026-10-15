@@ -22,7 +22,7 @@
 
       {% if messages %}
         {% for message in messages %}
-          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'info' %}alert-info{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
@@ -47,23 +47,42 @@
         {% if solicitud.escenario %}
           <p class="mb-0"><strong>{{ solicitud.escenario.nombre }}</strong> — en espera de que el cliente lo apruebe o lo rechace.</p>
         {% else %}
-          <p class="text-muted mb-0">Todavía no se le ha propuesto un escenario a esta solicitud.</p>
+          <p class="text-muted mb-0">Todavía no se le ha asignado un escenario a esta solicitud.</p>
         {% endif %}
 
         {% if solicitud.estado == 'Pendiente' or solicitud.estado == 'En Revisión' %}
-          <form method="post" class="row g-3 align-items-end">
-            {% csrf_token %}
-            <div class="col-md-8">
-              <label class="form-label">{{ form.escenario.label }}</label>
-              {{ form.escenario }}
-              {% for error in form.escenario.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+          {% if sin_escenarios %}
+            <div class="panel-vacio vacio-interno">
+              <div class="panel-vacio-icono" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+              </div>
+              <strong>No hay escenarios disponibles</strong>
+              <p>
+                {% if solicitud.escenario %}
+                  No hay otros escenarios activos compatibles con el tipo «{{ solicitud.tipo_simulacion }}» para reemplazar el actual.
+                {% else %}
+                  No hay escenarios activos compatibles con el tipo «{{ solicitud.tipo_simulacion }}». Crea uno nuevo para poder asignarlo.
+                {% endif %}
+              </p>
+              <a href="{% url 'simulactores:crear_escenario' %}" class="btn btn-granate btn-pildora mt-3">Crear escenario nuevo</a>
             </div>
-            <div class="col-md-4">
-              <button type="submit" class="btn btn-granate btn-pildora w-100">
-                {% if solicitud.escenario %}Cambiar escenario propuesto{% else %}Proponer escenario{% endif %}
-              </button>
-            </div>
-          </form>
+          {% else %}
+            <form method="post" id="form-asignar" class="row g-3 align-items-end"
+                  data-actual="{{ solicitud.escenario_id|default_if_none:'' }}"
+                  data-actual-nombre="{{ solicitud.escenario.nombre|default:'' }}">
+              {% csrf_token %}
+              <input type="hidden" name="confirmar_reemplazo" id="confirmar-reemplazo" value="">
+              <div class="col-md-8">
+                <label class="form-label" for="{{ form.escenario.id_for_label }}">Escenario a asignar</label>
+                {{ form.escenario }}
+                {% for error in form.escenario.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+                <p class="panel-sub mb-0 mt-1">Se muestran los escenarios activos compatibles con el tipo de esta solicitud.</p>
+              </div>
+              <div class="col-md-4">
+                <button type="submit" class="btn btn-granate btn-pildora w-100">Asignar escenario</button>
+              </div>
+            </form>
+          {% endif %}
         {% else %}
           <div class="alert alert-info mb-0">
             Esta solicitud ya avanzó más allá de la propuesta de escenario (estado: {{ solicitud.estado }}),
@@ -115,5 +134,54 @@
   </div>
 </div>
 
+<div class="modal fade" id="modalReemplazo" tabindex="-1" aria-labelledby="titulo-reemplazo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="titulo-reemplazo">¿Reemplazar el escenario?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Esta solicitud ya tiene un escenario asignado. ¿Deseas reemplazarlo por el nuevo?</p>
+        <div class="reemplazo-comparacion">
+          <div><span class="panel-sub">Escenario actual</span><strong id="reemplazo-anterior"></strong></div>
+          <div><span class="panel-sub">Escenario nuevo</span><strong id="reemplazo-nuevo"></strong></div>
+        </div>
+        <p class="panel-sub mb-0 mt-3">El cliente recibirá una notificación con el cambio.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-claro btn-pildora" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-granate btn-pildora" id="btn-confirmar-reemplazo">Sí, reemplazar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* HU-18: si la solicitud ya tiene escenario, pedir confirmación antes de reemplazarlo */
+  (function () {
+    var form = document.getElementById('form-asignar');
+    if (!form) return;
+    var select = form.querySelector('select[name="escenario"]');
+    var actualId = form.dataset.actual;
+    var confirmado = document.getElementById('confirmar-reemplazo');
+    var modal = new bootstrap.Modal(document.getElementById('modalReemplazo'));
+
+    form.addEventListener('submit', function (e) {
+      if (!actualId || !select.value || select.value === actualId) return;  // el servidor valida el resto
+      if (confirmado.value === '1') return;
+      e.preventDefault();
+      document.getElementById('reemplazo-anterior').textContent = form.dataset.actualNombre;
+      document.getElementById('reemplazo-nuevo').textContent = select.options[select.selectedIndex].text;
+      modal.show();
+    });
+
+    document.getElementById('btn-confirmar-reemplazo').addEventListener('click', function () {
+      confirmado.value = '1';
+      form.submit();
+    });
+  })();
+</script>
 </body>
 </html>

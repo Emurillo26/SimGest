@@ -1,5 +1,5 @@
 """
-Pruebas automáticas de las HU-19 a HU-23 (Sprint 2).
+Pruebas automáticas de las HU-18 a HU-23 (Sprint 2).
 
 Cómo correrlas (desde la carpeta del proyecto, con el venv activo):
 
@@ -47,6 +47,77 @@ class BaseSprint2(TestCase):
                  'guion': 'Guion', 'categorias': [self.categoria.pk]}
         datos.update(extra)
         return datos
+
+
+class HU18AsignarEscenarioTests(BaseSprint2):
+
+    def url(self, solicitud):
+        return reverse('simulactores:solicitud_admin_detalle', args=[solicitud.uuid])
+
+    def otro_escenario(self, **extra):
+        datos = {'nombre': 'Otro escenario', 'descripcion': 'Descripción', 'guion': 'Guion', 'tipo': 'Otro'}
+        datos.update(extra)
+        escenario = Escenario.objects.create(**datos)
+        escenario.categorias.add(self.categoria)
+        return escenario
+
+    def test_asignacion_exitosa_vincula_cambia_estado_y_notifica(self):
+        solicitud = self.crear_solicitud()
+        r = self.client.post(self.url(solicitud), {'escenario': self.escenario.pk}, follow=True)
+        solicitud.refresh_from_db()
+        self.assertEqual(solicitud.escenario, self.escenario)
+        self.assertEqual(solicitud.estado, 'En Revisión')
+        self.assertTrue(self.cliente.notificaciones.exists())
+        self.assertTrue(Bitacora.objects.filter(campo_modificado='escenario').exists())
+        self.assertContains(r, 'Escenario asignado correctamente')
+
+    def test_reemplazar_sin_confirmar_no_cambia_nada(self):
+        otro = self.otro_escenario()
+        solicitud = self.crear_solicitud(estado='En Revisión', escenario=self.escenario)
+        r = self.client.post(self.url(solicitud), {'escenario': otro.pk}, follow=True)
+        solicitud.refresh_from_db()
+        self.assertEqual(solicitud.escenario, self.escenario)
+        self.assertContains(r, 'Confirma el reemplazo')
+        self.assertFalse(self.cliente.notificaciones.exists())
+
+    def test_reemplazar_confirmado_cambia_el_escenario_y_notifica(self):
+        otro = self.otro_escenario()
+        solicitud = self.crear_solicitud(estado='En Revisión', escenario=self.escenario)
+        r = self.client.post(self.url(solicitud), {'escenario': otro.pk, 'confirmar_reemplazo': '1'}, follow=True)
+        solicitud.refresh_from_db()
+        self.assertEqual(solicitud.escenario, otro)
+        self.assertEqual(solicitud.estado, 'En Revisión')
+        self.assertTrue(self.cliente.notificaciones.exists())
+        self.assertContains(r, 'Escenario reemplazado correctamente')
+
+    def test_elegir_el_mismo_escenario_no_vuelve_a_notificar(self):
+        solicitud = self.crear_solicitud(estado='En Revisión', escenario=self.escenario)
+        r = self.client.post(self.url(solicitud), {'escenario': self.escenario.pk}, follow=True)
+        self.assertContains(r, 'ya tiene ese escenario')
+        self.assertFalse(self.cliente.notificaciones.exists())
+
+    def test_la_pantalla_incluye_el_modal_de_reemplazo(self):
+        solicitud = self.crear_solicitud(estado='En Revisión', escenario=self.escenario)
+        self.otro_escenario()
+        r = self.client.get(self.url(solicitud))
+        self.assertContains(r, 'modalReemplazo')
+        self.assertContains(r, 'Sí, reemplazar')
+
+    def test_el_selector_solo_ofrece_escenarios_compatibles(self):
+        self.otro_escenario(nombre='Escenario solo ECOE', tipo='Examen ECOE')
+        solicitud = self.crear_solicitud()
+        solicitud.tipo_simulacion = 'Manejo de Crisis'
+        solicitud.save()
+        r = self.client.get(self.url(solicitud))
+        self.assertContains(r, 'Escenario base')                 # tipo Otro: sirve para cualquiera
+        self.assertNotContains(r, 'Escenario solo ECOE')         # de otro tipo: no se ofrece
+
+    def test_sin_escenarios_muestra_mensaje_y_opcion_de_crear(self):
+        solicitud = self.crear_solicitud()
+        Escenario.objects.all().delete()
+        r = self.client.get(self.url(solicitud))
+        self.assertContains(r, 'No hay escenarios disponibles')
+        self.assertContains(r, reverse('simulactores:crear_escenario'))
 
 
 class HU19CambiarEstadoTests(BaseSprint2):

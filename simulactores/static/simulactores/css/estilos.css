@@ -1566,6 +1566,8 @@ a.auth-boton {
 }
 
 .tab-filtro {
+  display: inline-flex;
+  align-items: center;
   padding: 9px 18px;
   border: 1px solid #D2DCE4;
   border-radius: 999px;
@@ -1848,4 +1850,53 @@ a.auth-boton {
 
 .perfil-grid .form-floating > .form-control.is-invalid:focus {
   box-shadow: 0 0 0 0.22rem rgba(179, 38, 30, 0.14);
+}
+
+.tab-filtro .contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #E4EEF5;
+  color: #1F4A63;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tab-filtro.activa .contador {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+
+.barra-filtros .campo-error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.vacio-interno {
+  padding: 24px 0 8px;
+}
+
+.reemplazo-comparacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.reemplazo-comparacion > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #F3F6F9;
+}
+
+.reemplazo-comparacion > div:last-child {
+  background: #E4EEF5;
 }

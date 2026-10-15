@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SimGest - Mis solicitudes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="d-flex">
+  {% include 'simulactores/_sidebar.html' %}
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <h1>Mis solicitudes</h1>
+          <p>Consulta y da seguimiento a todas tus solicitudes de simulación.</p>
+        </div>
+        <a href="{% url 'simulactores:crear_solicitud' %}" class="btn btn-granate btn-pildora">Nueva solicitud</a>
+      </header>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-success py-2 mb-0" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      {% if not total %}
+
+        <!-- Sin solicitudes registradas -->
+        <section class="panel-tarjeta bienvenida-vacia">
+          <div class="panel-vacio-icono grande" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></div>
+          <h2>Aún no tienes solicitudes</h2>
+          <p>Cuando crees una, aparecerá aquí y podrás seguir su estado paso a paso.</p>
+          <a href="{% url 'simulactores:crear_solicitud' %}" class="panel-boton-vino">Crear mi primera solicitud</a>
+        </section>
+
+      {% else %}
+
+        <nav class="tabs-filtro" aria-label="Filtrar por estado">
+          <a class="tab-filtro{% if not estado_activo %} activa{% endif %}" href="?desde={{ desde }}&hasta={{ hasta }}">Todas<span class="contador">{{ total }}</span></a>
+          {% for p in pestanas %}
+            <a class="tab-filtro{% if estado_activo == p.valor %} activa{% endif %}" href="?estado={{ p.valor|urlencode }}&desde={{ desde }}&hasta={{ hasta }}">{{ p.etiqueta }}<span class="contador">{{ p.cantidad }}</span></a>
+          {% endfor %}
+        </nav>
+
+        <section class="panel-tabla">
+          <form method="get" class="barra-filtros">
+            <input type="hidden" name="estado" value="{{ estado_activo }}">
+            <label class="campo-filtro">Fecha del evento, desde
+              <input type="date" name="desde" class="form-control" value="{{ filtro.desde.value|default_if_none:'' }}">
+            </label>
+            <label class="campo-filtro">Hasta
+              <input type="date" name="hasta" class="form-control" value="{{ filtro.hasta.value|default_if_none:'' }}">
+            </label>
+            <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
+            <a href="{% url 'simulactores:mis_solicitudes' %}" class="btn btn-claro btn-pildora">Limpiar</a>
+            {% for campo in filtro %}{% for error in campo.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}{% endfor %}
+          </form>
+
+          {% if solicitudes %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr><th>N° Solicitud</th><th>Tipo</th><th>Fecha del evento</th><th>Estado</th><th></th></tr>
+              </thead>
+              <tbody>
+                {% for solicitud in solicitudes %}
+                <tr>
+                  <td class="fw-semibold">{{ solicitud.numero_solicitud }}</td>
+                  <td>{{ solicitud.tipo_simulacion }}</td>
+                  <td><span class="fw-semibold">{{ solicitud.fecha_evento|date:"d/m/Y" }}</span><div class="panel-sub">{{ solicitud.hora_inicio|time:"H:i" }} – {{ solicitud.hora_fin|time:"H:i" }}</div></td>
+                  <td>{% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</td>
+                  <td class="text-end">
+                    <a href="{% url 'simulactores:detalle_solicitud' solicitud.uuid %}" class="btn btn-sm btn-ver">Ver detalle</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        <div class="tabla-pie">
+          <span>Mostrando {{ solicitudes|length }}{% if solicitudes.paginator %} de {{ solicitudes.paginator.count }}{% endif %} solicitudes</span>
+          {% if solicitudes.has_other_pages %}
+          <nav aria-label="Paginación">
+            <ul class="pagination">
+              {% if solicitudes.has_previous %}
+                <li class="page-item"><a class="page-link" href="?pagina={{ solicitudes.previous_page_number }}&estado={{ estado_activo|urlencode }}&desde={{ desde }}&hasta={{ hasta }}">Anterior</a></li>
+              {% endif %}
+              {% for num in solicitudes.paginator.page_range %}
+                <li class="page-item {% if num == solicitudes.number %}active{% endif %}">
+                  <a class="page-link" href="?pagina={{ num }}&estado={{ estado_activo|urlencode }}&desde={{ desde }}&hasta={{ hasta }}">{{ num }}</a>
+                </li>
+              {% endfor %}
+              {% if solicitudes.has_next %}
+                <li class="page-item"><a class="page-link" href="?pagina={{ solicitudes.next_page_number }}&estado={{ estado_activo|urlencode }}&desde={{ desde }}&hasta={{ hasta }}">Siguiente</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+
+          {% else %}
+        <div class="panel-vacio">
+          <div class="panel-vacio-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></div>
+          <strong>No hay solicitudes que coincidan</strong>
+          <p>Cambia el estado o el rango de fechas para ver otros resultados.</p>
+          <a href="{% url 'simulactores:mis_solicitudes' %}" class="btn btn-claro btn-pildora mt-3">Limpiar filtros</a>
+        </div>
+          {% endif %}
+        </section>
+
+      {% endif %}
+
+    </main>
+  </div>
+</div>
+
+</body>
+</html>
