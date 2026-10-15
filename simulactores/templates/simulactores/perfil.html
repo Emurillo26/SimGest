@@ -58,14 +58,12 @@
               <p class="perfil-nota">Así te ven los demás usuarios del sistema.</p>
             </div>
 
-            <div class="form-floating">
-              <input type="text" name="nombre" id="id_nombre" class="form-control" placeholder="Nombre completo" value="{{ usuario.nombre }}" required>
-              <label for="id_nombre">Nombre completo</label>
-            </div>
-
-            <div class="form-floating">
-              <input type="text" name="telefono" id="id_telefono" class="form-control" placeholder="Teléfono" value="{{ usuario.telefono|default:'' }}">
-              <label for="id_telefono">Teléfono</label>
+            <div>
+              <div class="form-floating">
+                <input type="text" name="nombre" id="id_nombre" class="form-control{% if perfil_form.nombre.errors %} is-invalid{% endif %}" placeholder="Nombre completo" value="{{ perfil_form.nombre.value|default_if_none:'' }}" autocomplete="name" required{% if perfil_form.nombre.errors %} aria-invalid="true"{% endif %}>
+                <label for="id_nombre">Nombre completo</label>
+              </div>
+              {% for error in perfil_form.nombre.errors %}<div class="campo-error ms-2">{{ error }}</div>{% endfor %}
             </div>
 
             <div>
@@ -74,7 +72,15 @@
                 <label for="id_correo">Correo electrónico</label>
                 <svg class="perfil-candado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
               </div>
-              <p class="perfil-nota ms-2">Es tu usuario de acceso, por eso no se puede editar.</p>
+              <p class="perfil-nota ms-2 mb-0">Es tu usuario de acceso, por eso no se puede editar.</p>
+            </div>
+
+            <div>
+              <div class="form-floating">
+                <input type="text" name="telefono" id="id_telefono" class="form-control{% if perfil_form.telefono.errors %} is-invalid{% endif %}" placeholder="Teléfono" value="{{ perfil_form.telefono.value|default_if_none:'' }}" autocomplete="tel">
+                <label for="id_telefono">Teléfono</label>
+              </div>
+              {% for error in perfil_form.telefono.errors %}<div class="campo-error ms-2">{{ error }}</div>{% endfor %}
             </div>
           </section>
 

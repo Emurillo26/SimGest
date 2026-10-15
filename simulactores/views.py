@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from .forms import (
     AsignarEscenarioForm, CambiarPasswordForm, CancelarSolicitudForm,
-    RechazarEscenarioForm, RegistroClienteForm, SolicitudForm,
+    PerfilForm, RechazarEscenarioForm, RegistroClienteForm, SolicitudForm,
 )
 from .models import Actor, Bitacora, HistorialAcceso, Rol, Solicitud, Usuario
 from .permisos import modulo_requerido
@@ -142,44 +142,64 @@ def perfil_view(request):
     usuario = request.user
 
     if request.method == 'POST':
-        nombre_anterior = usuario.nombre
-        telefono_anterior = usuario.telefono
-
+        perfil_form = PerfilForm(request.POST, usuario=usuario)
         password_form = CambiarPasswordForm(request.POST, usuario=usuario)
-        if not password_form.is_valid():
-            return render(request, 'simulactores/perfil.html', {
-                'usuario': usuario,
-                'password_form': password_form,
-            })
 
-        usuario.nombre = request.POST.get('nombre')
-        usuario.telefono = request.POST.get('telefono')
+        # Se validan los dos formularios para mostrar todos los errores a la vez.
+        perfil_valido = perfil_form.is_valid()
+        password_valido = password_form.is_valid()
 
-        nueva_password = password_form.cleaned_data.get('password')
-        cambio_password = False
-        if nueva_password:
-            usuario.set_password(nueva_password)
-            cambio_password = True
+        if perfil_valido and password_valido:
+            datos = perfil_form.cleaned_data
+            anteriores = {
+                'nombre': usuario.nombre,
+                'telefono': usuario.telefono,
+            }
 
-        usuario.save()
+            # El correo es el identificador de acceso: nunca se modifica desde aquí.
+            usuario.nombre = datos['nombre']
+            usuario.telefono = datos['telefono']
 
-        cambios = []
-        if nombre_anterior != usuario.nombre:
-            cambios.append(('nombre', nombre_anterior, usuario.nombre))
-        if telefono_anterior != usuario.telefono:
-            cambios.append(('telefono', telefono_anterior, usuario.telefono))
-        if cambio_password:
-            cambios.append(('password', '(oculto)', '(oculto)'))
+            nueva_password = password_form.cleaned_data.get('password')
+            if nueva_password:
+                usuario.set_password(nueva_password)
 
-        registrar_cambios(
-            usuario, 'Edición de perfil propio', cambios,
-            realizado_por=usuario, ip_origen=_ip_del_request(request),
-        )
-        messages.success(request, 'Perfil actualizado correctamente.')
-        return redirect('simulactores:perfil')
+            usuario.save()
+
+            if nueva_password:
+                # Mantiene la sesión abierta después de cambiar la contraseña.
+                update_session_auth_hash(request, usuario)
+
+            cambios = [
+                (campo, anterior, getattr(usuario, campo))
+                for campo, anterior in anteriores.items()
+                if anterior != getattr(usuario, campo)
+            ]
+            if nueva_password:
+                cambios.append(('password', '(oculto)', '(oculto)'))
+
+            registrar_cambios(
+                usuario, 'Edición de perfil propio', cambios,
+                realizado_por=usuario, ip_origen=_ip_del_request(request),
+            )
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('simulactores:perfil')
+
+        return render(request, 'simulactores/perfil.html', {
+            'usuario': usuario,
+            'perfil_form': perfil_form,
+            'password_form': password_form,
+        })
 
     return render(request, 'simulactores/perfil.html', {
         'usuario': usuario,
+        'perfil_form': PerfilForm(
+            initial={
+                'nombre': usuario.nombre,
+                'telefono': usuario.telefono or '',
+            },
+            usuario=usuario,
+        ),
         'password_form': CambiarPasswordForm(usuario=usuario),
     })
 
@@ -462,21 +482,86 @@ def _es_cliente(request):
     return getattr(request.user.rol, 'nombre', None) == 'Cliente'
 
 
+# HU 11 - Resumen del dashboard del cliente
+# Las solicitudes "activas" son todas las que no están completadas ni canceladas
+# (incluye Actor Asignado, que está entre Aprobada y Confirmada en el flujo).
+ESTADOS_HISTORIAL = (Solicitud.Estado.COMPLETADA, Solicitud.Estado.CANCELADA)
+
+# Orden y color (clase "estado-<clase>" / "seg-<clase>") del indicador de estados activos.
+INDICADOR_ACTIVAS = (
+    (Solicitud.Estado.PENDIENTE, 'pe'),
+    (Solicitud.Estado.EN_REVISION, 'rv'),
+    (Solicitud.Estado.APROBADA, 'ap'),
+    (Solicitud.Estado.ACTOR_ASIGNADO, 'as'),
+    (Solicitud.Estado.CONFIRMADA, 'ok'),
+)
+
+
 @modulo_requerido('dashboard_cliente')
 def dashboard_cliente_view(request):
 
-    solicitudes = Solicitud.objects.filter(cliente=request.user).select_related('escenario').order_by('-fecha_solicitud')
+    todas = Solicitud.objects.filter(cliente=request.user)
+    activas = (
+        todas.exclude(estado__in=ESTADOS_HISTORIAL)
+        .select_related('escenario')
+        .order_by('-fecha_solicitud')
+    )
+
+    # Una sola consulta con el conteo por estado.
+    conteo = {
+        fila['estado']: fila['n']
+        for fila in todas.values('estado').annotate(n=Count('pk')).order_by()
+    }
+
+    indicador = [
+        {
+            'etiqueta': estado.label,
+            'clase': clase,
+            'cantidad': conteo.get(estado.value, 0),
+        }
+        for estado, clase in INDICADOR_ACTIVAS
+        if conteo.get(estado.value, 0)
+    ]
+
+    completadas = conteo.get(Solicitud.Estado.COMPLETADA.value, 0)
+    canceladas = conteo.get(Solicitud.Estado.CANCELADA.value, 0)
 
     resumen = {
-        'total': solicitudes.count(),
-        'pendientes': solicitudes.filter(estado=Solicitud.Estado.PENDIENTE).count(),
-        'en_revision': solicitudes.filter(estado=Solicitud.Estado.EN_REVISION).count(),
-        'confirmadas': solicitudes.filter(estado=Solicitud.Estado.CONFIRMADA).count(),
+        'total': sum(conteo.values()),
+        'activas': sum(item['cantidad'] for item in indicador),
+        'completadas': completadas,
+        'canceladas': canceladas,
+        'historial': completadas + canceladas,
     }
 
     return render(request, 'simulactores/dashboard_cliente.html', {
-        'solicitudes': solicitudes,
+        'solicitudes': activas,
         'resumen': resumen,
+        'indicador': indicador,
+    })
+
+
+@modulo_requerido('dashboard_cliente')
+def historial_solicitudes_view(request):
+
+    solicitudes = (
+        Solicitud.objects.filter(cliente=request.user, estado__in=ESTADOS_HISTORIAL)
+        .select_related('escenario')
+        .order_by('-fecha_solicitud')
+    )
+
+    filtro_estado = request.GET.get('estado', '')
+    if filtro_estado in ESTADOS_HISTORIAL:
+        solicitudes = solicitudes.filter(estado=filtro_estado)
+    else:
+        filtro_estado = ''
+
+    paginador = Paginator(solicitudes, 10)
+    solicitudes_pagina = paginador.get_page(request.GET.get('pagina'))
+
+    return render(request, 'simulactores/historial_solicitudes.html', {
+        'solicitudes': solicitudes_pagina,
+        'filtro_estado': filtro_estado,
     })
 
 

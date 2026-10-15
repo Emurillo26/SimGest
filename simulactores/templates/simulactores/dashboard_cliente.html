@@ -13,7 +13,6 @@
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-
       {% if messages %}
         {% for message in messages %}
           <div class="alert alert-success py-2 mb-0" role="alert">{{ message }}</div>
@@ -25,82 +24,120 @@
         <div class="panel-bienvenida-texto">
           <h1>{% if request.user.nombre %}Hola, {{ request.user.nombre.split.0 }}{% else %}Hola de nuevo{% endif %}</h1>
           <p>
-            {% if resumen.total %}
-              Aquí puedes seguir el estado de tus solicitudes de simulación.
+            {% if not resumen.total %}
+              Te damos la bienvenida a SimGest.
+            {% elif resumen.activas %}
+              Tienes {{ resumen.activas }} solicitud{{ resumen.activas|pluralize:"es" }} activa{{ resumen.activas|pluralize }}.
             {% else %}
-              Solicita tu primera simulación clínica en pocos pasos.
+              No tienes solicitudes activas por ahora.
             {% endif %}
           </p>
-          <a href="{% url 'simulactores:crear_solicitud' %}" class="panel-boton-claro">Nueva solicitud</a>
+          {% if resumen.total %}
+            <a href="{% url 'simulactores:crear_solicitud' %}" class="panel-boton-claro">Nueva solicitud</a>
+          {% endif %}
         </div>
       </section>
 
-      <!-- Resumen -->
-      <section class="panel-resumen">
-        <article class="panel-tarjeta panel-tarjeta-ancha" style="grid-column: 1 / -1;">
-          <h2>Mis solicitudes</h2>
-          <div class="panel-stats">
-            <div class="panel-stat">
-              <div class="panel-numero">{{ resumen.total }}</div>
-              <div class="panel-etiqueta">Total</div>
-            </div>
-            <div class="panel-stat">
-              <div class="panel-numero">{{ resumen.pendientes }}</div>
-              <div class="panel-etiqueta">Pendientes</div>
-            </div>
-            <div class="panel-stat">
-              <div class="panel-numero">{{ resumen.en_revision }}</div>
-              <div class="panel-etiqueta">En revisión</div>
-            </div>
-            <div class="panel-stat">
-              <div class="panel-numero">{{ resumen.confirmadas }}</div>
-              <div class="panel-etiqueta">Confirmadas</div>
-            </div>
+      {% if not resumen.total %}
+
+        <!-- Sin solicitudes: bienvenida con acceso directo -->
+        <section class="panel-tarjeta bienvenida-vacia">
+          <div class="panel-vacio-icono grande" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></div>
+          <h2>Aún no tienes solicitudes</h2>
+          <p>Desde aquí podrás pedir simulaciones clínicas y seguir el estado de cada una. Empieza creando tu primera solicitud.</p>
+          <a href="{% url 'simulactores:crear_solicitud' %}" class="panel-boton-vino">Crear mi primera solicitud</a>
+          <div class="pasos-inicio">
+            <div><b>1</b><span class="d-block">Cuéntanos qué simulación necesitas y cuándo.</span></div>
+            <div><b>2</b><span class="d-block">Revisamos tu solicitud y te proponemos un escenario.</span></div>
+            <div><b>3</b><span class="d-block">Apruébalo y sigue su estado desde este panel.</span></div>
           </div>
-        </article>
-      </section>
+        </section>
 
-      <!-- Listado -->
-      <section class="panel-tabla">
-        <div class="panel-tabla-cabecera">
-          <h2>Mis solicitudes</h2>
-        </div>
+      {% else %}
 
-        {% if solicitudes %}
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr><th>N° Solicitud</th><th>Tipo</th><th>Fecha del evento</th><th>Estado</th><th></th></tr>
-            </thead>
-            <tbody>
-              {% for solicitud in solicitudes %}
-              <tr>
-                <td class="fw-semibold">{{ solicitud.numero_solicitud }}</td>
-                <td>{{ solicitud.tipo_simulacion }}</td>
-                <td>{{ solicitud.fecha_evento }}</td>
-                <td>{% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</td>
-                <td class="text-end">
-                  <a href="{% url 'simulactores:detalle_solicitud' solicitud.uuid %}" class="btn btn-sm btn-ver">Ver detalle</a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
+        <!-- Resumen -->
+        <section class="panel-resumen">
+
+          <article class="panel-tarjeta {% if resumen.historial %}panel-tarjeta-ancha{% else %}panel-tarjeta-completa{% endif %}">
+            <h2>Solicitudes activas</h2>
+            {% if resumen.activas %}
+              <div class="activas-fila">
+                <div>
+                  <div class="panel-numero panel-numero-grande">{{ resumen.activas }}</div>
+                  <div class="panel-etiqueta">en curso</div>
+                </div>
+                <div class="activas-indicador">
+                  <div class="barra-estados" role="img" aria-label="Solicitudes activas por estado">
+                    {% for item in indicador %}<span class="seg-{{ item.clase }}" style="flex: {{ item.cantidad }};" title="{{ item.etiqueta }}: {{ item.cantidad }}"></span>{% endfor %}
+                  </div>
+                  <div class="leyenda-estados">
+                    {% for item in indicador %}<span class="estado estado-{{ item.clase }}"><i></i>{{ item.etiqueta }} {{ item.cantidad }}</span>{% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <p class="panel-etiqueta mb-0">No tienes solicitudes activas por ahora.</p>
+            {% endif %}
+          </article>
+
+          {% if resumen.historial %}
+          <article class="panel-tarjeta">
+            <h2>Historial</h2>
+            <div>
+              <div class="panel-numero panel-numero-indigo">{{ resumen.historial }}</div>
+              <div class="panel-etiqueta">{{ resumen.completadas }} completada{{ resumen.completadas|pluralize }} · {{ resumen.canceladas }} cancelada{{ resumen.canceladas|pluralize }}</div>
+            </div>
+            <a href="{% url 'simulactores:historial_solicitudes' %}" class="panel-enlace">
+              Ver historial completo
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+            </a>
+          </article>
+          {% endif %}
+
+        </section>
+
+        <!-- Solicitudes activas -->
+        <section class="panel-tabla">
+          <div class="panel-tabla-cabecera">
+            <h2>Solicitudes activas</h2>
+          </div>
+
+          {% if solicitudes %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr><th>N° Solicitud</th><th>Tipo</th><th>Fecha del evento</th><th>Estado</th><th></th></tr>
+              </thead>
+              <tbody>
+                {% for solicitud in solicitudes %}
+                <tr>
+                  <td class="fw-semibold">{{ solicitud.numero_solicitud }}</td>
+                  <td>{{ solicitud.tipo_simulacion }}</td>
+                  <td>{{ solicitud.fecha_evento }}</td>
+                  <td>{% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</td>
+                  <td class="text-end">
+                    <a href="{% url 'simulactores:detalle_solicitud' solicitud.uuid %}" class="btn btn-sm btn-ver">Ver detalle</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
         <div class="panel-vacio">
-          <div class="panel-vacio-icono" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
-          </div>
-          <strong>Todavía no tienes ninguna solicitud</strong>
-          <p>Crea la primera y sigue su estado desde aquí.</p>
-          <a href="{% url 'simulactores:crear_solicitud' %}" class="panel-boton-vino">Crear solicitud</a>
+          <div class="panel-vacio-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></div>
+          <strong>No tienes solicitudes activas</strong>
+          <p>Crea una nueva solicitud o revisa tu historial.</p>
+          <a href="{% url 'simulactores:crear_solicitud' %}" class="panel-boton-vino">Nueva solicitud</a>
         </div>
-        {% endif %}
-      </section>
+          {% endif %}
+        </section>
+
+      {% endif %}
 
     </main>
   </div>
 </div>
+
 </body>
 </html>

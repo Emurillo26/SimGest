@@ -1727,3 +1727,125 @@ a.auth-boton {
   font-size: 1.05rem;
   transition: background-color 600000s 0s, color 600000s 0s;
 }
+
+.panel-tarjeta-completa {
+  grid-column: 1 / -1;
+}
+
+.activas-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+}
+
+.activas-indicador {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-numero-grande {
+  font-size: 3.2rem;
+}
+
+.panel-numero-indigo {
+  color: #2C3E73;
+}
+
+.barra-estados {
+  display: flex;
+  gap: 3px;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 99px;
+}
+
+.barra-estados span {
+  display: block;
+  height: 100%;
+}
+
+.seg-pe { background: #D98200; }
+.seg-rv { background: #3B7CA6; }
+.seg-ap { background: #1C9A8F; }
+.seg-as { background: #8A5CB8; }
+.seg-ok { background: #2F7D5B; }
+
+.leyenda-estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.estado-ap { background: #DDF1EF; color: #0F5C57; }
+.estado-as { background: #EFE7F6; color: #4A2C6B; }
+.estado-co { background: #E6EAF5; color: #2C3E73; }
+
+.bienvenida-vacia {
+  align-items: center;
+  padding: 56px 40px 60px;
+  border-radius: 24px;
+  text-align: center;
+}
+
+.bienvenida-vacia h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.bienvenida-vacia p {
+  max-width: 480px;
+  margin: 0;
+  line-height: 1.55;
+  color: var(--gris-azul);
+}
+
+.panel-vacio-icono.grande {
+  width: 72px;
+  height: 72px;
+  margin: 0;
+}
+
+.panel-vacio-icono.grande svg {
+  width: 34px;
+  height: 34px;
+}
+
+.pasos-inicio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.pasos-inicio > div {
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: #F3F6F9;
+  font-size: 0.95rem;
+}
+
+.pasos-inicio b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: var(--celeste-claro);
+  color: var(--vino-profundo);
+  font-size: 0.875rem;
+}
+
+.perfil-grid .form-floating > .form-control.is-invalid:focus {
+  box-shadow: 0 0 0 0.22rem rgba(179, 38, 30, 0.14);
+}

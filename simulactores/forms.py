@@ -67,6 +67,26 @@ class RegistroClienteForm(forms.Form):
         return cleaned
 
 
+class PerfilForm(forms.Form):
+    """
+    Edición del perfil propio (HU 12): nombre y teléfono.
+    El correo es el identificador de acceso, por eso no se edita aquí.
+    """
+
+    nombre = forms.CharField(
+        max_length=150, label="Nombre completo",
+        error_messages={"required": "El nombre es obligatorio."},
+    )
+    telefono = forms.CharField(max_length=20, required=False, label="Teléfono")
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        self._usuario = usuario
+        super().__init__(*args, **kwargs)
+
+    def clean_telefono(self):
+        return (self.cleaned_data.get("telefono") or "").strip() or None
+
+
 class CambiarPasswordForm(forms.Form):
 
 

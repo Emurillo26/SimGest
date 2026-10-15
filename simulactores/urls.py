@@ -80,6 +80,11 @@ urlpatterns = [
 
     path('solicitudes/nueva/', views.crear_solicitud_view, name='crear_solicitud'),
     path(
+        'solicitudes/historial/',
+        views.historial_solicitudes_view,
+        name='historial_solicitudes'
+    ),
+    path(
         'solicitudes/<uuid:solicitud_uuid>/',
         views.detalle_solicitud_view,
         name='detalle_solicitud'
