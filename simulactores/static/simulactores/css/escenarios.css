@@ -73,3 +73,16 @@
 .esc-dato small { display: block; color: #6B7A82; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .esc-dato strong { font-size: 1.05rem; }
 .esc-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
+
+
+/* Color de la tarjeta según la categoría del escenario */
+.esc-card[data-cat="medicina"]               { border-top-color: #79242F; }
+.esc-card[data-cat="enfermeria"]             { border-top-color: #2F6F9A; }
+.esc-card[data-cat="psicologia"]             { border-top-color: #6B4A8F; }
+.esc-card[data-cat="nutricion"]              { border-top-color: #2E7D5B; }
+.esc-card[data-cat="comunicacion-en-salud"]  { border-top-color: #C77700; }
+.esc-card[data-cat="rehabilitacion"]         { border-top-color: #0F7C80; }
+.esc-card[data-cat="ultrasonido"]            { border-top-color: #3E5C9A; }
+.esc-card[data-cat="educacion"]              { border-top-color: #B5527A; }
+.esc-card[data-cat="administracion"]         { border-top-color: #5B6B73; }
+.esc-card.archivado[data-cat]                { border-top-color: #A9B4BA; }

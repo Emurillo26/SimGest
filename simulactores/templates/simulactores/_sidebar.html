@@ -1,3 +1,4 @@
+{% load static %}
 <nav class="sidebar p-3" style="width:230px;" aria-label="Menú principal">
   {# Íconos del menú: se llaman con <use href="#ic-NOMBRE"> #}
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -15,9 +16,7 @@
   </svg>
 
   <div class="sidebar-marca text-white fs-5 fw-bold mb-1">
-    <svg viewBox="0 0 34 18" fill="none" stroke="#C6DAE8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M1 9 H9 L12 5 L16 15 L20 2 L23 9 H33"/>
-    </svg>
+    <img src="{% static 'simulactores/img/logo-simulactores-blanco.svg' %}" alt="" class="sidebar-logo">
     <span>Simulactores</span>
   </div>
   <div class="sidebar-panel">{{ panel_nombre }}</div>

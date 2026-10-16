@@ -1,3 +1,5 @@
+
+
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap');
 
 :root {
@@ -2048,3 +2050,15 @@ a.auth-boton {
   .sidebar .nav-link { padding: 6px 10px; font-size: 0.9rem; }
   .sidebar-pie { padding-top: 8px; }
 }
+
+
+/* ---------- Marca Simulactores ---------- */
+.sidebar-logo { height: 38px; width: auto; flex-shrink: 0; }
+
+.auth-marca { display: flex; align-items: center; gap: 14px; }
+.auth-logo { height: 58px; width: auto; flex-shrink: 0; }
+
+/* Números de resumen con el color de su estado */
+.panel-numero.num-pe { color: #B26A00; }
+.panel-numero.num-rv { color: #2F6F9A; }
+.panel-numero.num-ok { color: #2E7D5B; }

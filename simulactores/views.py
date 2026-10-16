@@ -545,14 +545,14 @@ def solicitud_admin_detalle_view(request, solicitud_uuid):
                 notificar(
                     solicitud.cliente,
                     f'Cambiamos el escenario propuesto para tu solicitud {solicitud.numero_solicitud}. Revisa el nuevo y apruébalo o recházalo.',
-                    asunto='Escenario actualizado en SimGest',
+                    asunto='Escenario actualizado en Simulactores',
                 )
                 messages.success(request, 'Escenario reemplazado correctamente. El cliente fue notificado.')
             else:
                 notificar(
                     solicitud.cliente,
                     f'Te propusimos un escenario para tu solicitud {solicitud.numero_solicitud}. Revísalo y apruébalo o recházalo.',
-                    asunto='Escenario propuesto en SimGest',
+                    asunto='Escenario propuesto en Simulactores',
                 )
                 messages.success(request, 'Escenario asignado correctamente. El cliente fue notificado.')
             return redirect('simulactores:solicitud_admin_detalle', solicitud_uuid=solicitud.uuid)
@@ -644,13 +644,13 @@ def cambiar_estado_solicitud_view(request, solicitud_uuid):
             f'Tu solicitud {solicitud.numero_solicitud} fue cancelada por el equipo de Simulactores. '
             f'Motivo: {motivo}'
         )
-        asunto = 'Solicitud cancelada en SimGest'
+        asunto = 'Solicitud cancelada en Simulactores'
     else:
         mensaje = (
             f'El estado de tu solicitud {solicitud.numero_solicitud} cambió de '
             f'«{estado_anterior}» a «{nuevo_estado}».'
         )
-        asunto = 'Tu solicitud cambió de estado en SimGest'
+        asunto = 'Tu solicitud cambió de estado en Simulactores'
     notificar(solicitud.cliente, mensaje, asunto=asunto)
 
     messages.success(request, f'Estado actualizado a «{nuevo_estado}». El cliente fue notificado.')
@@ -894,14 +894,14 @@ def crear_solicitud_view(request):
             notificar(
                 request.user,
                 f'Tu solicitud {solicitud.numero_solicitud} fue registrada y está Pendiente de revisión.',
-                asunto='Solicitud registrada en SimGest',
+                asunto='Solicitud registrada en Simulactores',
             )
 
             for admin_usuario in Usuario.objects.filter(rol__nombre='Administrador', estado='Activo'):
                 notificar(
                     admin_usuario,
                     f'Hay una nueva solicitud {solicitud.numero_solicitud} pendiente de revisión.',
-                    asunto='Nueva solicitud en SimGest',
+                    asunto='Nueva solicitud en Simulactores',
                 )
 
             messages.success(request, f'Solicitud {solicitud.numero_solicitud} creada correctamente.')
@@ -958,7 +958,7 @@ def aprobar_escenario_view(request, solicitud_uuid):
         notificar(
             admin_usuario,
             f'El cliente aprobó el escenario propuesto para la solicitud {solicitud.numero_solicitud}.',
-            asunto='Escenario aprobado en SimGest',
+            asunto='Escenario aprobado en Simulactores',
         )
     messages.success(request, 'Escenario aprobado correctamente.')
     return redirect('simulactores:detalle_solicitud', solicitud_uuid=solicitud.uuid)
@@ -999,7 +999,7 @@ def rechazar_escenario_view(request, solicitud_uuid):
                 notificar(
                     admin_usuario,
                     f'El cliente rechazó el escenario propuesto para la solicitud {solicitud.numero_solicitud}: {solicitud.comentario_rechazo}',
-                    asunto='Escenario rechazado en SimGest',
+                    asunto='Escenario rechazado en Simulactores',
                 )
             messages.success(request, 'Escenario rechazado. La solicitud vuelve a estar Pendiente de reasignación.')
             return redirect('simulactores:detalle_solicitud', solicitud_uuid=solicitud.uuid)
@@ -1043,7 +1043,7 @@ def cancelar_solicitud_view(request, solicitud_uuid):
                 notificar(
                     admin_usuario,
                     f'El cliente canceló la solicitud {solicitud.numero_solicitud}.',
-                    asunto='Solicitud cancelada en SimGest',
+                    asunto='Solicitud cancelada en Simulactores',
                 )
             messages.success(request, f'Solicitud {solicitud.numero_solicitud} cancelada. La fecha queda libre nuevamente.')
             return redirect('simulactores:dashboard_cliente')

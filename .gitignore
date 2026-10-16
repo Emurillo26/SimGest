@@ -28,3 +28,6 @@ staticfiles/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Copia de credenciales con otro nombre
+.env.txt

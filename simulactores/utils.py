@@ -30,7 +30,7 @@ def notificar(usuario, mensaje, asunto=None, enviar_correo=True):
 
     if enviar_correo and usuario.email:
         send_mail(
-            asunto or 'Notificación de SimGest',
+            asunto or 'Notificación de Simulactores',
             mensaje,
             settings.DEFAULT_FROM_EMAIL,
             [usuario.email],

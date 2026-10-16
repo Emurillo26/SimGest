@@ -32,17 +32,17 @@ def recuperar_contrasena_view(request):
                 )
             )
 
-            asunto = 'Restablecimiento de contraseña - SimGest'
+            asunto = 'Restablecimiento de contraseña - Simulactores'
 
             mensaje = (
                 f'Hola {usuario.nombre},\n\n'
                 'Recibimos una solicitud para restablecer la contraseña '
-                'de tu cuenta en SimGest.\n\n'
+                'de tu cuenta en Simulactores.\n\n'
                 'Puedes crear una nueva contraseña usando el siguiente enlace:\n\n'
                 f'{enlace}\n\n'
                 'Este enlace es de un solo uso y vence en 30 minutos.\n\n'
                 'Si no solicitaste este cambio, puedes ignorar este mensaje.\n\n'
-                'SimGest'
+                'Simulactores'
             )
 
             send_mail(
