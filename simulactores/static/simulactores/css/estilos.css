@@ -1,5 +1,3 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap');
 
 :root {
@@ -1310,6 +1308,16 @@ a.auth-boton {
 /* Formularios */
 .panel-formulario {
   max-width: 720px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+/* Página de formulario: título, avisos y tarjeta alineados y centrados */
+.panel-contenido:has(> .panel-formulario) > .panel-encabezado,
+.panel-contenido:has(> .panel-formulario) > .alert {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
 }
 
 .perfil-cabecera {
@@ -2040,7 +2048,10 @@ a.auth-boton {
 
 /* ---------- Pantallas de laptop: todo un poco más compacto ---------- */
 @media (max-width: 1440px) {
-  html { font-size: 90%; }
+  /* Solo las pantallas internas (las de acceso ya tienen su propio ajuste) */
+  body:not(.auth-body) { zoom: 0.85; }
+  /* El zoom también achica las unidades vh: se compensa para llenar la ventana */
+  body:not(.auth-body) .sidebar { height: calc(100vh / 0.85); }
 }
 
 @media (max-height: 700px) {
@@ -2062,3 +2073,24 @@ a.auth-boton {
 .panel-numero.num-pe { color: #B26A00; }
 .panel-numero.num-rv { color: #2F6F9A; }
 .panel-numero.num-ok { color: #2E7D5B; }
+
+
+/* ---------- Pantallas de acceso en laptop: más compactas ---------- */
+@media (max-width: 1440px), (max-height: 760px) {
+  .auth-fondo { padding: 16px; }
+  .auth-card { max-width: 960px; border-radius: 28px; }
+  .auth-panel { min-height: 440px; padding: 34px 36px 110px; }
+  .auth-panel > .auth-ecg { left: 36px; width: calc(100% - 72px); bottom: 34px; }
+  .auth-panel::before { width: 220px; height: 220px; border-width: 28px; top: -60px; left: -60px; }
+  .auth-panel::after { width: 290px; height: 290px; right: -90px; bottom: -110px; }
+  .auth-logo { height: 44px; }
+  .auth-marca { font-size: 1.45rem; }
+  .auth-texto h1 { font-size: clamp(1.6rem, 2.6vw, 2.1rem); }
+  .auth-texto p { font-size: 0.98rem; }
+  .auth-lado { padding: 30px 44px; }
+  .auth-titulo { font-size: clamp(1.5rem, 2.2vw, 1.9rem); }
+  .auth-sub { margin-bottom: 18px; font-size: 0.98rem; }
+  .auth-card .form-floating { margin-bottom: 12px; }
+  .auth-card .form-floating > .form-control { height: 3.2rem; min-height: 3.2rem; padding: 1.4rem 1.1rem 0.4rem; font-size: 0.98rem; }
+  .auth-card .form-floating > label { padding: 0.85rem 1.1rem; font-size: 0.98rem; }
+}
