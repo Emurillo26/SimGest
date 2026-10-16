@@ -1,5 +1,3 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap');
 
 :root {
@@ -53,6 +51,16 @@ h1, h2, h3, h4, h5 {
 /* ---------- Barra lateral ---------- */
 .sidebar {
   background: linear-gradient(180deg, var(--vino-profundo) 0%, var(--vino-oscuro) 100%) !important;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: flex-start;
+  flex-shrink: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(198, 218, 232, 0.25) transparent;
 }
 
 .sidebar-marca {
@@ -1899,4 +1907,144 @@ a.auth-boton {
 
 .reemplazo-comparacion > div:last-child {
   background: #E4EEF5;
+}
+
+
+/* ==========================================================
+   PULIDO VISUAL (menú lateral, tarjetas, botones, entrada)
+   ========================================================== */
+
+/* ---------- Menú lateral ---------- */
+.sidebar-panel {
+  margin-bottom: 1.6rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sidebar-seccion {
+  margin: 14px 0 4px;
+  padding: 0 12px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar .nav-link svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.sidebar .nav-link:hover:not(.active) {
+  transform: translateX(3px);
+}
+
+.sidebar .nav-link.active {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.sidebar-pie {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- Tarjetas y botones ---------- */
+.panel-tarjeta,
+.card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.panel-tarjeta:hover {
+  box-shadow: 0 8px 22px rgba(59, 16, 23, 0.12);
+  transform: translateY(-2px);
+}
+
+.btn-granate,
+.btn-primary,
+.panel-boton-claro,
+.panel-boton-vino,
+.auth-boton {
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-granate:hover,
+.btn-primary:hover,
+.panel-boton-claro:hover,
+.panel-boton-vino:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(121, 36, 47, 0.25);
+}
+
+.btn-granate:active,
+.btn-primary:active,
+.panel-boton-claro:active,
+.panel-boton-vino:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ---------- Tablas ---------- */
+.table thead th {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* ---------- Entrada suave del contenido ---------- */
+@keyframes aparecer-subiendo {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.panel-contenido > * {
+  animation: aparecer-subiendo 0.45s ease both;
+}
+
+.panel-contenido > *:nth-child(2) { animation-delay: 0.06s; }
+.panel-contenido > *:nth-child(3) { animation-delay: 0.12s; }
+.panel-contenido > *:nth-child(4) { animation-delay: 0.18s; }
+.panel-contenido > *:nth-child(n+5) { animation-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-contenido > * { animation: none; }
+  .panel-tarjeta:hover,
+  .btn-granate:hover,
+  .btn-primary:hover,
+  .panel-boton-claro:hover,
+  .panel-boton-vino:hover,
+  .sidebar .nav-link:hover:not(.active) { transform: none; }
+}
+
+
+/* ---------- Pantallas de laptop: todo un poco más compacto ---------- */
+@media (max-width: 1440px) {
+  html { font-size: 90%; }
+}
+
+@media (max-height: 700px) {
+  .sidebar { padding: 12px !important; }
+  .sidebar-panel { margin-bottom: 0.8rem; }
+  .sidebar-seccion { margin: 8px 0 2px; }
+  .sidebar .nav-link { padding: 6px 10px; font-size: 0.9rem; }
+  .sidebar-pie { padding-top: 8px; }
 }
