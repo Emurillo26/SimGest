@@ -1,84 +1,552 @@
 {% load static %}
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Simulactores - {% if escenario %}Editar escenario{% else %}Nuevo escenario{% endif %}</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+
+  <title>
+    Simulactores -
+    {% if escenario %}
+      Editar escenario
+    {% else %}
+      Nuevo escenario
+    {% endif %}
+  </title>
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="{% static 'simulactores/img/logo-simulactores.svg' %}"
+  >
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link
+    href="{% static 'simulactores/css/estilos.css' %}"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    .categoria-bloque {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 1.25rem;
+      background: #ffffff;
+    }
+
+    .categoria-titulo {
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .categoria-ayuda {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .categorias-existentes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+    }
+
+    .categoria-check {
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 0.5rem 0.9rem;
+      background: #fafafa;
+      transition: all 0.2s ease;
+    }
+
+    .categoria-check:hover {
+      background: #f4f4f4;
+      border-color: #cfcfcf;
+    }
+
+    .categoria-check .form-check {
+      margin: 0;
+      min-height: auto;
+    }
+
+    .nueva-categoria-bloque {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #ededed;
+    }
+
+    .nueva-categoria-icono {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f7e8eb;
+      color: #a61f3d;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .campo-error {
+      color: #b42318;
+      font-size: 0.875rem;
+      margin-top: 0.35rem;
+    }
+
+  </style>
+
 </head>
+
+
 <body>
+
+
 <div class="d-flex">
+
+
   {% include 'simulactores/_sidebar.html' %}
+
+
   <div class="flex-fill panel-columna">
+
+
     <main class="panel-contenido">
+
+
       <header class="panel-encabezado">
+
+
         <div>
-          <a href="{% url 'simulactores:biblioteca_escenarios' %}" class="panel-volver">Biblioteca de escenarios</a>
-          <h1>{% if escenario %}Editar escenario{% else %}Nuevo escenario{% endif %}</h1>
+
+          <a
+            href="{% url 'simulactores:biblioteca_escenarios' %}"
+            class="panel-volver"
+          >
+            Biblioteca de escenarios
+          </a>
+
+
+          <h1>
+
+            {% if escenario %}
+
+              Editar escenario
+
+            {% else %}
+
+              Nuevo escenario
+
+            {% endif %}
+
+          </h1>
+
         </div>
+
+
       </header>
 
+
       {% if messages %}
+
         {% for message in messages %}
-          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+
+          <div
+            class="
+              alert
+              {% if message.tags == 'error' %}
+                alert-danger
+              {% elif message.tags == 'warning' %}
+                alert-warning
+              {% elif message.tags == 'info' %}
+                alert-info
+              {% else %}
+                alert-success
+              {% endif %}
+              py-2
+              mb-3
+            "
+            role="alert"
+          >
+
+            {{ message }}
+
+          </div>
+
         {% endfor %}
+
       {% endif %}
+
 
       {% if requiere_confirmacion %}
-      <div class="alert alert-warning mb-0" role="alert">
-        <strong>Este escenario está en {{ solicitudes_activas }} solicitud{{ solicitudes_activas|pluralize:"es" }} activa{{ solicitudes_activas|pluralize }}.</strong>
-        Si guardas, el cambio afectará a las solicitudes activas asociadas. Revisa lo que escribiste y presiona «Confirmar y guardar» para continuar.
-      </div>
+
+        <div
+          class="alert alert-warning mb-3"
+          role="alert"
+        >
+
+          <strong>
+
+            Este escenario está en
+            {{ solicitudes_activas }}
+
+            solicitud{{ solicitudes_activas|pluralize:"es" }}
+
+            activa{{ solicitudes_activas|pluralize }}.
+
+          </strong>
+
+          Si guardas, el cambio afectará a las solicitudes
+          activas asociadas.
+
+          Revisa lo que escribiste y presiona
+          «Confirmar y guardar» para continuar.
+
+        </div>
+
       {% endif %}
 
+
       <section class="panel-tarjeta">
-        <form method="post" novalidate>
+
+
+        <form
+          method="post"
+          novalidate
+        >
+
+
           {% csrf_token %}
-          {% if requiere_confirmacion %}<input type="hidden" name="confirmar_cambio" value="1">{% endif %}
+
+
+          {% if requiere_confirmacion %}
+
+            <input
+              type="hidden"
+              name="confirmar_cambio"
+              value="1"
+            >
+
+          {% endif %}
+
 
           <div class="mb-3">
-            <label class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
+
+
+            <label
+              class="form-label"
+              for="{{ form.nombre.id_for_label }}"
+            >
+
+              {{ form.nombre.label }}
+
+            </label>
+
+
             {{ form.nombre }}
-            {% for error in form.nombre.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+
+
+            {% for error in form.nombre.errors %}
+
+              <div class="campo-error">
+
+                {{ error }}
+
+              </div>
+
+            {% endfor %}
+
+
           </div>
+
+
           <div class="mb-3">
-            <label class="form-label" for="{{ form.tipo.id_for_label }}">{{ form.tipo.label }}</label>
+
+
+            <label
+              class="form-label"
+              for="{{ form.tipo.id_for_label }}"
+            >
+
+              {{ form.tipo.label }}
+
+            </label>
+
+
             {{ form.tipo }}
-            {% for error in form.tipo.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+
+
+            {% for error in form.tipo.errors %}
+
+              <div class="campo-error">
+
+                {{ error }}
+
+              </div>
+
+            {% endfor %}
+
+
           </div>
-          <div class="mb-3">
-            <label class="form-label d-block">{{ form.categorias.label }}</label>
-            <div class="d-flex flex-wrap gap-3">
-              {% for check in form.categorias %}
-                <div class="form-check">{{ check.tag }} <label class="form-check-label" for="{{ check.id_for_label }}">{{ check.choice_label }}</label></div>
+
+
+          <div class="mb-4">
+
+
+            <div class="categoria-bloque">
+
+
+              <div class="categoria-titulo">
+
+                Categorías
+
+              </div>
+
+
+              <div class="categoria-ayuda">
+
+                Selecciona una o varias categorías existentes
+                o crea una nueva.
+
+              </div>
+
+
+              <div class="categorias-existentes">
+
+
+                {% for check in form.categorias %}
+
+
+                  <div class="categoria-check">
+
+
+                    <div class="form-check">
+
+
+                      {{ check.tag }}
+
+
+                      <label
+                        class="form-check-label"
+                        for="{{ check.id_for_label }}"
+                      >
+
+                        {{ check.choice_label }}
+
+                      </label>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                {% empty %}
+
+
+                  <p class="text-muted mb-0">
+
+                    Todavía no hay categorías registradas.
+
+                  </p>
+
+
+                {% endfor %}
+
+
+              </div>
+
+
+              {% for error in form.categorias.errors %}
+
+                <div class="campo-error mt-3">
+
+                  {{ error }}
+
+                </div>
+
               {% endfor %}
+
+
+              <div class="nueva-categoria-bloque">
+
+
+                <label
+                  class="form-label fw-semibold"
+                  for="{{ form.nueva_categoria.id_for_label }}"
+                >
+
+                  <span class="nueva-categoria-icono">
+
+                    +
+
+                  </span>
+
+                  {{ form.nueva_categoria.label }}
+
+                </label>
+
+
+                {{ form.nueva_categoria }}
+
+
+                {% if form.nueva_categoria.help_text %}
+
+                  <div class="form-text">
+
+                    {{ form.nueva_categoria.help_text }}
+
+                  </div>
+
+                {% endif %}
+
+
+                {% for error in form.nueva_categoria.errors %}
+
+                  <div class="campo-error">
+
+                    {{ error }}
+
+                  </div>
+
+                {% endfor %}
+
+
+              </div>
+
+
             </div>
-            {% for error in form.categorias.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+
+
           </div>
+
+
           <div class="mb-3">
-            <label class="form-label" for="{{ form.descripcion.id_for_label }}">{{ form.descripcion.label }}</label>
+
+
+            <label
+              class="form-label"
+              for="{{ form.descripcion.id_for_label }}"
+            >
+
+              {{ form.descripcion.label }}
+
+            </label>
+
+
             {{ form.descripcion }}
-            {% for error in form.descripcion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+
+
+            {% for error in form.descripcion.errors %}
+
+              <div class="campo-error">
+
+                {{ error }}
+
+              </div>
+
+            {% endfor %}
+
+
           </div>
+
+
           <div class="mb-3">
-            <label class="form-label" for="{{ form.guion.id_for_label }}">{{ form.guion.label }}</label>
+
+
+            <label
+              class="form-label"
+              for="{{ form.guion.id_for_label }}"
+            >
+
+              {{ form.guion.label }}
+
+            </label>
+
+
             {{ form.guion }}
-            {% for error in form.guion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+
+
+            {% for error in form.guion.errors %}
+
+              <div class="campo-error">
+
+                {{ error }}
+
+              </div>
+
+            {% endfor %}
+
+
           </div>
+
 
           <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-granate btn-pildora">
-              {% if requiere_confirmacion %}Confirmar y guardar{% elif escenario %}Guardar Cambios{% else %}Guardar Escenario{% endif %}
+
+
+            <button
+              type="submit"
+              class="btn btn-granate btn-pildora"
+            >
+
+              {% if requiere_confirmacion %}
+
+                Confirmar y guardar
+
+              {% elif escenario %}
+
+                Guardar cambios
+
+              {% else %}
+
+                Guardar escenario
+
+              {% endif %}
+
             </button>
-            <a href="{% url 'simulactores:biblioteca_escenarios' %}" class="btn btn-claro btn-pildora">Cancelar</a>
+
+
+            <a
+              href="{% url 'simulactores:biblioteca_escenarios' %}"
+              class="btn btn-claro btn-pildora"
+            >
+
+              Cancelar
+
+            </a>
+
+
           </div>
+
+
         </form>
+
+
       </section>
+
+
     </main>
+
+
   </div>
+
+
 </div>
+
+
 </body>
+
 </html>

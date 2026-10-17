@@ -1,60 +1,581 @@
 {% load static %}
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Simulactores - {{ escenario.nombre }}</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
-  <link href="{% static 'simulactores/css/escenarios.css' %}" rel="stylesheet">
+
+  <title>
+    Simulactores - {{ escenario.nombre }}
+  </title>
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="{% static 'simulactores/img/logo-simulactores.svg' %}"
+  >
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link
+    href="{% static 'simulactores/css/estilos.css' %}"
+    rel="stylesheet"
+  >
+
+  <link
+    href="{% static 'simulactores/css/escenarios.css' %}"
+    rel="stylesheet"
+  >
+
+  <style>
+    .modal-content {
+      border: none;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #ececec;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #ececec;
+    }
+
+    .modal-icono {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 16px auto;
+    }
+
+    .modal-icono-archivar {
+      background-color: #fbe8e8;
+      color: #a3262d;
+    }
+
+    .modal-icono-reactivar {
+      background-color: #e5f5eb;
+      color: #217a45;
+    }
+
+    .btn-archivar-confirmar {
+      background-color: #a3262d;
+      color: white;
+      border: none;
+    }
+
+    .btn-archivar-confirmar:hover {
+      background-color: #851f25;
+      color: white;
+    }
+
+    .btn-reactivar-confirmar {
+      background-color: #217a45;
+      color: white;
+      border: none;
+    }
+
+    .btn-reactivar-confirmar:hover {
+      background-color: #186236;
+      color: white;
+    }
+  </style>
+
 </head>
+
+
 <body>
+
 <div class="d-flex">
+
   {% include 'simulactores/_sidebar.html' %}
+
+
   <div class="flex-fill panel-columna">
+
     <main class="panel-contenido">
+
+
       <header class="panel-encabezado">
+
         <div>
-          <a href="{% url 'simulactores:biblioteca_escenarios' %}" class="panel-volver">Biblioteca de escenarios</a>
-          <h1>{{ escenario.nombre }} {% include 'simulactores/_estado_badge.html' with estado=escenario.estado %}</h1>
+
+          <a
+            href="{% url 'simulactores:biblioteca_escenarios' %}"
+            class="panel-volver"
+          >
+            Biblioteca de escenarios
+          </a>
+
+
+          <h1>
+
+            {{ escenario.nombre }}
+
+            {% include 'simulactores/_estado_badge.html' with estado=escenario.estado %}
+
+          </h1>
+
         </div>
-        <a href="{% url 'simulactores:editar_escenario' escenario.pk %}" class="btn btn-granate btn-pildora">Editar escenario</a>
+
+
+        <div class="d-flex gap-2 flex-wrap">
+
+
+          <a
+            href="{% url 'simulactores:editar_escenario' escenario.pk %}"
+            class="btn btn-granate btn-pildora"
+          >
+            Editar escenario
+          </a>
+
+
+          {% if escenario.estado == 'Activo' %}
+
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-pildora"
+              data-bs-toggle="modal"
+              data-bs-target="#modalArchivar"
+            >
+              Archivar
+            </button>
+
+
+          {% elif escenario.estado == 'Archivado' %}
+
+            <button
+              type="button"
+              class="btn btn-outline-success btn-pildora"
+              data-bs-toggle="modal"
+              data-bs-target="#modalReactivar"
+            >
+              Reactivar
+            </button>
+
+          {% endif %}
+
+
+        </div>
+
       </header>
 
+
       {% if messages %}
+
         {% for message in messages %}
-          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+
+          <div
+            class="
+              alert
+
+              {% if message.tags == 'error' %}
+                alert-danger
+
+              {% elif message.tags == 'warning' %}
+                alert-warning
+
+              {% elif message.tags == 'info' %}
+                alert-info
+
+              {% else %}
+                alert-success
+
+              {% endif %}
+
+              py-2
+              mb-3
+            "
+            role="alert"
+          >
+
+            {{ message }}
+
+          </div>
+
         {% endfor %}
+
       {% endif %}
 
+
       <div class="esc-stack">
+
+
         <div class="esc-datos">
-          <div class="esc-dato"><small>Tipo de simulación</small><strong>{{ escenario.get_tipo_display }}</strong></div>
-          <div class="esc-dato"><small>Estado</small><strong>{{ escenario.estado }}</strong></div>
-          <div class="esc-dato"><small>Solicitudes activas</small><strong>{{ solicitudes_activas }}</strong></div>
-        </div>
 
-        <div class="esc-bloque">
-          <h2>Categorías</h2>
-          <div class="esc-chips">
-            {% for c in escenario.categorias.all %}<span class="esc-cat">{{ c.nombre }}</span>{% empty %}<span class="esc-cat vacia">Sin categoría</span>{% endfor %}
+
+          <div class="esc-dato">
+
+            <small>
+              Tipo de simulación
+            </small>
+
+            <strong>
+              {{ escenario.get_tipo_display }}
+            </strong>
+
           </div>
+
+
+          <div class="esc-dato">
+
+            <small>
+              Estado
+            </small>
+
+            <strong>
+              {{ escenario.estado }}
+            </strong>
+
+          </div>
+
+
+          <div class="esc-dato">
+
+            <small>
+              Solicitudes activas
+            </small>
+
+            <strong>
+              {{ solicitudes_activas }}
+            </strong>
+
+          </div>
+
+
         </div>
 
-        <div class="esc-bloque">
-          <h2>Descripción</h2>
-          <p>{{ escenario.descripcion|default:"Sin descripción." }}</p>
-        </div>
+
+        {% if escenario.estado == 'Activo' and solicitudes_activas > 0 %}
+
+          <div class="alert alert-warning">
+
+            Este escenario tiene
+
+            <strong>
+              {{ solicitudes_activas }}
+            </strong>
+
+            solicitud(es) activa(s).
+
+            No podrá archivarse hasta que dichas solicitudes
+            estén completadas o canceladas.
+
+          </div>
+
+        {% endif %}
+
+
+        {% if escenario.estado == 'Archivado' %}
+
+          <div class="alert alert-secondary">
+
+            Este escenario está archivado.
+
+            Puedes reactivarlo para que vuelva a aparecer entre
+            los escenarios activos.
+
+          </div>
+
+        {% endif %}
+
 
         <div class="esc-bloque">
-          <h2>Guion</h2>
-          <div class="esc-guion esc-texto">{{ escenario.guion|default:"Sin guion." }}</div>
+
+          <h2>
+            Categorías
+          </h2>
+
+
+          <div class="esc-chips">
+
+            {% for c in escenario.categorias.all %}
+
+              <span class="esc-cat">
+                {{ c.nombre }}
+              </span>
+
+            {% empty %}
+
+              <span class="esc-cat vacia">
+                Sin categoría
+              </span>
+
+            {% endfor %}
+
+          </div>
+
         </div>
+
+
+        <div class="esc-bloque">
+
+          <h2>
+            Descripción
+          </h2>
+
+          <p>
+            {{ escenario.descripcion|default:"Sin descripción." }}
+          </p>
+
+        </div>
+
+
+        <div class="esc-bloque">
+
+          <h2>
+            Guion
+          </h2>
+
+          <div class="esc-guion esc-texto">
+            {{ escenario.guion|default:"Sin guion." }}
+          </div>
+
+        </div>
+
+
       </div>
+
+
     </main>
+
   </div>
+
 </div>
+
+
+{% if escenario.estado == 'Activo' %}
+
+<div
+  class="modal fade"
+  id="modalArchivar"
+  tabindex="-1"
+  aria-labelledby="modalArchivarLabel"
+  aria-hidden="true"
+>
+
+  <div class="modal-dialog modal-dialog-centered">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5
+          class="modal-title"
+          id="modalArchivarLabel"
+        >
+          Archivar escenario
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+
+      </div>
+
+
+      <div class="modal-body text-center p-4">
+
+        <div class="modal-icono modal-icono-archivar">
+          ⚠
+        </div>
+
+        <h5 class="mb-3">
+          ¿Deseas archivar este escenario?
+        </h5>
+
+        <p class="text-muted mb-0">
+
+          El escenario
+
+          <strong>
+            {{ escenario.nombre }}
+          </strong>
+
+          dejará de estar disponible entre los escenarios activos,
+          pero conservará todo su historial.
+
+        </p>
+
+
+        {% if solicitudes_activas > 0 %}
+
+          <div class="alert alert-warning mt-3 mb-0">
+
+            Este escenario tiene
+
+            <strong>
+              {{ solicitudes_activas }}
+            </strong>
+
+            solicitud(es) activa(s), por lo que actualmente
+            no puede archivarse.
+
+          </div>
+
+        {% endif %}
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-claro btn-pildora"
+          data-bs-dismiss="modal"
+        >
+          Cancelar
+        </button>
+
+
+        <form
+          method="post"
+          action="{% url 'simulactores:archivar_escenario' escenario.pk %}"
+        >
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="btn btn-archivar-confirmar btn-pildora"
+            {% if solicitudes_activas > 0 %}
+              disabled
+            {% endif %}
+          >
+            Sí, archivar
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endif %}
+
+
+{% if escenario.estado == 'Archivado' %}
+
+<div
+  class="modal fade"
+  id="modalReactivar"
+  tabindex="-1"
+  aria-labelledby="modalReactivarLabel"
+  aria-hidden="true"
+>
+
+  <div class="modal-dialog modal-dialog-centered">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5
+          class="modal-title"
+          id="modalReactivarLabel"
+        >
+          Reactivar escenario
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+
+      </div>
+
+
+      <div class="modal-body text-center p-4">
+
+        <div class="modal-icono modal-icono-reactivar">
+          ✓
+        </div>
+
+        <h5 class="mb-3">
+          ¿Deseas reactivar este escenario?
+        </h5>
+
+        <p class="text-muted mb-0">
+
+          <strong>
+            {{ escenario.nombre }}
+          </strong>
+
+          volverá a estar disponible entre los escenarios activos.
+
+        </p>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-claro btn-pildora"
+          data-bs-dismiss="modal"
+        >
+          Cancelar
+        </button>
+
+
+        <form
+          method="post"
+          action="{% url 'simulactores:reactivar_escenario' escenario.pk %}"
+        >
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="btn btn-reactivar-confirmar btn-pildora"
+          >
+            Sí, reactivar
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endif %}
+
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
 </body>
+
 </html>

@@ -1,88 +1,507 @@
 {% load static %}
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Simulactores - Biblioteca de escenarios</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
-  <link href="{% static 'simulactores/css/escenarios.css' %}" rel="stylesheet">
+
+  <title>
+    Simulactores - Biblioteca de escenarios
+  </title>
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="{% static 'simulactores/img/logo-simulactores.svg' %}"
+  >
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link
+    href="{% static 'simulactores/css/estilos.css' %}"
+    rel="stylesheet"
+  >
+
+  <link
+    href="{% static 'simulactores/css/escenarios.css' %}"
+    rel="stylesheet"
+  >
+
 </head>
+
+
 <body>
+
+
 <div class="d-flex">
+
+
   {% include 'simulactores/_sidebar.html' %}
+
+
   <div class="flex-fill panel-columna">
+
+
     <main class="panel-contenido">
+
+
       <header class="panel-encabezado">
+
         <div>
-          <h1>Biblioteca de escenarios</h1>
-          <p>Consulta, filtra y gestiona los escenarios disponibles.</p>
+
+          <h1>
+            Biblioteca de escenarios
+          </h1>
+
+          <p>
+            Consulta, filtra y gestiona los escenarios disponibles.
+          </p>
+
         </div>
-        <a href="{% url 'simulactores:crear_escenario' %}" class="btn btn-granate btn-pildora">Crear escenario</a>
+
+
+        <a
+          href="{% url 'simulactores:crear_escenario' %}"
+          class="btn btn-granate btn-pildora"
+        >
+          Crear escenario
+        </a>
+
       </header>
 
+
       {% if messages %}
+
         {% for message in messages %}
-          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+
+          <div
+            class="
+              alert
+
+              {% if message.tags == 'error' %}
+                alert-danger
+
+              {% elif message.tags == 'warning' %}
+                alert-warning
+
+              {% elif message.tags == 'info' %}
+                alert-info
+
+              {% else %}
+                alert-success
+
+              {% endif %}
+
+              py-2
+              mb-3
+            "
+            role="alert"
+          >
+
+            {{ message }}
+
+          </div>
+
         {% endfor %}
+
       {% endif %}
+
 
       {% if biblioteca_vacia %}
-      <section class="panel-tabla">
-        <div class="panel-vacio">
-          <strong>No hay escenarios registrados</strong>
-          <p>Crea el primero para empezar a armar la biblioteca.</p>
-          <a href="{% url 'simulactores:crear_escenario' %}" class="btn btn-granate btn-pildora">Crear el primer escenario</a>
-        </div>
-      </section>
-      {% else %}
-      <section class="panel-tabla">
-        <form method="get" class="barra-filtros">
-          <select name="categoria" class="form-select" style="max-width:15rem" aria-label="Filtrar por categoría">
-            <option value="">Todas las categorías</option>
-            {% for c in categorias %}<option value="{{ c.pk }}"{% if filtro_categoria == c.pk|stringformat:"s" %} selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
-          </select>
-          <select name="tipo" class="form-select" style="max-width:17rem" aria-label="Filtrar por tipo de simulación">
-            <option value="">Todos los tipos</option>
-            {% for valor, etiqueta in tipos %}<option value="{{ valor }}"{% if filtro_tipo == valor %} selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
-          </select>
-          <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
-          <a href="{% url 'simulactores:biblioteca_escenarios' %}" class="btn btn-claro btn-pildora">Limpiar</a>
-        </form>
 
-        {% if escenarios %}
-        <p class="esc-contador px-3 pt-3 mb-0">{{ escenarios|length }} escenario{{ escenarios|length|pluralize }}</p>
-        <div class="esc-grid p-3">
-          {% for e in escenarios %}
-          <article class="esc-card{% if e.estado == 'Archivado' %} archivado{% endif %}" data-cat="{{ e.categorias.all.0.nombre|slugify }}">
-            <div class="esc-card-top">
-              <span class="esc-tipo">{{ e.get_tipo_display }}</span>
-              <span class="esc-estado {% if e.estado == 'Activo' %}activo{% else %}archivado{% endif %}">{{ e.estado }}</span>
+
+        <section class="panel-tabla">
+
+          <div class="panel-vacio">
+
+            <strong>
+              No hay escenarios registrados
+            </strong>
+
+            <p>
+              Crea el primero para empezar a armar la biblioteca.
+            </p>
+
+            <a
+              href="{% url 'simulactores:crear_escenario' %}"
+              class="btn btn-granate btn-pildora"
+            >
+              Crear el primer escenario
+            </a>
+
+          </div>
+
+        </section>
+
+
+      {% else %}
+
+
+        <section class="panel-tabla">
+
+
+          <form
+            method="get"
+            class="barra-filtros"
+          >
+
+
+            <select
+              name="estado"
+              class="form-select"
+              style="max-width: 13rem"
+              aria-label="Filtrar por estado"
+            >
+
+              <option
+                value="Activo"
+                {% if filtro_estado == 'Activo' %}
+                  selected
+                {% endif %}
+              >
+                Activos
+              </option>
+
+
+              <option
+                value="Archivado"
+                {% if filtro_estado == 'Archivado' %}
+                  selected
+                {% endif %}
+              >
+                Archivados
+              </option>
+
+
+              <option
+                value="Todos"
+                {% if filtro_estado == 'Todos' %}
+                  selected
+                {% endif %}
+              >
+                Todos
+              </option>
+
+            </select>
+
+
+            <select
+              name="categoria"
+              class="form-select"
+              style="max-width: 15rem"
+              aria-label="Filtrar por categoría"
+            >
+
+              <option value="">
+                Todas las categorías
+              </option>
+
+
+              {% for c in categorias %}
+
+                <option
+                  value="{{ c.pk }}"
+
+                  {% if filtro_categoria == c.pk|stringformat:"s" %}
+                    selected
+                  {% endif %}
+                >
+
+                  {{ c.nombre }}
+
+                </option>
+
+              {% endfor %}
+
+            </select>
+
+
+            <select
+              name="tipo"
+              class="form-select"
+              style="max-width: 17rem"
+              aria-label="Filtrar por tipo de simulación"
+            >
+
+              <option value="">
+                Todos los tipos
+              </option>
+
+
+              {% for valor, etiqueta in tipos %}
+
+                <option
+                  value="{{ valor }}"
+
+                  {% if filtro_tipo == valor %}
+                    selected
+                  {% endif %}
+                >
+
+                  {{ etiqueta }}
+
+                </option>
+
+              {% endfor %}
+
+            </select>
+
+
+            <button
+              type="submit"
+              class="btn btn-granate btn-pildora"
+            >
+              Filtrar
+            </button>
+
+
+            <a
+              href="{% url 'simulactores:biblioteca_escenarios' %}"
+              class="btn btn-claro btn-pildora"
+            >
+              Limpiar
+            </a>
+
+
+          </form>
+
+
+          {% if escenarios %}
+
+
+            <p class="esc-contador px-3 pt-3 mb-0">
+
+              {{ escenarios|length }}
+
+              escenario{{ escenarios|length|pluralize }}
+
+            </p>
+
+
+            <div class="esc-grid p-3">
+
+
+              {% for e in escenarios %}
+
+
+                <article
+                  class="
+                    esc-card
+
+                    {% if e.estado == 'Archivado' %}
+                      archivado
+                    {% endif %}
+                  "
+                >
+
+
+                  <div class="esc-card-top">
+
+
+                    <span class="esc-tipo">
+
+                      {{ e.get_tipo_display }}
+
+                    </span>
+
+
+                    <span
+                      class="
+                        esc-estado
+
+                        {% if e.estado == 'Activo' %}
+                          activo
+                        {% else %}
+                          archivado
+                        {% endif %}
+                      "
+                    >
+
+                      {{ e.estado }}
+
+                    </span>
+
+
+                  </div>
+
+
+                  <h2 class="esc-nombre">
+
+                    {{ e.nombre }}
+
+                  </h2>
+
+
+                  <p class="esc-desc">
+
+                    {{ e.descripcion|default:"Sin descripción." }}
+
+                  </p>
+
+
+                  <div class="esc-cats">
+
+
+                    {% for c in e.categorias.all %}
+
+                      <span class="esc-cat">
+
+                        {{ c.nombre }}
+
+                      </span>
+
+
+                    {% empty %}
+
+                      <span class="esc-cat vacia">
+
+                        Sin categoría
+
+                      </span>
+
+                    {% endfor %}
+
+
+                  </div>
+
+
+                  <div class="esc-acciones">
+
+
+                    <a
+                      href="{% url 'simulactores:detalle_escenario' e.pk %}"
+                      class="btn btn-sm btn-claro btn-pildora"
+                    >
+                      Ver detalle
+                    </a>
+
+
+                    {% if e.estado == 'Activo' %}
+
+                      <a
+                        href="{% url 'simulactores:editar_escenario' e.pk %}"
+                        class="btn btn-sm btn-granate btn-pildora"
+                      >
+                        Editar
+                      </a>
+
+
+                    {% else %}
+
+
+                      <form
+                        method="post"
+                        action="{% url 'simulactores:reactivar_escenario' e.pk %}"
+                        class="d-inline"
+                      >
+
+                        {% csrf_token %}
+
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-success btn-pildora"
+                        >
+                          Reactivar
+                        </button>
+
+                      </form>
+
+
+                    {% endif %}
+
+
+                  </div>
+
+
+                </article>
+
+
+              {% endfor %}
+
+
             </div>
-            <h2 class="esc-nombre">{{ e.nombre }}</h2>
-            <p class="esc-desc">{{ e.descripcion|default:"Sin descripción." }}</p>
-            <div class="esc-cats">
-              {% for c in e.categorias.all %}<span class="esc-cat">{{ c.nombre }}</span>{% empty %}<span class="esc-cat vacia">Sin categoría</span>{% endfor %}
+
+
+          {% else %}
+
+
+            <div class="panel-vacio">
+
+
+              {% if filtro_estado == 'Archivado' %}
+
+                <strong>
+                  No hay escenarios archivados
+                </strong>
+
+                <p>
+                  Los escenarios archivados aparecerán aquí.
+                </p>
+
+
+              {% elif filtro_estado == 'Activo' %}
+
+                <strong>
+                  Ningún escenario activo coincide con los filtros
+                </strong>
+
+                <p>
+                  Prueba con otra categoría o tipo de simulación.
+                </p>
+
+
+              {% else %}
+
+                <strong>
+                  Ningún escenario coincide con el filtro
+                </strong>
+
+                <p>
+                  Prueba con otros filtros.
+                </p>
+
+              {% endif %}
+
+
+              <a
+                href="{% url 'simulactores:biblioteca_escenarios' %}"
+                class="btn btn-claro btn-pildora"
+              >
+                Limpiar filtros
+              </a>
+
+
             </div>
-            <div class="esc-acciones">
-              <a href="{% url 'simulactores:detalle_escenario' e.pk %}" class="btn btn-sm btn-claro btn-pildora">Ver detalle</a>
-              <a href="{% url 'simulactores:editar_escenario' e.pk %}" class="btn btn-sm btn-granate btn-pildora">Editar</a>
-            </div>
-          </article>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="panel-vacio">
-          <strong>Ningún escenario coincide con el filtro</strong>
-          <p>Prueba con otra categoría o tipo, o limpia los filtros.</p>
-        </div>
-        {% endif %}
-      </section>
+
+
+          {% endif %}
+
+
+        </section>
+
+
       {% endif %}
+
+
     </main>
+
+
   </div>
+
+
 </div>
+
+
 </body>
+
 </html>
