@@ -2,6 +2,14 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
+
+from .escenario_estado_views import (
+    archivar_escenario_view,
+    biblioteca_escenarios_hu24_view,
+    detalle_escenario_hu24_view,
+    reactivar_escenario_view,
+)
+
 from .password_reset_views import recuperar_contrasena_view
 
 
@@ -9,9 +17,25 @@ app_name = 'simulactores'
 
 
 urlpatterns = [
-    path('', views.home_view, name='home'),
+    # ------------------------------------------------------------
+    # Inicio
+    # ------------------------------------------------------------
 
-    path('registro/', views.registro_view, name='registro'),
+    path(
+        '',
+        views.home_view,
+        name='home'
+    ),
+
+    # ------------------------------------------------------------
+    # Registro
+    # ------------------------------------------------------------
+
+    path(
+        'registro/',
+        views.registro_view,
+        name='registro'
+    ),
 
     path(
         'confirmar/<str:token>/',
@@ -19,10 +43,26 @@ urlpatterns = [
         name='confirmar_correo'
     ),
 
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
+    # ------------------------------------------------------------
+    # Login / Logout
+    # ------------------------------------------------------------
 
+    path(
+        'login/',
+        views.login_view,
+        name='login'
+    ),
+
+    path(
+        'logout/',
+        views.logout_view,
+        name='logout'
+    ),
+
+    # ------------------------------------------------------------
     # HU-03 - Recuperación de contraseña
+    # ------------------------------------------------------------
+
     path(
         'recuperar-contrasena/',
         recuperar_contrasena_view,
@@ -54,7 +94,19 @@ urlpatterns = [
         name='password_reset_complete'
     ),
 
-    path('perfil/', views.perfil_view, name='perfil'),
+    # ------------------------------------------------------------
+    # Perfil
+    # ------------------------------------------------------------
+
+    path(
+        'perfil/',
+        views.perfil_view,
+        name='perfil'
+    ),
+
+    # ------------------------------------------------------------
+    # Usuarios
+    # ------------------------------------------------------------
 
     path(
         'usuarios/',
@@ -68,51 +120,100 @@ urlpatterns = [
         name='actualizar_rol'
     ),
 
+    # ------------------------------------------------------------
+    # Bitácora
+    # ------------------------------------------------------------
+
     path(
         'bitacora-actividad/',
         views.bitacora_actividad_view,
         name='bitacora_actividad'
     ),
 
-    path('dashboard/', views.dashboard_cliente_view, name='dashboard_cliente'),
-    path('dashboard/admin/', views.dashboard_administrador_view, name='dashboard_administrador'),
-    path('dashboard/actor/', views.dashboard_actor_view, name='dashboard_actor'),
+    # ------------------------------------------------------------
+    # Dashboards
+    # ------------------------------------------------------------
 
-    path('solicitudes/', views.mis_solicitudes_view, name='mis_solicitudes'),
-    path('solicitudes/nueva/', views.crear_solicitud_view, name='crear_solicitud'),
+    path(
+        'dashboard/',
+        views.dashboard_cliente_view,
+        name='dashboard_cliente'
+    ),
+
+    path(
+        'dashboard/admin/',
+        views.dashboard_administrador_view,
+        name='dashboard_administrador'
+    ),
+
+    path(
+        'dashboard/actor/',
+        views.dashboard_actor_view,
+        name='dashboard_actor'
+    ),
+
+    # ------------------------------------------------------------
+    # Solicitudes del cliente
+    # ------------------------------------------------------------
+
+    path(
+        'solicitudes/',
+        views.mis_solicitudes_view,
+        name='mis_solicitudes'
+    ),
+
+    path(
+        'solicitudes/nueva/',
+        views.crear_solicitud_view,
+        name='crear_solicitud'
+    ),
+
     path(
         'solicitudes/historial/',
         views.historial_solicitudes_view,
         name='historial_solicitudes'
     ),
+
     path(
         'solicitudes/<uuid:solicitud_uuid>/',
         views.detalle_solicitud_view,
         name='detalle_solicitud'
     ),
+
     path(
         'solicitudes/<uuid:solicitud_uuid>/aprobar/',
         views.aprobar_escenario_view,
         name='aprobar_escenario'
     ),
+
     path(
         'solicitudes/<uuid:solicitud_uuid>/rechazar/',
         views.rechazar_escenario_view,
         name='rechazar_escenario'
     ),
+
     path(
         'solicitudes/<uuid:solicitud_uuid>/cancelar/',
         views.cancelar_solicitud_view,
         name='cancelar_solicitud'
     ),
 
+    # ------------------------------------------------------------
+    # Gestión de solicitudes del administrador
+    # ------------------------------------------------------------
 
-    path('gestion-solicitudes/', views.solicitudes_admin_view, name='solicitudes_admin'),
+    path(
+        'gestion-solicitudes/',
+        views.solicitudes_admin_view,
+        name='solicitudes_admin'
+    ),
+
     path(
         'gestion-solicitudes/<uuid:solicitud_uuid>/',
         views.solicitud_admin_detalle_view,
         name='solicitud_admin_detalle'
     ),
+
     # HU-19
     path(
         'gestion-solicitudes/<uuid:solicitud_uuid>/estado/',
@@ -120,9 +221,46 @@ urlpatterns = [
         name='cambiar_estado_solicitud'
     ),
 
-    # Biblioteca de escenarios (HU-21; HU-22 a HU-25 la extienden)
-    path('escenarios/', views.biblioteca_escenarios_view, name='biblioteca_escenarios'),
-    path('escenarios/nuevo/', views.crear_escenario_view, name='crear_escenario'),
-    path('escenarios/<int:escenario_id>/', views.detalle_escenario_view, name='detalle_escenario'),
-    path('escenarios/<int:escenario_id>/editar/', views.editar_escenario_view, name='editar_escenario'),
+    # ------------------------------------------------------------
+    # Biblioteca de escenarios
+    # HU-21 / HU-22 / HU-23 / HU-24 / HU-25
+    # ------------------------------------------------------------
+
+    path(
+        'escenarios/',
+        biblioteca_escenarios_hu24_view,
+        name='biblioteca_escenarios'
+    ),
+
+    path(
+        'escenarios/nuevo/',
+        views.crear_escenario_view,
+        name='crear_escenario'
+    ),
+
+    path(
+        'escenarios/<int:escenario_id>/',
+        detalle_escenario_hu24_view,
+        name='detalle_escenario'
+    ),
+
+    path(
+        'escenarios/<int:escenario_id>/editar/',
+        views.editar_escenario_view,
+        name='editar_escenario'
+    ),
+
+    # HU-24 - Archivar escenario
+    path(
+        'escenarios/<int:escenario_id>/archivar/',
+        archivar_escenario_view,
+        name='archivar_escenario'
+    ),
+
+    # HU-24 - Reactivar escenario
+    path(
+        'escenarios/<int:escenario_id>/reactivar/',
+        reactivar_escenario_view,
+        name='reactivar_escenario'
+    ),
 ]
