@@ -662,53 +662,6 @@ def cambiar_estado_solicitud_view(request, solicitud_uuid):
 # --------------------------------------------------------------------------
 
 @modulo_requerido('biblioteca_escenarios')
-def biblioteca_escenarios_view(request):
-    """HU-23: listado completo de la biblioteca de escenarios.
-
-    Muestra nombre, categorías, tipo, estado (Activo/Archivado) y acceso al detalle.
-    Se puede filtrar por categoría y/o tipo de simulación (los filtros se combinan).
-    Si no hay ningún escenario en la biblioteca se muestra 'No hay escenarios registrados'
-    con acceso directo para crear el primero; si hay pero ninguno coincide con el
-    filtro, se muestra un mensaje distinto.
-    """
-    escenarios = Escenario.objects.prefetch_related('categorias').order_by('nombre')
-
-    filtro_categoria = request.GET.get('categoria', '').strip()
-    filtro_tipo = request.GET.get('tipo', '').strip()
-
-    if filtro_categoria.isdigit():
-        escenarios = escenarios.filter(categorias__pk=int(filtro_categoria))
-    else:
-        filtro_categoria = ''
-    if filtro_tipo in TipoSimulacion.values:
-        escenarios = escenarios.filter(tipo=filtro_tipo)
-    else:
-        filtro_tipo = ''
-
-    return render(request, 'simulactores/escenarios.html', {
-        'escenarios': escenarios,
-        'categorias': Categoria.objects.order_by('nombre'),
-        'tipos': TipoSimulacion.choices,
-        'filtro_categoria': filtro_categoria,
-        'filtro_tipo': filtro_tipo,
-        'hay_filtros': bool(filtro_categoria or filtro_tipo),
-        'biblioteca_vacia': not Escenario.objects.exists(),
-    })
-
-
-@modulo_requerido('biblioteca_escenarios')
-def detalle_escenario_view(request, escenario_id):
-    """HU-23: detalle de un escenario (acceso desde el listado)."""
-    escenario = get_object_or_404(Escenario.objects.prefetch_related('categorias'), pk=escenario_id)
-    return render(request, 'simulactores/escenario_detalle.html', {
-        'escenario': escenario,
-        'solicitudes_activas': escenario.solicitudes.exclude(
-            estado__in=[Solicitud.Estado.COMPLETADA, Solicitud.Estado.CANCELADA]
-        ).count(),
-    })
-
-
-@modulo_requerido('biblioteca_escenarios')
 def crear_escenario_view(request):
     """HU-21: el administrador crea un escenario nuevo.
 

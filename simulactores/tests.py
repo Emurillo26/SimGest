@@ -265,7 +265,7 @@ class HU23ListadoEscenariosTests(BaseSprint2):
     def test_filtra_por_tipo(self):
         r = self.client.get(self.url, {'tipo': 'Examen ECOE'})
         self.assertNotContains(r, 'Escenario base')
-        self.assertContains(r, 'Ningún escenario coincide')
+        self.assertContains(r, 'Ningún escenario activo coincide')
 
     def test_filtra_por_categoria(self):
         otra = Categoria.objects.create(nombre='Categoría vacía de prueba')
