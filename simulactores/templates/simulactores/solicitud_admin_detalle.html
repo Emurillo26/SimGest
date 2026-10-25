@@ -93,6 +93,30 @@
       </section>
 
       <section class="panel-tarjeta">
+        <h2>Actor asignado</h2>
+        {% with vigentes=solicitud.asignaciones.all %}
+          {% for a in vigentes %}
+            {% if a.estado == 'Pendiente' or a.estado == 'Confirmada' or a.estado == 'Rechazada' %}
+              <p class="mb-1"><strong>{{ a.actor.usuario.nombre }}</strong> — {{ a.get_estado_display }}{% if a.estado == 'Rechazada' and a.motivo_rechazo %}: {{ a.motivo_rechazo }}{% endif %}</p>
+            {% endif %}
+          {% empty %}
+            <p class="text-muted mb-1">Todavía no hay un actor asignado a esta solicitud.</p>
+          {% endfor %}
+        {% endwith %}
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          {% if puede_asignar_actor %}
+            <a href="{% url 'simulactores:asignar_actor' solicitud.uuid %}" class="btn btn-granate btn-pildora">Asignar actor</a>
+          {% endif %}
+          {% if puede_reasignar_actor %}
+            <a href="{% url 'simulactores:reasignar_actor' solicitud.uuid %}" class="btn btn-claro btn-pildora">Reasignar actor</a>
+          {% endif %}
+        </div>
+        {% if not puede_asignar_actor and not puede_reasignar_actor and solicitud.estado != 'Aprobada' %}
+          <p class="panel-sub mb-0 mt-2">Se puede asignar un actor cuando la solicitud está Aprobada.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel-tarjeta">
         <h2>Cambiar estado de la solicitud</h2>
         {% if transiciones_permitidas %}
           <form method="post" action="{% url 'simulactores:cambiar_estado_solicitud' solicitud.uuid %}" class="row g-3 align-items-end">

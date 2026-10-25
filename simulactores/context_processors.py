@@ -1,4 +1,4 @@
-from .models import MATRIZ_PERMISOS
+from .models import MATRIZ_PERMISOS, Notificacion
 from .navegacion import MENU_LATERAL, MODULOS_SIN_VISTA_TODAVIA, VISTA_A_SECCION
 
 
@@ -23,4 +23,5 @@ def menu_lateral(request):
     return {
         'menu_lateral': items,
         'panel_nombre': f'Panel {rol}' if rol else 'Panel',
+        'notificaciones_no_leidas': Notificacion.objects.filter(usuario=usuario, leido=False).count(),
     }

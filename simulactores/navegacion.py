@@ -61,6 +61,12 @@ MENU_LATERAL = [
 
     # --- Común a todos los roles ---
     {
+        'modulo': 'notificaciones',
+        'seccion': 'notificaciones',
+        'etiqueta': 'Notificaciones',
+        'url_name': 'simulactores:notificaciones',
+    },
+    {
         'modulo': 'perfil',
         'seccion': 'perfil',
         'etiqueta': 'Mi perfil',
@@ -75,6 +81,8 @@ VISTA_A_SECCION = {
     'simulactores:actualizar_rol': 'listado_usuarios',
     'simulactores:solicitudes_admin': 'gestion_solicitudes',
     'simulactores:solicitud_admin_detalle': 'gestion_solicitudes',
+    'simulactores:asignar_actor': 'gestion_solicitudes',
+    'simulactores:reasignar_actor': 'gestion_solicitudes',
     'simulactores:bitacora_actividad': 'bitacora_actividad',
     'simulactores:biblioteca_escenarios': 'biblioteca_escenarios',
     'simulactores:crear_escenario': 'biblioteca_escenarios',
@@ -91,6 +99,11 @@ VISTA_A_SECCION = {
     'simulactores:crear_solicitud': 'nueva_solicitud',
 
     'simulactores:dashboard_actor': 'dashboard_actor',
+
+    'simulactores:notificaciones': 'notificaciones',
+    'simulactores:abrir_notificacion': 'notificaciones',
+    'simulactores:marcar_notificacion_leida': 'notificaciones',
+    'simulactores:marcar_notificaciones_leidas': 'notificaciones',
 
     'simulactores:perfil': 'perfil',
 }

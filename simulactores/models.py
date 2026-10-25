@@ -98,10 +98,10 @@ MATRIZ_PERMISOS = {
     'Administrador': {
         'dashboard_administrador', 'listado_usuarios', 'actualizar_rol',
         'bitacora_actividad', 'perfil', 'biblioteca_escenarios',
-        'gestion_solicitudes',
+        'gestion_solicitudes', 'notificaciones',
     },
-    'Actor': {'perfil', 'dashboard_actor'},
-    'Cliente': {'perfil', 'dashboard_cliente'},
+    'Actor': {'perfil', 'dashboard_actor', 'notificaciones'},
+    'Cliente': {'perfil', 'dashboard_cliente', 'notificaciones'},
 }
 
 
@@ -406,6 +406,12 @@ class Notificacion(models.Model):
     mensaje = models.CharField(max_length=255)
     fecha = models.DateTimeField(auto_now_add=True)
     leido = models.BooleanField(default=False)
+    # HU-30: a dónde lleva la notificación al abrirla (ruta interna, opcional).
+    enlace = models.CharField(max_length=255, blank=True, default='')
+    # HU-30 escenario 3: resultado del correo. None = no se intentó enviar,
+    # True = enviado, False = falló (la notificación interna se conserva igual).
+    correo_enviado = models.BooleanField(null=True, blank=True, default=None)
+    error_correo = models.CharField(max_length=255, blank=True, default='')
 
     class Meta:
         db_table = 'notificacion'

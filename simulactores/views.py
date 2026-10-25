@@ -26,6 +26,7 @@ from .models import (
     Actor, Asignacion, Bitacora, Categoria, Escenario, HistorialAcceso, Rol,
     Solicitud, TipoSimulacion, Usuario,
 )
+from . import asignacion_service
 from .permisos import modulo_requerido
 from .utils import notificar, registrar_cambios
 
@@ -564,6 +565,15 @@ def solicitud_admin_detalle_view(request, solicitud_uuid):
         'solicitud': solicitud,
         'form': form,
         'sin_escenarios': sin_escenarios,
+        # HU-44 / HU-45: botones para asignar o reasignar actor
+        'puede_asignar_actor': (
+            solicitud.estado in asignacion_service.ESTADOS_PARA_ASIGNAR
+            and asignacion_service.cupos_libres(solicitud) > 0
+        ),
+        'puede_reasignar_actor': (
+            solicitud.estado in asignacion_service.ESTADOS_PARA_REASIGNAR
+            and asignacion_service.asignaciones_vigentes(solicitud).exists()
+        ),
         # HU-19: estados a los que se puede pasar desde el estado actual
         'estado_form': CambiarEstadoSolicitudForm(initial={'estado': solicitud.estado}),
         'transiciones_permitidas': [

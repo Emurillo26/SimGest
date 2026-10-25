@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulactores - {% if modo == 'reasignar' %}Reasignar actor{% else %}Asignar actor{% endif %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <style>
+    .actor-fila.no-disponible { opacity: .6; }
+    .actor-motivo { font-size: .8rem; color: #8a5a00; }
+    .chip-habilidad {
+      display: inline-block; margin: 0 4px 4px 0; padding: 2px 10px;
+      border-radius: 999px; background: #f1ecee; color: #4a2a30; font-size: .78rem;
+    }
+    .etiqueta-disp {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      font-size: .78rem; font-weight: 600;
+    }
+    .etiqueta-disp.si { background: #e3f4e8; color: #1d6b3a; }
+    .etiqueta-disp.no { background: #fff4d6; color: #8a5a00; }
+  </style>
+</head>
+<body>
+<div class="d-flex">
+  {% include 'simulactores/_sidebar.html' %}
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Solicitud {{ solicitud.numero_solicitud }}</a>
+          <h1>{% if modo == 'reasignar' %}Reasignar actor{% else %}Asignar actor{% endif %}</h1>
+        </div>
+      </header>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'info' %}alert-info{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <section class="panel-tarjeta">
+        <dl class="dl-detalle detalle-grid">
+          <div><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
+          <div><dt>Fecha del evento</dt><dd>{{ solicitud.fecha_evento }}</dd></div>
+          <div><dt>Horario</dt><dd>{{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</dd></div>
+          <div><dt>Intérpretes requeridos</dt><dd>{{ solicitud.cantidad_interpretes }}</dd></div>
+        </dl>
+      </section>
+
+      <form method="post" class="panel-tabla">
+        {% csrf_token %}
+
+        {% if modo == 'reasignar' %}
+          <div class="p-3 pb-0">
+            <label class="form-label fw-semibold" for="id_asignacion">Actor que será reemplazado</label>
+            <select name="asignacion" id="id_asignacion" class="form-select" required>
+              {% if vigentes|length > 1 %}<option value="">Selecciona…</option>{% endif %}
+              {% for a in vigentes %}
+                <option value="{{ a.pk }}" {% if asignacion_elegida == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.actor.usuario.nombre }} ({{ a.get_estado_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+
+        {% if filas and hay_disponibles %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr><th></th><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Disponibilidad</th></tr>
+              </thead>
+              <tbody>
+                {% for f in filas %}
+                <tr class="actor-fila {% if not f.disponible %}no-disponible{% endif %}">
+                  <td>
+                    <input type="radio" name="actor" value="{{ f.actor.pk }}" id="actor-{{ f.actor.pk }}"
+                           {% if not f.disponible %}disabled{% endif %}
+                           {% if actor_elegido == f.actor.pk|stringformat:"s" %}checked{% endif %}
+                           aria-label="Elegir a {{ f.actor.usuario.nombre }}">
+                  </td>
+                  <td><label for="actor-{{ f.actor.pk }}" class="fw-semibold mb-0">{{ f.actor.usuario.nombre }}</label></td>
+                  <td>{{ f.edad|default_if_none:"—" }}</td>
+                  <td>{{ f.actor.genero|default:"—" }}</td>
+                  <td>{% for h in f.habilidades %}<span class="chip-habilidad">{{ h }}</span>{% empty %}—{% endfor %}</td>
+                  <td>
+                    {% if f.disponible %}
+                      <span class="etiqueta-disp si">Disponible</span>
+                    {% else %}
+                      <span class="etiqueta-disp no">No disponible</span>
+                      <div class="actor-motivo">{{ f.motivo }}</div>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="p-3 d-flex gap-2 justify-content-end">
+            <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="btn btn-claro btn-pildora">Cancelar</a>
+            <button type="submit" class="btn btn-granate btn-pildora">{% if modo == 'reasignar' %}Confirmar reemplazo{% else %}Asignar actor{% endif %}</button>
+          </div>
+        {% else %}
+          <div class="panel-vacio">
+            <div class="panel-vacio-icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>
+            </div>
+            <strong>No hay actores disponibles</strong>
+            <p>Ningún actor puede cubrir el {{ solicitud.fecha_evento|date:"d/m/Y" }} de {{ solicitud.hora_inicio|time:"H:i" }} a {{ solicitud.hora_fin|time:"H:i" }}. Revisa fechas alternativas para esta simulación.</p>
+            <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="btn btn-claro btn-pildora mt-3">Volver a la solicitud</a>
+          </div>
+        {% endif %}
+      </form>
+    </main>
+  </div>
+</div>
+</body>
+</html>

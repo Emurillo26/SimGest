@@ -3,11 +3,19 @@ from django.contrib.auth import views as auth_views
 
 from . import views
 
+from .asignacion_views import asignar_actor_view, reasignar_actor_view
 from .escenario_estado_views import (
     archivar_escenario_view,
     biblioteca_escenarios_hu24_view,
     detalle_escenario_hu24_view,
     reactivar_escenario_view,
+)
+
+from .notificaciones_views import (
+    abrir_notificacion_view,
+    marcar_notificacion_leida_view,
+    marcar_todas_leidas_view,
+    notificaciones_view,
 )
 
 from .password_reset_views import recuperar_contrasena_view
@@ -221,6 +229,18 @@ urlpatterns = [
         name='cambiar_estado_solicitud'
     ),
 
+    # HU-44 y HU-45
+    path(
+        'gestion-solicitudes/<uuid:solicitud_uuid>/asignar-actor/',
+        asignar_actor_view,
+        name='asignar_actor'
+    ),
+    path(
+        'gestion-solicitudes/<uuid:solicitud_uuid>/reasignar-actor/',
+        reasignar_actor_view,
+        name='reasignar_actor'
+    ),
+
     # ------------------------------------------------------------
     # Biblioteca de escenarios
     # HU-21 / HU-22 / HU-23 / HU-24 / HU-25
@@ -262,5 +282,30 @@ urlpatterns = [
         'escenarios/<int:escenario_id>/reactivar/',
         reactivar_escenario_view,
         name='reactivar_escenario'
+    ),
+
+    # HU-30 - Notificaciones
+    path(
+        'notificaciones/',
+        notificaciones_view,
+        name='notificaciones'
+    ),
+
+    path(
+        'notificaciones/<int:notificacion_id>/abrir/',
+        abrir_notificacion_view,
+        name='abrir_notificacion'
+    ),
+
+    path(
+        'notificaciones/<int:notificacion_id>/leida/',
+        marcar_notificacion_leida_view,
+        name='marcar_notificacion_leida'
+    ),
+
+    path(
+        'notificaciones/marcar-todas/',
+        marcar_todas_leidas_view,
+        name='marcar_notificaciones_leidas'
     ),
 ]
