@@ -2,6 +2,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
+from .actor_views import dashboard_actor_view
 
 from .asignacion_views import asignar_actor_view, reasignar_actor_view
 from .escenario_estado_views import (
@@ -154,9 +155,10 @@ urlpatterns = [
         name='dashboard_administrador'
     ),
 
+    # HU-26 - Dashboard del actor
     path(
         'dashboard/actor/',
-        views.dashboard_actor_view,
+        dashboard_actor_view,
         name='dashboard_actor'
     ),
 
@@ -235,6 +237,7 @@ urlpatterns = [
         asignar_actor_view,
         name='asignar_actor'
     ),
+
     path(
         'gestion-solicitudes/<uuid:solicitud_uuid>/reasignar-actor/',
         reasignar_actor_view,
@@ -284,7 +287,10 @@ urlpatterns = [
         name='reactivar_escenario'
     ),
 
+    # ------------------------------------------------------------
     # HU-30 - Notificaciones
+    # ------------------------------------------------------------
+
     path(
         'notificaciones/',
         notificaciones_view,

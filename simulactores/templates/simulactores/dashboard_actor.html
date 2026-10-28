@@ -4,101 +4,255 @@
 <head>
   <meta charset="UTF-8">
   <title>Simulactores - Mi panel</title>
-  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="{% static 'simulactores/img/logo-simulactores.svg' %}"
+  >
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link
+    href="{% static 'simulactores/css/estilos.css' %}"
+    rel="stylesheet"
+  >
 </head>
+
 <body>
+
 <div class="d-flex">
+
   {% include 'simulactores/_sidebar.html' %}
+
   <div class="flex-fill panel-columna">
+
     <main class="panel-contenido">
 
       <!-- Bienvenida -->
       <section class="panel-bienvenida">
+
         <div class="panel-bienvenida-texto">
-          <h1>{% if request.user.nombre %}Hola, {{ request.user.nombre.split.0 }}{% else %}Hola de nuevo{% endif %}</h1>
+
+          <h1>
+            {% if request.user.nombre %}
+              Hola, {{ request.user.nombre.split.0 }}
+            {% else %}
+              Hola de nuevo
+            {% endif %}
+          </h1>
+
           <p>
             {% if not actor %}
               Tu perfil de actor todavía no está completo.
-            {% elif resumen.pendientes %}
-              Tienes {{ resumen.pendientes }} asignaci{{ resumen.pendientes|pluralize:"ón,ones" }} pendiente{{ resumen.pendientes|pluralize }} de respuesta.
+            {% elif resumen.total %}
+              Tienes {{ resumen.total }}
+              simulación{{ resumen.total|pluralize:"es" }}
+              próxima{{ resumen.total|pluralize }}.
             {% else %}
-              No tienes asignaciones pendientes por ahora.
+              No tienes simulaciones programadas próximamente.
             {% endif %}
           </p>
+
         </div>
+
       </section>
+
 
       {% if not actor %}
 
         <div class="alert alert-info mb-0">
-          Todavía no tienes un perfil de Actor completo (habilidades, tarifa, etc.).
-          Contacta a un administrador para que lo configure.
+          Todavía no tienes un perfil de Actor completo.
+          Contacta a un administrador para que configure correctamente tu perfil.
         </div>
 
       {% else %}
 
         <!-- Resumen -->
         <section class="panel-resumen">
+
           <article class="panel-tarjeta panel-tarjeta-ancha">
-            <h2>Mis asignaciones</h2>
+
+            <h2>Próximas simulaciones</h2>
+
             <div class="panel-stats">
+
               <div class="panel-stat">
-                <div class="panel-numero">{{ resumen.total }}</div>
-                <div class="panel-etiqueta">Totales</div>
+                <div class="panel-numero">
+                  {{ resumen.total }}
+                </div>
+
+                <div class="panel-etiqueta">
+                  Próximas
+                </div>
               </div>
+
               <div class="panel-stat">
-                <div class="panel-numero num-pe">{{ resumen.pendientes }}</div>
-                <div class="panel-etiqueta">Pendientes</div>
+                <div class="panel-numero num-pe">
+                  {{ resumen.pendientes }}
+                </div>
+
+                <div class="panel-etiqueta">
+                  Pendientes
+                </div>
               </div>
+
               <div class="panel-stat">
-                <div class="panel-numero num-ok">{{ resumen.confirmadas }}</div>
-                <div class="panel-etiqueta">Confirmadas</div>
+                <div class="panel-numero num-ok">
+                  {{ resumen.confirmadas }}
+                </div>
+
+                <div class="panel-etiqueta">
+                  Confirmadas
+                </div>
               </div>
+
             </div>
+
           </article>
+
         </section>
 
-        <!-- Asignaciones -->
+
+        <!-- Tabla de simulaciones -->
         <section class="panel-tabla">
+
           <div class="panel-tabla-cabecera">
-            <h2>Asignaciones</h2>
+
+            <div>
+              <h2>Mis próximas simulaciones</h2>
+
+              <p class="text-muted mb-0">
+                Consulta rápidamente la fecha,
+                el horario y el estado de tus próximos eventos.
+              </p>
+            </div>
+
           </div>
 
+
           {% if asignaciones %}
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr><th>Solicitud</th><th>Estado de la asignación</th><th>Tarifa aplicada</th></tr>
-              </thead>
-              <tbody>
-                {% for asignacion in asignaciones %}
-                <tr>
-                  <td class="fw-semibold">{{ asignacion.solicitud.numero_solicitud }}</td>
-                  <td>{% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}</td>
-                  <td>{{ asignacion.tarifa_aplicada|default:"—" }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div class="panel-vacio">
-            <div class="panel-vacio-icono" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+
+            <div class="table-responsive">
+
+              <table class="table align-middle">
+
+                <thead>
+                  <tr>
+                    <th>Solicitud</th>
+                    <th>Fecha</th>
+                    <th>Horario</th>
+                    <th>Escenario</th>
+                    <th>Estado de la simulación</th>
+                    <th>Estado de mi asignación</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {% for asignacion in asignaciones %}
+
+                    <tr>
+
+                      <td class="fw-semibold">
+                        {{ asignacion.solicitud.numero_solicitud }}
+                      </td>
+
+                      <td>
+                        {{ asignacion.solicitud.fecha_evento|date:"d/m/Y" }}
+                      </td>
+
+                      <td>
+                        {{ asignacion.solicitud.hora_inicio|time:"H:i" }}
+                        -
+                        {{ asignacion.solicitud.hora_fin|time:"H:i" }}
+                      </td>
+
+                      <td>
+                        {% if asignacion.solicitud.escenario %}
+                          {{ asignacion.solicitud.escenario.nombre }}
+                        {% else %}
+                          <span class="text-muted">
+                            Por definir
+                          </span>
+                        {% endif %}
+                      </td>
+
+                      <td>
+                        {% include 'simulactores/_estado_badge.html' with estado=asignacion.solicitud.estado %}
+                      </td>
+
+                      <td>
+                        {% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}
+                      </td>
+
+                    </tr>
+
+                  {% endfor %}
+
+                </tbody>
+
+              </table>
+
             </div>
-            <strong>Todavía no tienes asignaciones</strong>
-            <p>Cuando te asignen a una simulación, aparecerá aquí.</p>
-          </div>
+
+          {% else %}
+
+            <div class="panel-vacio">
+
+              <div
+                class="panel-vacio-icono"
+                aria-hidden="true"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect
+                    x="5"
+                    y="4"
+                    width="14"
+                    height="17"
+                    rx="2.5"
+                  />
+                  <path d="M9 9h6M9 13h6M9 17h3"/>
+                </svg>
+              </div>
+
+              <strong>
+                No tienes simulaciones programadas
+              </strong>
+
+              <p>
+                Cuando tengas una próxima simulación asignada,
+                aparecerá aquí con su fecha, horario y estado.
+              </p>
+
+            </div>
+
           {% endif %}
+
         </section>
 
       {% endif %}
 
     </main>
+
   </div>
+
 </div>
+
 </body>
 </html>
