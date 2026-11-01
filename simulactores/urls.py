@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .actor_views import dashboard_actor_view, detalle_simulacion_actor_view
 from .disponibilidad_views import (
+    consulta_disponibilidad_view,
     editar_disponibilidad_view,
     eliminar_disponibilidad_view,
     mi_disponibilidad_view,
@@ -191,6 +192,13 @@ urlpatterns = [
         'disponibilidad/<int:bloque_id>/eliminar/',
         eliminar_disponibilidad_view,
         name='eliminar_disponibilidad'
+    ),
+
+    # #38 - Consulta de disponibilidad (administrador)
+    path(
+        'disponibilidad-actores/',
+        consulta_disponibilidad_view,
+        name='consulta_disponibilidad'
     ),
 
     # ------------------------------------------------------------

@@ -1,5 +1,5 @@
 """
-Pruebas de #37 (bloquear fechas) y #40 (editar o eliminar bloques de disponibilidad).
+Pruebas de #37 (bloquear fechas), #40 (editar o eliminar bloques) y #38 (consulta del admin).
 
 Cómo correrlas:  python manage.py test simulactores.tests_disponibilidad
 """
@@ -129,3 +129,56 @@ class Item40EditarEliminarBloqueTests(BaseDisponibilidad):
         self.assertEqual(self.client.get(self.url_editar(ajeno)).status_code, 404)
         self.assertEqual(self.client.post(self.url_eliminar(ajeno)).status_code, 404)
         self.assertTrue(Disponibilidad.objects.filter(pk=ajeno.pk).exists())
+
+
+class Item38ConsultaDisponibilidadTests(BaseDisponibilidad):
+
+    url = reverse('simulactores:consulta_disponibilidad')
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.admin)
+
+    def consultar(self, inicio='', fin=''):
+        return self.client.get(self.url, {'fecha': self.fecha.isoformat(),
+                                          'hora_inicio': inicio, 'hora_fin': fin})
+
+    def test_consulta_exitosa_muestra_actores_disponibles(self):
+        self.bloque(inicio=8, fin=12)
+        respuesta = self.consultar('09:00', '11:00')
+        self.assertContains(respuesta, 'Actor Disp')
+        self.assertNotContains(respuesta, 'No hay actores disponibles para esta fecha')
+
+    def test_sin_actores_disponibles_muestra_mensaje(self):
+        respuesta = self.consultar()
+        self.assertContains(respuesta, 'No hay actores disponibles para esta fecha')
+
+    def test_horario_fuera_del_bloque_no_aparece(self):
+        self.bloque(inicio=8, fin=12)
+        respuesta = self.consultar('11:00', '13:00')
+        self.assertContains(respuesta, 'No hay actores disponibles para esta fecha')
+
+    def test_actor_con_bloqueo_o_simulacion_no_aparece_en_ese_horario(self):
+        self.bloque(inicio=8, fin=18)
+        self.bloque(inicio=14, fin=16, tipo='Bloqueado')
+        self.simulacion_asignada(hora=9)
+        self.assertContains(self.consultar('09:00', '10:00'), 'No hay actores disponibles')
+        self.assertContains(self.consultar('14:00', '15:00'), 'No hay actores disponibles')
+        self.assertContains(self.consultar('11:00', '12:00'), 'Actor Disp')
+
+    def test_sin_horario_muestra_compromisos_del_dia(self):
+        self.bloque(inicio=8, fin=18)
+        asignacion = self.simulacion_asignada(hora=9)
+        respuesta = self.consultar()
+        self.assertContains(respuesta, 'Actor Disp')
+        self.assertContains(respuesta, asignacion.solicitud.numero_solicitud)
+
+    def test_actor_inactivo_no_aparece(self):
+        self.bloque(inicio=8, fin=12)
+        self.actor.estado = 'Inactivo'
+        self.actor.save()
+        self.assertContains(self.consultar(), 'No hay actores disponibles')
+
+    def test_solo_el_administrador_entra(self):
+        self.client.force_login(self.usuario_actor)
+        self.assertEqual(self.client.get(self.url).status_code, 403)

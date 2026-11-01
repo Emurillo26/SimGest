@@ -1,4 +1,4 @@
-"""Disponibilidad del actor: bloquear fechas (#37) y editar o eliminar bloques (#40)."""
+"""Disponibilidad: bloquear fechas (#37), editar o eliminar bloques (#40) y consulta del admin (#38)."""
 from django import forms
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -184,3 +184,103 @@ def eliminar_disponibilidad_view(request, bloque_id):
         messages.success(request, 'Bloque eliminado.')
 
     return redirect('simulactores:mi_disponibilidad')
+
+
+# --- #38: consulta de disponibilidad del administrador ----------------------
+
+MENSAJE_SIN_ACTORES_FECHA = 'No hay actores disponibles para esta fecha'
+
+
+class ConsultaDisponibilidadForm(forms.Form):
+    fecha = forms.DateField(
+        label='Fecha',
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+    )
+    hora_inicio = forms.TimeField(
+        label='Desde (opcional)', required=False,
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}, format='%H:%M'),
+    )
+    hora_fin = forms.TimeField(
+        label='Hasta (opcional)', required=False,
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}, format='%H:%M'),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        inicio = cleaned.get('hora_inicio')
+        fin = cleaned.get('hora_fin')
+        if bool(inicio) != bool(fin):
+            raise forms.ValidationError('Indica las dos horas o deja ambas vacías.')
+        if inicio and fin and fin <= inicio:
+            self.add_error('hora_fin', 'La hora final debe ser posterior a la hora inicial.')
+        return cleaned
+
+
+def actores_disponibles(fecha, hora_inicio=None, hora_fin=None):
+    """Actores activos con disponibilidad registrada para la fecha.
+
+    Con horario: solo los que tienen un bloque disponible que lo cubre completo,
+    sin bloqueos ni simulaciones que se crucen.
+    Sin horario: todos los que registraron disponibilidad ese día, con sus
+    compromisos (bloqueos y simulaciones) para que el administrador los vea.
+    """
+    bloques = (
+        Disponibilidad.objects
+        .filter(
+            fecha=fecha,
+            tipo_bloque=Disponibilidad.TipoBloque.DISPONIBLE,
+            actor__estado=Actor.EstadoActor.ACTIVO,
+            actor__usuario__estado='Activo',
+        )
+        .select_related('actor__usuario')
+        .order_by('actor__usuario__nombre', 'hora_inicio')
+    )
+    if hora_inicio and hora_fin:
+        bloques = bloques.filter(hora_inicio__lte=hora_inicio, hora_fin__gte=hora_fin)
+
+    filas = {}
+    for bloque in bloques:
+        actor = bloque.actor
+        if actor.pk not in filas:
+            filas[actor.pk] = {'actor': actor, 'bloques': [], 'bloqueos': [], 'simulaciones': []}
+        filas[actor.pk]['bloques'].append(bloque)
+
+    for actor_id, fila in list(filas.items()):
+        actor = fila['actor']
+        if hora_inicio and hora_fin:
+            inicio, fin = hora_inicio, hora_fin
+        else:
+            inicio = min(b.hora_inicio for b in fila['bloques'])
+            fin = max(b.hora_fin for b in fila['bloques'])
+
+        fila['bloqueos'] = list(Disponibilidad.objects.filter(
+            actor=actor, fecha=fecha, tipo_bloque=Disponibilidad.TipoBloque.BLOQUEADO,
+            hora_inicio__lt=fin, hora_fin__gt=inicio,
+        ).order_by('hora_inicio'))
+        fila['simulaciones'] = list(simulaciones_en_rango(actor, fecha, inicio, fin)
+                                    .order_by('solicitud__hora_inicio'))
+
+        if hora_inicio and hora_fin and (fila['bloqueos'] or fila['simulaciones']):
+            del filas[actor_id]
+
+    return list(filas.values())
+
+
+@modulo_requerido('disponibilidad_actores')
+def consulta_disponibilidad_view(request):
+    """#38: el administrador consulta qué actores están disponibles en una fecha y horario."""
+    form = ConsultaDisponibilidadForm(request.GET or None)
+    filas = None
+
+    if form.is_bound and form.is_valid():
+        filas = actores_disponibles(
+            form.cleaned_data['fecha'],
+            form.cleaned_data.get('hora_inicio'),
+            form.cleaned_data.get('hora_fin'),
+        )
+
+    return render(request, 'simulactores/consulta_disponibilidad.html', {
+        'form': form,
+        'filas': filas,
+        'mensaje_sin_actores': MENSAJE_SIN_ACTORES_FECHA,
+    })
