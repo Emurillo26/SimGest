@@ -98,9 +98,9 @@ MATRIZ_PERMISOS = {
     'Administrador': {
         'dashboard_administrador', 'listado_usuarios', 'actualizar_rol',
         'bitacora_actividad', 'perfil', 'biblioteca_escenarios',
-        'gestion_solicitudes', 'notificaciones',
+        'gestion_solicitudes', 'disponibilidad_actores', 'notificaciones',
     },
-    'Actor': {'perfil', 'dashboard_actor', 'notificaciones'},
+    'Actor': {'perfil', 'dashboard_actor', 'disponibilidad_actor', 'notificaciones'},
     'Cliente': {'perfil', 'dashboard_cliente', 'notificaciones'},
 }
 
@@ -279,6 +279,7 @@ class Solicitud(models.Model):
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
     observaciones = models.TextField(null=True, blank=True)
+    ubicacion = models.CharField(max_length=255, null=True, blank=True)
     motivo_cancelacion = models.TextField(null=True, blank=True)
     comentario_rechazo = models.TextField(null=True, blank=True)
     # HU-14 escenario 3: plazo para aprobar/rechazar el escenario propuesto.

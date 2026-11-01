@@ -56,6 +56,11 @@
             {{ form.cantidad_interpretes }}
             {% for error in form.cantidad_interpretes.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
           </div>
+                    <div class="mb-3">
+            <label class="form-label">{{ form.ubicacion.label }}</label>
+            {{ form.ubicacion }}
+            {% for error in form.ubicacion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+          </div>
           <div class="mb-4">
             <label class="form-label">{{ form.observaciones.label }}</label>
             {{ form.observaciones }}

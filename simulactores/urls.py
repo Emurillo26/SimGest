@@ -2,6 +2,13 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
+from .actor_views import dashboard_actor_view, detalle_simulacion_actor_view
+from .disponibilidad_views import (
+    consulta_disponibilidad_view,
+    editar_disponibilidad_view,
+    eliminar_disponibilidad_view,
+    mi_disponibilidad_view,
+)
 
 from .asignacion_views import asignar_actor_view, reasignar_actor_view
 from .escenario_estado_views import (
@@ -154,10 +161,44 @@ urlpatterns = [
         name='dashboard_administrador'
     ),
 
+    # HU-26 - Dashboard del actor
     path(
         'dashboard/actor/',
-        views.dashboard_actor_view,
+        dashboard_actor_view,
         name='dashboard_actor'
+    ),
+
+    # HU-28 - Detalle de simulación del actor
+    path(
+        'dashboard/actor/simulaciones/<uuid:solicitud_uuid>/',
+        detalle_simulacion_actor_view,
+        name='detalle_simulacion_actor'
+    ),
+
+    # #37 y #40 - Disponibilidad del actor
+    path(
+        'disponibilidad/',
+        mi_disponibilidad_view,
+        name='mi_disponibilidad'
+    ),
+
+    path(
+        'disponibilidad/<int:bloque_id>/editar/',
+        editar_disponibilidad_view,
+        name='editar_disponibilidad'
+    ),
+
+    path(
+        'disponibilidad/<int:bloque_id>/eliminar/',
+        eliminar_disponibilidad_view,
+        name='eliminar_disponibilidad'
+    ),
+
+    # #38 - Consulta de disponibilidad (administrador)
+    path(
+        'disponibilidad-actores/',
+        consulta_disponibilidad_view,
+        name='consulta_disponibilidad'
     ),
 
     # ------------------------------------------------------------
@@ -235,6 +276,7 @@ urlpatterns = [
         asignar_actor_view,
         name='asignar_actor'
     ),
+
     path(
         'gestion-solicitudes/<uuid:solicitud_uuid>/reasignar-actor/',
         reasignar_actor_view,
@@ -284,7 +326,10 @@ urlpatterns = [
         name='reactivar_escenario'
     ),
 
+    # ------------------------------------------------------------
     # HU-30 - Notificaciones
+    # ------------------------------------------------------------
+
     path(
         'notificaciones/',
         notificaciones_view,

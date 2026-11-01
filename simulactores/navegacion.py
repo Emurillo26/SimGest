@@ -19,6 +19,12 @@ MENU_LATERAL = [
         'url_name': 'simulactores:solicitudes_admin',
     },
     {
+        'modulo': 'disponibilidad_actores',
+        'seccion': 'disponibilidad_actores',
+        'etiqueta': 'Disponibilidad de actores',
+        'url_name': 'simulactores:consulta_disponibilidad',
+    },
+    {
         'modulo': 'bitacora_actividad',
         'seccion': 'bitacora_actividad',
         'etiqueta': 'Bitácora de actividad',
@@ -57,6 +63,12 @@ MENU_LATERAL = [
         'seccion': 'dashboard_actor',
         'etiqueta': 'Mi panel',
         'url_name': 'simulactores:dashboard_actor',
+    },
+    {
+        'modulo': 'disponibilidad_actor',
+        'seccion': 'disponibilidad_actor',
+        'etiqueta': 'Mi disponibilidad',
+        'url_name': 'simulactores:mi_disponibilidad',
     },
 
     # --- Común a todos los roles ---
@@ -99,6 +111,11 @@ VISTA_A_SECCION = {
     'simulactores:crear_solicitud': 'nueva_solicitud',
 
     'simulactores:dashboard_actor': 'dashboard_actor',
+        'simulactores:detalle_simulacion_actor': 'dashboard_actor',
+    'simulactores:mi_disponibilidad': 'disponibilidad_actor',
+    'simulactores:consulta_disponibilidad': 'disponibilidad_actores',
+    'simulactores:editar_disponibilidad': 'disponibilidad_actor',
+    'simulactores:eliminar_disponibilidad': 'disponibilidad_actor',
 
     'simulactores:notificaciones': 'notificaciones',
     'simulactores:abrir_notificacion': 'notificaciones',
