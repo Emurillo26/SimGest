@@ -100,7 +100,7 @@ MATRIZ_PERMISOS = {
         'bitacora_actividad', 'perfil', 'biblioteca_escenarios',
         'gestion_solicitudes', 'notificaciones',
     },
-    'Actor': {'perfil', 'dashboard_actor', 'notificaciones'},
+    'Actor': {'perfil', 'dashboard_actor', 'disponibilidad_actor', 'notificaciones'},
     'Cliente': {'perfil', 'dashboard_cliente', 'notificaciones'},
 }
 

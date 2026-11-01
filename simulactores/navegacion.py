@@ -58,6 +58,12 @@ MENU_LATERAL = [
         'etiqueta': 'Mi panel',
         'url_name': 'simulactores:dashboard_actor',
     },
+    {
+        'modulo': 'disponibilidad_actor',
+        'seccion': 'disponibilidad_actor',
+        'etiqueta': 'Mi disponibilidad',
+        'url_name': 'simulactores:mi_disponibilidad',
+    },
 
     # --- Común a todos los roles ---
     {
@@ -100,6 +106,9 @@ VISTA_A_SECCION = {
 
     'simulactores:dashboard_actor': 'dashboard_actor',
         'simulactores:detalle_simulacion_actor': 'dashboard_actor',
+    'simulactores:mi_disponibilidad': 'disponibilidad_actor',
+    'simulactores:editar_disponibilidad': 'disponibilidad_actor',
+    'simulactores:eliminar_disponibilidad': 'disponibilidad_actor',
 
     'simulactores:notificaciones': 'notificaciones',
     'simulactores:abrir_notificacion': 'notificaciones',

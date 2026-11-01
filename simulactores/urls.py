@@ -3,6 +3,11 @@ from django.contrib.auth import views as auth_views
 
 from . import views
 from .actor_views import dashboard_actor_view, detalle_simulacion_actor_view
+from .disponibilidad_views import (
+    editar_disponibilidad_view,
+    eliminar_disponibilidad_view,
+    mi_disponibilidad_view,
+)
 
 from .asignacion_views import asignar_actor_view, reasignar_actor_view
 from .escenario_estado_views import (
@@ -167,6 +172,25 @@ urlpatterns = [
         'dashboard/actor/simulaciones/<uuid:solicitud_uuid>/',
         detalle_simulacion_actor_view,
         name='detalle_simulacion_actor'
+    ),
+
+    # #37 y #40 - Disponibilidad del actor
+    path(
+        'disponibilidad/',
+        mi_disponibilidad_view,
+        name='mi_disponibilidad'
+    ),
+
+    path(
+        'disponibilidad/<int:bloque_id>/editar/',
+        editar_disponibilidad_view,
+        name='editar_disponibilidad'
+    ),
+
+    path(
+        'disponibilidad/<int:bloque_id>/eliminar/',
+        eliminar_disponibilidad_view,
+        name='eliminar_disponibilidad'
     ),
 
     # ------------------------------------------------------------
