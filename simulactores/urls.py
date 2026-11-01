@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
-from .actor_views import dashboard_actor_view
+from .actor_views import dashboard_actor_view, detalle_simulacion_actor_view
 
 from .asignacion_views import asignar_actor_view, reasignar_actor_view
 from .escenario_estado_views import (
@@ -160,6 +160,13 @@ urlpatterns = [
         'dashboard/actor/',
         dashboard_actor_view,
         name='dashboard_actor'
+    ),
+
+    # HU-28 - Detalle de simulación del actor
+    path(
+        'dashboard/actor/simulaciones/<uuid:solicitud_uuid>/',
+        detalle_simulacion_actor_view,
+        name='detalle_simulacion_actor'
     ),
 
     # ------------------------------------------------------------

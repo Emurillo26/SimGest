@@ -89,3 +89,37 @@ def dashboard_actor_view(request):
             'resumen': resumen,
         }
     )
+
+
+ESTADOS_CON_ACCESO_AL_DETALLE = [
+    Asignacion.Estado.PENDIENTE,
+    Asignacion.Estado.CONFIRMADA,
+    Asignacion.Estado.EJECUTADA,
+]
+
+
+@modulo_requerido('dashboard_actor')
+def detalle_simulacion_actor_view(request, solicitud_uuid):
+    """HU-28: detalle de una simulación asignada al actor."""
+
+    asignacion = (
+        Asignacion.objects
+        .filter(
+            solicitud__uuid=solicitud_uuid,
+            actor__usuario=request.user,
+            estado__in=ESTADOS_CON_ACCESO_AL_DETALLE,
+        )
+        .select_related('solicitud', 'solicitud__escenario')
+        .first()
+    )
+
+    if asignacion is None:
+        return render(request, 'simulactores/simulacion_no_autorizada.html', status=403)
+
+    solicitud = asignacion.solicitud
+
+    return render(request, 'simulactores/detalle_simulacion_actor.html', {
+        'asignacion': asignacion,
+        'solicitud': solicitud,
+        'escenario': solicitud.escenario,
+    })

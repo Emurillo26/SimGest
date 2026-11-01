@@ -249,6 +249,7 @@ class SolicitudForm(forms.ModelForm):
             'hora_inicio',
             'hora_fin',
             'cantidad_interpretes',
+            'ubicacion',
             'observaciones',
         ]
 
@@ -282,6 +283,12 @@ class SolicitudForm(forms.ModelForm):
                     'min': 1
                 }
             ),
+                        'ubicacion': forms.TextInput(
+                attrs={
+                    'class': 'form-control',
+                    'placeholder': 'Ej.: Hospital México, Sala de simulación 2'
+                }
+            ),
             'observaciones': forms.Textarea(
                 attrs={
                     'class': 'form-control',
@@ -296,6 +303,7 @@ class SolicitudForm(forms.ModelForm):
             'hora_inicio': 'Hora de inicio',
             'hora_fin': 'Hora de fin',
             'cantidad_interpretes': 'Cantidad de intérpretes',
+            'ubicacion': 'Ubicación del evento',
             'observaciones': 'Observaciones (opcional)',
         }
 

@@ -279,6 +279,7 @@ class Solicitud(models.Model):
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
     observaciones = models.TextField(null=True, blank=True)
+    ubicacion = models.CharField(max_length=255, null=True, blank=True)
     motivo_cancelacion = models.TextField(null=True, blank=True)
     comentario_rechazo = models.TextField(null=True, blank=True)
     # HU-14 escenario 3: plazo para aprobar/rechazar el escenario propuesto.

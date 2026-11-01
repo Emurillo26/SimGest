@@ -99,6 +99,7 @@ VISTA_A_SECCION = {
     'simulactores:crear_solicitud': 'nueva_solicitud',
 
     'simulactores:dashboard_actor': 'dashboard_actor',
+        'simulactores:detalle_simulacion_actor': 'dashboard_actor',
 
     'simulactores:notificaciones': 'notificaciones',
     'simulactores:abrir_notificacion': 'notificaciones',

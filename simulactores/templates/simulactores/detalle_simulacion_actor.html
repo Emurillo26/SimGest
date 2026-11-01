@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulactores - Detalle de simulación</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="d-flex">
+  {% include 'simulactores/_sidebar.html' %}
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <a href="{% url 'simulactores:dashboard_actor' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mi panel</a>
+          <h1>Simulación {{ solicitud.numero_solicitud }} {% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</h1>
+        </div>
+      </header>
+
+      <section class="panel-tarjeta">
+        <h2>Datos del evento</h2>
+        <dl class="dl-detalle detalle-grid">
+          <div><dt>Fecha</dt><dd>{{ solicitud.fecha_evento|date:"d/m/Y" }}</dd></div>
+          <div><dt>Horario</dt><dd>{{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</dd></div>
+          <div><dt>Ubicación</dt><dd>{{ solicitud.ubicacion|default:"Por definir" }}</dd></div>
+          <div><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
+          <div><dt>Mi asignación</dt><dd>{% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}</dd></div>
+          <div class="detalle-ancho"><dt>Observaciones</dt><dd class="fw-normal">{{ solicitud.observaciones|default:"Sin observaciones" }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="panel-tarjeta">
+        <h2>Escenario y perfil a preparar</h2>
+        {% if escenario %}
+          <dl class="dl-detalle detalle-grid">
+            <div><dt>Escenario</dt><dd>{{ escenario.nombre }}</dd></div>
+            <div><dt>Tipo</dt><dd>{{ escenario.tipo }}</dd></div>
+            <div class="detalle-ancho"><dt>Descripción</dt><dd class="fw-normal">{{ escenario.descripcion|default:"—" }}</dd></div>
+            <div class="detalle-ancho"><dt>Perfil a preparar (guion)</dt><dd class="fw-normal">{{ escenario.guion|default:"El administrador aún no cargó el guion."|linebreaksbr }}</dd></div>
+          </dl>
+        {% else %}
+          <div class="alert alert-info mb-0">El escenario de esta simulación aún está por definir.</div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -153,6 +153,7 @@
                     <th>Escenario</th>
                     <th>Estado de la simulación</th>
                     <th>Estado de mi asignación</th>
+                                        <th></th>
                   </tr>
                 </thead>
 
@@ -193,7 +194,9 @@
                       <td>
                         {% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}
                       </td>
-
+                      <td class="text-end">
+                        <a href="{% url 'simulactores:detalle_simulacion_actor' asignacion.solicitud.uuid %}" class="btn btn-sm btn-ver">Ver detalle</a>
+                      </td>
                     </tr>
 
                   {% endfor %}
