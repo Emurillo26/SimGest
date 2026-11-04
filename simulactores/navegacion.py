@@ -65,6 +65,12 @@ MENU_LATERAL = [
         'url_name': 'simulactores:dashboard_actor',
     },
     {
+        'modulo': 'dashboard_actor',
+        'seccion': 'calendario_actor',
+        'etiqueta': 'Mi calendario',
+        'url_name': 'simulactores:calendario_actor',
+    },
+    {
         'modulo': 'disponibilidad_actor',
         'seccion': 'disponibilidad_actor',
         'etiqueta': 'Mi disponibilidad',
@@ -112,6 +118,7 @@ VISTA_A_SECCION = {
 
     'simulactores:dashboard_actor': 'dashboard_actor',
         'simulactores:detalle_simulacion_actor': 'dashboard_actor',
+    'simulactores:calendario_actor': 'calendario_actor',
     'simulactores:mi_disponibilidad': 'disponibilidad_actor',
     'simulactores:consulta_disponibilidad': 'disponibilidad_actores',
     'simulactores:editar_disponibilidad': 'disponibilidad_actor',

@@ -2,7 +2,11 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
-from .actor_views import dashboard_actor_view, detalle_simulacion_actor_view
+from .actor_views import (
+    calendario_actor_view,
+    dashboard_actor_view,
+    detalle_simulacion_actor_view,
+)
 from .disponibilidad_views import (
     consulta_disponibilidad_view,
     editar_disponibilidad_view,
@@ -166,6 +170,13 @@ urlpatterns = [
         'dashboard/actor/',
         dashboard_actor_view,
         name='dashboard_actor'
+    ),
+
+    # HU-27 - Calendario de simulaciones del actor
+    path(
+        'dashboard/actor/calendario/',
+        calendario_actor_view,
+        name='calendario_actor'
     ),
 
     # HU-28 - Detalle de simulación del actor
