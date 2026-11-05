@@ -25,6 +25,12 @@ MENU_LATERAL = [
         'url_name': 'simulactores:consulta_disponibilidad',
     },
     {
+        'modulo': 'pagos_actores',
+        'seccion': 'pagos_actores',
+        'etiqueta': 'Pagos a actores',
+        'url_name': 'simulactores:pagos_admin',
+    },
+    {
         'modulo': 'bitacora_actividad',
         'seccion': 'bitacora_actividad',
         'etiqueta': 'Bitácora de actividad',
@@ -101,6 +107,10 @@ VISTA_A_SECCION = {
     'simulactores:solicitud_admin_detalle': 'gestion_solicitudes',
     'simulactores:asignar_actor': 'gestion_solicitudes',
     'simulactores:reasignar_actor': 'gestion_solicitudes',
+    'simulactores:pagos_admin': 'pagos_actores',
+    'simulactores:registrar_pago': 'pagos_actores',
+    'simulactores:editar_pago': 'pagos_actores',
+    'simulactores:anular_pago': 'pagos_actores',
     'simulactores:bitacora_actividad': 'bitacora_actividad',
     'simulactores:biblioteca_escenarios': 'biblioteca_escenarios',
     'simulactores:crear_escenario': 'biblioteca_escenarios',

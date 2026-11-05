@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulactores - Pago a actor</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="d-flex">
+  {% include 'simulactores/_sidebar.html' %}
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <a href="{% url 'simulactores:pagos_admin' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Pagos</a>
+          <h1>{% if pago %}Modificar pago{% else %}Registrar pago{% endif %}</h1>
+          {% if pago %}
+            <p>{{ pago.actor.usuario.nombre }} · {{ pago.periodo_mes|stringformat:"02d" }}/{{ pago.periodo_anio }} {% include 'simulactores/_estado_badge.html' with estado=pago.estado %}</p>
+          {% else %}
+            <p>Elige al actor y el período, consulta lo que tiene pendiente y completa los datos del pago.</p>
+          {% endif %}
+        </div>
+      </header>
+
+      <section class="panel-tarjeta panel-formulario">
+        {% if form.non_field_errors %}
+          <div class="alert alert-warning py-2" role="alert">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        {% if pago and pago.estado == 'Pagado' %}
+          <div class="alert alert-warning py-2" role="alert">
+            Este pago ya está confirmado como <strong>Pagado</strong>. Para modificarlo debes confirmar el cambio al final del formulario.
+          </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          {% if not pago %}
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="{{ form.actor.id_for_label }}">{{ form.actor.label }}</label>
+                {{ form.actor }}
+                {% for error in form.actor.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label" for="{{ form.periodo_mes.id_for_label }}">{{ form.periodo_mes.label }}</label>
+                {{ form.periodo_mes }}
+                {% for error in form.periodo_mes.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label" for="{{ form.periodo_anio.id_for_label }}">{{ form.periodo_anio.label }}</label>
+                {{ form.periodo_anio }}
+                {% for error in form.periodo_anio.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+              </div>
+            </div>
+
+            <button type="submit" name="accion" value="calcular" class="btn btn-claro btn-pildora mb-3">Consultar monto pendiente</button>
+
+            {% if pendiente %}
+              <div class="alert {% if pendiente.total > 0 %}alert-info{% else %}alert-warning{% endif %} mb-3" role="status">
+                {% if pendiente.filas %}
+                  <strong>{{ pendiente.actor.usuario.nombre }} tiene ₡{{ pendiente.total|floatformat:2 }} pendientes en {{ pendiente.mes }} {{ pendiente.anio }}.</strong>
+                  <ul class="mb-0 mt-2">
+                    {% for asignacion, monto in pendiente.filas %}
+                      <li>{{ asignacion.solicitud.numero_solicitud }} · {{ asignacion.solicitud.fecha_evento|date:"d/m/Y" }} · ₡{{ monto|floatformat:2 }}</li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <strong>{{ pendiente.actor.usuario.nombre }} no tiene monto pendiente en {{ pendiente.mes }} {{ pendiente.anio }}.</strong>
+                  No hay simulaciones ejecutadas en ese período.
+                {% endif %}
+                {% if pendiente.pago_existente %}
+                  <div class="mt-2">Ya existe un pago de ese período en estado <strong>{{ pendiente.pago_existente.estado }}</strong>.</div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endif %}
+
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label" for="{{ form.monto.id_for_label }}">{{ form.monto.label }}</label>
+              {{ form.monto }}
+              {% for error in form.monto.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label" for="{{ form.fecha_pago.id_for_label }}">{{ form.fecha_pago.label }}</label>
+              {{ form.fecha_pago }}
+              {% for error in form.fecha_pago.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label" for="{{ form.metodo_pago.id_for_label }}">{{ form.metodo_pago.label }}</label>
+              {{ form.metodo_pago }}
+              {% for error in form.metodo_pago.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label" for="{{ form.referencia.id_for_label }}">{{ form.referencia.label }}</label>
+              {{ form.referencia }}
+              {% for error in form.referencia.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+
+          {% if pago and pago.estado == 'Pagado' %}
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" name="confirmo" id="confirmo" value="on">
+              <label class="form-check-label" for="confirmo">Confirmo que quiero modificar un pago que ya está confirmado como Pagado.</label>
+            </div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-granate btn-pildora">{% if pago %}Guardar cambios{% else %}Registrar pago{% endif %}</button>
+            <a href="{% url 'simulactores:pagos_admin' %}" class="btn btn-claro btn-pildora">Cancelar</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

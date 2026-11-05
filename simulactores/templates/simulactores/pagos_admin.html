@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulactores - Pagos a actores</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="d-flex">
+  {% include 'simulactores/_sidebar.html' %}
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <h1>Pagos a actores</h1>
+          <p>Lleva el control de los pagos mensuales, con su referencia y su historial en la bitácora.</p>
+        </div>
+        <a href="{% url 'simulactores:registrar_pago' %}" class="btn btn-granate btn-pildora">Registrar pago</a>
+      </header>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <section class="panel-tarjeta panel-formulario">
+        <form method="get">
+          <div class="row align-items-end">
+            <div class="col-md-4 mb-2">
+              <label class="form-label" for="f-actor">Actor</label>
+              <select id="f-actor" name="actor" class="form-select">
+                <option value="">Todos</option>
+                {% for a in actores %}<option value="{{ a.pk }}" {% if filtro.actor == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.usuario.nombre }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 mb-2">
+              <label class="form-label" for="f-mes">Mes</label>
+              <select id="f-mes" name="mes" class="form-select">
+                <option value="">Todos</option>
+                {% for numero, nombre in meses %}<option value="{{ numero }}" {% if filtro.mes == numero|stringformat:"s" %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2 mb-2">
+              <label class="form-label" for="f-anio">Año</label>
+              <input id="f-anio" name="anio" type="number" class="form-control" value="{{ filtro.anio }}">
+            </div>
+            <div class="col-md-3 mb-2 d-flex gap-2">
+              <button type="submit" class="btn btn-claro btn-pildora">Filtrar</button>
+              <a href="{% url 'simulactores:pagos_admin' %}" class="btn btn-claro btn-pildora">Limpiar</a>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel-tabla">
+        {% if pagos %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Actor</th><th>Período</th><th>Monto</th><th>Método</th>
+                  <th>Referencia</th><th>Fecha de pago</th><th>Estado</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pago in pagos %}
+                  <tr>
+                    <td class="fw-semibold">{{ pago.actor.usuario.nombre }}</td>
+                    <td>{{ pago.periodo_mes|stringformat:"02d" }}/{{ pago.periodo_anio }}</td>
+                    <td>₡{{ pago.monto_total|floatformat:2 }}</td>
+                    <td>{{ pago.metodo_pago|default:"—" }}</td>
+                    <td>{{ pago.referencia|default:"—" }}</td>
+                    <td>{{ pago.fecha_pago|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{% include 'simulactores/_estado_badge.html' with estado=pago.estado %}</td>
+                    <td class="text-end">
+                      {% if pago.estado != 'Anulado' %}
+                        <div class="d-inline-flex gap-2">
+                          <a href="{% url 'simulactores:editar_pago' pago.pk %}" class="btn btn-sm btn-ver">Modificar</a>
+                          <a href="{% url 'simulactores:anular_pago' pago.pk %}" class="btn btn-sm btn-ver">Anular pago</a>
+                        </div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="panel-vacio">
+            <strong>No hay pagos registrados</strong>
+            <p>Cuando registres un pago a un actor, aparecerá aquí.</p>
+          </div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

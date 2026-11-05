@@ -31,6 +31,12 @@ from .notificaciones_views import (
     notificaciones_view,
 )
 
+from .pagos_views import (
+    anular_pago_view,
+    editar_pago_view,
+    pagos_admin_view,
+    registrar_pago_view,
+)
 from .password_reset_views import recuperar_contrasena_view
 
 
@@ -350,6 +356,34 @@ urlpatterns = [
         'escenarios/<int:escenario_id>/reactivar/',
         reactivar_escenario_view,
         name='reactivar_escenario'
+    ),
+
+    # ------------------------------------------------------------
+    # HU-43 - Pagos a actores (administrador)
+    # ------------------------------------------------------------
+
+    path(
+        'pagos/',
+        pagos_admin_view,
+        name='pagos_admin'
+    ),
+
+    path(
+        'pagos/nuevo/',
+        registrar_pago_view,
+        name='registrar_pago'
+    ),
+
+    path(
+        'pagos/<int:pago_id>/editar/',
+        editar_pago_view,
+        name='editar_pago'
+    ),
+
+    path(
+        'pagos/<int:pago_id>/anular/',
+        anular_pago_view,
+        name='anular_pago'
     ),
 
     # ------------------------------------------------------------
