@@ -150,3 +150,59 @@
 .cal-leyenda .l-pe { color: #C98A00; }
 .cal-leyenda .l-ok { color: #25624A; }
 .cal-leyenda .l-co { color: #1F4A63; }
+
+/* ---------- Disponibilidad dentro del calendario (HU-36) ---------- */
+.cal-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cal-mas {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--vino);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity .12s ease, background .12s ease;
+}
+.cal-celda:hover .cal-mas,
+.cal-mas:focus { opacity: 1; }
+.cal-mas:hover { background: var(--vino); color: #fff; }
+.cal-mas-texto {
+  width: auto;
+  height: auto;
+  padding: .1rem .55rem;
+  margin-left: .5rem;
+  opacity: 1;
+  font-size: .75rem;
+  border: 1px solid var(--vino);
+  border-radius: 999px;
+}
+
+.cal-bloque {
+  display: block;
+  text-decoration: none;
+  font-size: .72rem;
+  line-height: 1.2;
+  padding: .2rem .4rem;
+  border-radius: 6px;
+  border: 1px dashed currentColor;
+  background: #fff;
+}
+.cal-bloque strong { display: block; font-weight: 700; }
+.cal-bloque span { display: block; opacity: .9; }
+.cal-bloque.cal-di { color: #25624A; background: #F4FAF7; }
+.cal-bloque.cal-bl { color: #9A3340; background: #FBF1F2; }
+a.cal-bloque:hover { box-shadow: 0 2px 6px rgba(42, 20, 24, .15); }
+.cal-agenda-dia .cal-bloque { font-size: .85rem; padding: .45rem .65rem; margin-bottom: .35rem; }
+
+.cal-leyenda .l-di { color: #25624A; }
+.cal-leyenda .l-bl { color: #9A3340; }

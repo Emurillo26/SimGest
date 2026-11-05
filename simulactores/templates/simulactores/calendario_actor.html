@@ -20,7 +20,7 @@
         <div>
           <a href="{% url 'simulactores:dashboard_actor' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mi panel</a>
           <h1>Mi calendario</h1>
-          <p class="text-muted mb-0">Consulta tus simulaciones por fecha para organizar tu disponibilidad y tu preparación.</p>
+          <p class="text-muted mb-0">Consulta tus simulaciones y tu disponibilidad por fecha. Usa el <strong>+</strong> de cada día para registrar disponibilidad.</p>
         </div>
       </header>
 
@@ -67,7 +67,15 @@
             {% for semana in semanas %}
               {% for dia in semana %}
                 <div class="cal-celda{% if not dia.en_mes %} fuera{% endif %}{% if dia.es_hoy %} hoy{% endif %}" role="gridcell">
-                  <span class="cal-num">{{ dia.fecha.day }}</span>
+                  <span class="cal-cabecera">
+                    {% if dia.puede_registrar %}
+                      <a href="{% url 'simulactores:mi_disponibilidad' %}?fecha={{ dia.fecha|date:'Y-m-d' }}" class="cal-mas" title="Registrar disponibilidad el {{ dia.fecha|date:'d/m/Y' }}" aria-label="Registrar disponibilidad el {{ dia.fecha|date:'d/m/Y' }}">+</a>
+                    {% endif %}
+                    <span class="cal-num">{{ dia.fecha.day }}</span>
+                  </span>
+                  {% for bloque in dia.bloques %}
+                    {% include 'simulactores/_calendario_bloque.html' %}
+                  {% endfor %}
                   {% for asignacion in dia.eventos %}
                     <a href="{% url 'simulactores:detalle_simulacion_actor' asignacion.solicitud.uuid %}"
                        class="cal-evento {% if asignacion.estado == 'Pendiente' %}cal-pe{% elif asignacion.estado == 'Confirmada' %}cal-ok{% else %}cal-co{% endif %}"
@@ -83,10 +91,18 @@
 
           {# Agenda del mes (pantallas pequeñas) #}
           <div class="d-md-none">
-            {% for bloque in agenda %}
+            {% for dia_agenda in agenda %}
               <div class="cal-agenda-dia">
-                <h3>{{ bloque.etiqueta }}</h3>
-                {% for asignacion in bloque.eventos %}
+                <h3>
+                  {{ dia_agenda.etiqueta }}
+                  {% if dia_agenda.puede_registrar %}
+                    <a href="{% url 'simulactores:mi_disponibilidad' %}?fecha={{ dia_agenda.fecha|date:'Y-m-d' }}" class="cal-mas cal-mas-texto">+ Disponibilidad</a>
+                  {% endif %}
+                </h3>
+                {% for bloque in dia_agenda.bloques %}
+                  {% include 'simulactores/_calendario_bloque.html' with dia=dia_agenda %}
+                {% endfor %}
+                {% for asignacion in dia_agenda.eventos %}
                   <a href="{% url 'simulactores:detalle_simulacion_actor' asignacion.solicitud.uuid %}"
                      class="cal-evento {% if asignacion.estado == 'Pendiente' %}cal-pe{% elif asignacion.estado == 'Confirmada' %}cal-ok{% else %}cal-co{% endif %}">
                     <strong>{{ asignacion.solicitud.hora_inicio|time:"H:i" }} - {{ asignacion.solicitud.hora_fin|time:"H:i" }}</strong>
@@ -95,7 +111,7 @@
                 {% endfor %}
               </div>
             {% empty %}
-              <div class="alert alert-info mb-0">No tienes simulaciones en este mes.</div>
+              <div class="alert alert-info mb-0">No tienes simulaciones ni bloques de disponibilidad en este mes.</div>
             {% endfor %}
           </div>
 
@@ -103,6 +119,8 @@
             <span class="l-pe"><i></i>Pendiente de confirmación</span>
             <span class="l-ok"><i></i>Confirmada</span>
             <span class="l-co"><i></i>Ejecutada</span>
+            <span class="l-di"><i></i>Disponible</span>
+            <span class="l-bl"><i></i>Bloqueado</span>
           </div>
 
         </section>

@@ -1,4 +1,6 @@
 """Disponibilidad: bloquear fechas (#37), editar o eliminar bloques (#40) y consulta del admin (#38)."""
+import datetime
+
 from django import forms
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -135,7 +137,15 @@ def mi_disponibilidad_view(request):
                 messages.success(request, 'Disponibilidad guardada.')
             return redirect('simulactores:mi_disponibilidad')
     else:
-        form = DisponibilidadForm(actor=actor)
+        # HU-36: el calendario del actor enlaza aquí con ?fecha=AAAA-MM-DD.
+        inicial = {}
+        fecha_url = request.GET.get('fecha')
+        if fecha_url:
+            try:
+                inicial['fecha'] = datetime.date.fromisoformat(fecha_url)
+            except ValueError:
+                pass
+        form = DisponibilidadForm(actor=actor, initial=inicial)
 
     return _pantalla(request, actor, form)
 

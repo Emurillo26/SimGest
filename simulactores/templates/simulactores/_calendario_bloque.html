@@ -1,0 +1,12 @@
+{# Bloque de disponibilidad dentro del calendario del actor (HU-36). Variables: bloque, dia #}
+{% if dia.puede_registrar %}
+  <a href="{% url 'simulactores:editar_disponibilidad' bloque.pk %}" class="cal-bloque {% if bloque.tipo_bloque == 'Bloqueado' %}cal-bl{% else %}cal-di{% endif %}" title="Editar bloque">
+    <strong>{{ bloque.hora_inicio|time:"H:i" }} - {{ bloque.hora_fin|time:"H:i" }}</strong>
+    <span>{{ bloque.tipo_bloque }}</span>
+  </a>
+{% else %}
+  <div class="cal-bloque {% if bloque.tipo_bloque == 'Bloqueado' %}cal-bl{% else %}cal-di{% endif %}">
+    <strong>{{ bloque.hora_inicio|time:"H:i" }} - {{ bloque.hora_fin|time:"H:i" }}</strong>
+    <span>{{ bloque.tipo_bloque }}</span>
+  </div>
+{% endif %}
