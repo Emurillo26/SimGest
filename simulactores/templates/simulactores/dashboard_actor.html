@@ -37,6 +37,12 @@
 
     <main class="panel-contenido">
 
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'info' %}alert-info{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
       <!-- Bienvenida -->
       <section class="panel-bienvenida">
 

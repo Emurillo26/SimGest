@@ -21,6 +21,48 @@
         </div>
       </header>
 
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'info' %}alert-info{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <section class="panel-tarjeta" id="mi-participacion">
+        <h2>Mi participación</h2>
+
+        {% if asignacion.estado == 'Pendiente' %}
+          <p class="mb-3">Esta simulación está <strong>pendiente de tu confirmación</strong>. Avísale al administrador si puedes asistir.</p>
+        {% elif asignacion.estado == 'Confirmada' %}
+          <p class="mb-3">Ya <strong>confirmaste</strong> tu participación en esta simulación.</p>
+        {% elif asignacion.estado == 'Ejecutada' %}
+          <p class="mb-0">Esta simulación ya fue ejecutada.</p>
+        {% endif %}
+
+        {% if puede_responder %}
+          <div class="d-flex flex-wrap gap-2 align-items-start">
+            {% if asignacion.estado == 'Pendiente' %}
+              <form method="post" action="{% url 'simulactores:confirmar_participacion' solicitud.uuid %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-granate btn-pildora">Confirmar participación</button>
+              </form>
+            {% endif %}
+
+            <details class="flex-fill" {% if abrir_rechazo %}open{% endif %}>
+              <summary class="btn btn-claro btn-pildora">{% if asignacion.estado == 'Confirmada' %}Ya no puedo asistir{% else %}Rechazar{% endif %}</summary>
+              <form method="post" action="{% url 'simulactores:rechazar_participacion' solicitud.uuid %}" class="mt-3">
+                {% csrf_token %}
+                <label class="form-label" for="motivo">Motivo (obligatorio)</label>
+                <textarea id="motivo" name="motivo" class="form-control" rows="3" maxlength="500" placeholder="Cuéntale al administrador por qué no puedes asistir">{{ motivo_previo }}</textarea>
+                {% if error_motivo %}<div class="campo-error">{{ error_motivo }}</div>{% endif %}
+                <button type="submit" class="btn btn-claro btn-pildora mt-2">Enviar rechazo</button>
+              </form>
+            </details>
+          </div>
+        {% elif asignacion.estado != 'Ejecutada' %}
+          <div class="alert alert-info mb-0">Esta simulación ya fue ejecutada o cancelada, por lo que ya no es posible modificar tu participación.</div>
+        {% endif %}
+      </section>
+
       <section class="panel-tarjeta">
         <h2>Datos del evento</h2>
         <dl class="dl-detalle detalle-grid">

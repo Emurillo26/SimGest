@@ -4,8 +4,10 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .actor_views import (
     calendario_actor_view,
+    confirmar_participacion_view,
     dashboard_actor_view,
     detalle_simulacion_actor_view,
+    rechazar_participacion_view,
 )
 from .disponibilidad_views import (
     consulta_disponibilidad_view,
@@ -184,6 +186,19 @@ urlpatterns = [
         'dashboard/actor/simulaciones/<uuid:solicitud_uuid>/',
         detalle_simulacion_actor_view,
         name='detalle_simulacion_actor'
+    ),
+
+    # HU-29 - Confirmar o rechazar participación
+    path(
+        'dashboard/actor/simulaciones/<uuid:solicitud_uuid>/confirmar/',
+        confirmar_participacion_view,
+        name='confirmar_participacion'
+    ),
+
+    path(
+        'dashboard/actor/simulaciones/<uuid:solicitud_uuid>/rechazar/',
+        rechazar_participacion_view,
+        name='rechazar_participacion'
     ),
 
     # #37 y #40 - Disponibilidad del actor
