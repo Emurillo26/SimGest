@@ -1,5 +1,4 @@
-"""Lógica de asignación de actores (HU-42, HU-44 y HU-45).
-
+"""Lógica de asignación de actores (HU-39, HU-44 y HU-45).
 Se deja separada de las vistas para que otras historias (por ejemplo, la
 consulta de disponibilidad del administrador o el rechazo del actor) puedan
 reutilizar las mismas reglas.
@@ -28,7 +27,7 @@ class AsignacionError(Exception):
     """Error de negocio que se le muestra tal cual al administrador."""
 
 
-# --- HU-42: validar la disponibilidad ---------------------------------------
+# --- HU-39: validar la disponibilidad -------------------------
 
 def validar_disponibilidad(actor, solicitud):
     """Dice si el actor puede cubrir la fecha y el horario de la solicitud.
@@ -242,7 +241,7 @@ def reasignar_actor(solicitud, asignacion_id, actor_id, realizado_por=None, ip_o
 
 
 def _actor_validado(solicitud, actor_id):
-    """Bloquea la fila del actor y vuelve a validar su disponibilidad (HU-42)."""
+    """Bloquea la fila del actor y vuelve a validar su disponibilidad."""
     try:
         actor = Actor.objects.select_for_update().select_related('usuario').get(pk=actor_id)
     except (Actor.DoesNotExist, ValueError, TypeError):

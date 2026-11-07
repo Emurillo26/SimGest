@@ -338,3 +338,72 @@ class HU43ListadoYAccesoTests(BasePagos):
     def test_el_menu_del_administrador_incluye_pagos(self):
         r = self.client.get(reverse('simulactores:pagos_admin'))
         self.assertContains(r, 'Pagos a actores')
+
+
+class HU41ReporteMensualTests(BasePagos):
+    """HU-41: generar el reporte mensual de horas ejecutadas por actor."""
+
+    url = reverse('simulactores:reporte_mensual_actores')
+
+    def generar(self, mes=11, anio=2026):
+        return self.client.get(self.url, {'mes': mes, 'anio': anio})
+
+    def test_generacion_y_calculo_por_periodo(self):
+
+        self.ejecutada(hora=9)  # 1 hora a ₡5000/hora = ₡5000
+        otro = self.crear_actor('actor.pago2@simgest.com', 'Actor Pago Dos', tarifa='8000')
+        self.ejecutada(actor=otro, hora=14)
+
+        r = self.generar()
+        self.assertEqual(r.status_code, 200)
+        resultado = r.context['resultado']
+        self.assertTrue(resultado['hay_registros'])
+        self.assertEqual(len(resultado['filas']), 2)
+        self.assertEqual(resultado['total_horas'], Decimal('2'))
+        self.assertEqual(resultado['total_monto'], Decimal('13000.00'))
+        self.assertContains(r, 'Actor Pago')
+        self.assertContains(r, '₡13000.00')
+
+    def test_aplica_la_tarifa_vigente_en_la_fecha_del_evento(self):
+        from .models import TarifaActor
+        asignacion = self.ejecutada(hora=9)
+
+        TarifaActor.objects.create(
+            actor=self.actor, monto=Decimal('9000'), tipo_tarifa='Por Hora',
+            vigente_desde=datetime.date(2026, 11, 10))
+        asignacion.tarifa_aplicada = None
+        asignacion.save()
+
+        resultado = servicio.reporte_mensual(11, 2026)
+
+        self.assertEqual(resultado['total_monto'], Decimal('5000.00'))
+
+    def test_periodo_sin_registros_muestra_mensaje_informativo(self):
+
+        r = self.generar(mes=3, anio=2026)
+        resultado = r.context['resultado']
+        self.assertFalse(resultado['hay_registros'])
+        self.assertEqual(resultado['filas'], [])
+        self.assertContains(r, 'Reporte sin registros')
+        self.assertContains(r, 'No hay simulaciones ejecutadas')
+
+    def test_excluye_simulaciones_no_completadas(self):
+        """Escenario «Exclusión de simulaciones no completadas»: lo
+        pendiente, cancelado o nunca ejecutado no suma horas ni monto."""
+        self.ejecutada(hora=9)
+        self.ejecutada(hora=11, estado='Pendiente')
+        self.ejecutada(hora=13, estado='Cancelada')
+        self.ejecutada(hora=15, estado='Confirmada')
+
+        resultado = servicio.reporte_mensual(11, 2026)
+        self.assertEqual(resultado['total_monto'], Decimal('5000.00'))
+        self.assertEqual(len(resultado['filas'][0]['detalle']), 1)
+
+    def test_sin_mes_elegido_no_genera_nada_todavia(self):
+        r = self.client.get(self.url)
+        self.assertIsNone(r.context['resultado'])
+
+    def test_solo_el_administrador_entra(self):
+        for usuario in (self.cliente, self.actor.usuario):
+            self.client.force_login(usuario)
+            self.assertEqual(self.generar().status_code, 403)

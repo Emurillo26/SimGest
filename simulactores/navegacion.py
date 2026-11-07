@@ -31,6 +31,12 @@ MENU_LATERAL = [
         'url_name': 'simulactores:pagos_admin',
     },
     {
+        'modulo': 'pagos_actores',
+        'seccion': 'reporte_mensual_actores',
+        'etiqueta': 'Reporte mensual',
+        'url_name': 'simulactores:reporte_mensual_actores',
+    },
+    {
         'modulo': 'bitacora_actividad',
         'seccion': 'bitacora_actividad',
         'etiqueta': 'Bitácora de actividad',
@@ -111,6 +117,7 @@ VISTA_A_SECCION = {
     'simulactores:registrar_pago': 'pagos_actores',
     'simulactores:editar_pago': 'pagos_actores',
     'simulactores:anular_pago': 'pagos_actores',
+    'simulactores:reporte_mensual_actores': 'reporte_mensual_actores',
     'simulactores:bitacora_actividad': 'bitacora_actividad',
     'simulactores:biblioteca_escenarios': 'biblioteca_escenarios',
     'simulactores:crear_escenario': 'biblioteca_escenarios',

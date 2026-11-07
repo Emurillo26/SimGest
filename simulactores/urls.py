@@ -36,6 +36,7 @@ from .pagos_views import (
     editar_pago_view,
     pagos_admin_view,
     registrar_pago_view,
+    reporte_mensual_view,
 )
 from .password_reset_views import recuperar_contrasena_view
 
@@ -384,6 +385,13 @@ urlpatterns = [
         'pagos/<int:pago_id>/anular/',
         anular_pago_view,
         name='anular_pago'
+    ),
+
+    # HU-41 - Reporte mensual de horas ejecutadas por actor
+    path(
+        'pagos/reporte/',
+        reporte_mensual_view,
+        name='reporte_mensual_actores'
     ),
 
     # ------------------------------------------------------------

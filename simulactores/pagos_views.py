@@ -1,4 +1,6 @@
-"""HU-43: el administrador registra, modifica y anula pagos a actores."""
+"""HU-43: el administrador registra, modifica y anula pagos a actores.
+HU-41: el administrador genera el reporte mensual de horas ejecutadas por
+actor para preparar el cálculo de esos pagos."""
 import datetime
 from decimal import Decimal
 
@@ -87,6 +89,21 @@ class PagoForm(_DatosDelPago):
 
 class PagoEdicionForm(_DatosDelPago):
     confirmo = forms.BooleanField(required=False)
+
+
+class ReportePeriodoForm(forms.Form):
+    """HU-41: selección del mes/año sobre el que se genera el reporte."""
+
+    mes = forms.TypedChoiceField(
+        label='Mes', choices=[('', 'Selecciona…')] + MESES, coerce=int,
+        error_messages={'required': 'Selecciona el mes.', 'invalid_choice': 'Selecciona un mes válido.'},
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    anio = forms.IntegerField(
+        label='Año', min_value=ANIO_MIN, max_value=ANIO_MAX,
+        error_messages={'required': 'Indica el año.'},
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+    )
 
 
 def _contexto_pendiente(actor, mes, anio):
@@ -238,3 +255,24 @@ def anular_pago_view(request, pago_id):
             return redirect('simulactores:pagos_admin')
 
     return render(request, 'simulactores/pago_anular.html', {'pago': pago, 'error': error, 'motivo': motivo})
+
+
+@modulo_requerido('pagos_actores')
+def reporte_mensual_view(request):
+
+    hoy = timezone.localdate()
+    generado = bool(request.GET.get('mes'))
+
+    if generado:
+        form = ReportePeriodoForm(request.GET)
+    else:
+        form = ReportePeriodoForm(initial={'mes': hoy.month, 'anio': hoy.year})
+
+    resultado = None
+    if generado and form.is_valid():
+        resultado = servicio.reporte_mensual(form.cleaned_data['mes'], form.cleaned_data['anio'])
+        resultado['mes_nombre'] = NOMBRE_MES[resultado['mes']]
+
+    return render(request, 'simulactores/reporte_mensual.html', {
+        'form': form, 'resultado': resultado, 'generado': generado,
+    })

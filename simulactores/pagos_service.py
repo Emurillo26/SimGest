@@ -1,4 +1,5 @@
-"""Pagos a actores (HU-43): cálculo del monto pendiente y registro con trazabilidad."""
+"""Pagos a actores: cálculo del monto pendiente y registro con trazabilidad
+(HU-43) y reporte mensual de horas/monto consolidado por actor (HU-41)."""
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -66,6 +67,50 @@ def monto_pendiente(actor, mes, anio):
 
 def pago_del_periodo(actor, mes, anio):
     return Pago.objects.filter(actor=actor, periodo_mes=mes, periodo_anio=anio).first()
+
+
+# --- HU-41: reporte mensual de horas ejecutadas, por actor -------------------
+
+def asignaciones_ejecutadas_periodo(mes, anio):
+
+    return (
+        Asignacion.objects
+        .filter(
+            estado=Asignacion.Estado.EJECUTADA,
+            solicitud__fecha_evento__month=mes,
+            solicitud__fecha_evento__year=anio,
+        )
+        .select_related('solicitud', 'actor__usuario')
+        .order_by('actor__usuario__nombre', 'solicitud__fecha_evento', 'solicitud__hora_inicio')
+    )
+
+
+def reporte_mensual(mes, anio):
+
+    filas_por_actor = {}
+    for asignacion in asignaciones_ejecutadas_periodo(mes, anio):
+        actor = asignacion.actor
+        horas = _horas(asignacion)
+        monto = monto_asignacion(asignacion)
+        resumen = filas_por_actor.setdefault(actor.id_actor, {
+            'actor': actor,
+            'horas': Decimal('0'),
+            'monto': Decimal('0.00'),
+            'detalle': [],
+        })
+        resumen['horas'] += horas
+        resumen['monto'] += monto
+        resumen['detalle'].append({'asignacion': asignacion, 'horas': horas, 'monto': monto})
+
+    filas = sorted(filas_por_actor.values(), key=lambda f: f['actor'].usuario.nombre)
+    return {
+        'mes': mes,
+        'anio': anio,
+        'filas': filas,
+        'total_horas': sum((f['horas'] for f in filas), Decimal('0')),
+        'total_monto': sum((f['monto'] for f in filas), Decimal('0.00')),
+        'hay_registros': bool(filas),
+    }
 
 
 # --- Registro ---------------------------------------------------------------

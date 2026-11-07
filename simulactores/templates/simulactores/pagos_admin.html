@@ -19,7 +19,10 @@
           <h1>Pagos a actores</h1>
           <p>Lleva el control de los pagos mensuales, con su referencia y su historial en la bitácora.</p>
         </div>
-        <a href="{% url 'simulactores:registrar_pago' %}" class="btn btn-granate btn-pildora">Registrar pago</a>
+        <div class="d-flex gap-2">
+          <a href="{% url 'simulactores:reporte_mensual_actores' %}" class="btn btn-claro btn-pildora">Reporte mensual</a>
+          <a href="{% url 'simulactores:registrar_pago' %}" class="btn btn-granate btn-pildora">Registrar pago</a>
+        </div>
       </header>
 
       {% if messages %}

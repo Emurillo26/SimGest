@@ -1,5 +1,6 @@
 """
-Pruebas automáticas de HU-42 (validar disponibilidad), HU-44 (asignar actor)
+Pruebas automáticas de HU-39 (validar disponibilidad antes de confirmar una
+asignación — numeración de un sprint anterior: HU-42), HU-44 (asignar actor)
 y HU-45 (reasignar actor).
 
 Cómo correrlas:  python manage.py test simulactores
@@ -43,9 +44,11 @@ class BaseAsignacion(BaseSprint2):
         return reverse('simulactores:reasignar_actor', args=[(solicitud or self.solicitud).uuid])
 
 
-class HU42ValidarDisponibilidadTests(BaseAsignacion):
+class HU39ValidarDisponibilidadTests(BaseAsignacion):
+
 
     def test_actor_con_disponibilidad_registrada_es_valido(self):
+
         self.assertTrue(servicio.validar_disponibilidad(self.actor, self.solicitud).disponible)
 
     def test_actor_sin_disponibilidad_registrada_no_es_valido(self):
@@ -110,6 +113,13 @@ class HU44AsignarActorTests(BaseAsignacion):
         self.assertEqual(asignacion.actor, self.actor)
         self.assertEqual(asignacion.estado, 'Pendiente')
         self.assertContains(r, 'Actor asignado correctamente')
+
+    def test_hu39_el_administrador_confirma_la_asignacion_sin_restricciones(self):
+
+        r = self.client.post(self.url_asignar(), {'actor': self.actor.pk}, follow=True)
+        mensajes_error = [m for m in r.context['messages']]
+        self.assertFalse(any(m.tags == 'error' for m in mensajes_error))
+        self.assertTrue(Asignacion.objects.filter(solicitud=self.solicitud, actor=self.actor).exists())
 
     def test_notifica_al_actor_y_al_cliente(self):
         self.client.post(self.url_asignar(), {'actor': self.actor.pk})
