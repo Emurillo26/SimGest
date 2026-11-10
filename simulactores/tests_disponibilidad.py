@@ -182,3 +182,65 @@ class Item38ConsultaDisponibilidadTests(BaseDisponibilidad):
     def test_solo_el_administrador_entra(self):
         self.client.force_login(self.usuario_actor)
         self.assertEqual(self.client.get(self.url).status_code, 403)
+
+
+class SinBloquesEncimadosTests(BaseDisponibilidad):
+    """Un mismo horario nunca puede ser Disponible y Bloqueado a la vez."""
+
+    url = reverse('simulactores:mi_disponibilidad')
+
+    def horarios(self, tipo):
+        return sorted(
+            (b.hora_inicio.hour, b.hora_fin.hour)
+            for b in Disponibilidad.objects.filter(actor=self.actor, tipo_bloque=tipo)
+        )
+
+    def test_bloqueo_en_medio_parte_la_disponibilidad_en_dos(self):
+        self.bloque(inicio=8, fin=18)
+        self.client.post(self.url, self.datos(inicio='10:00', fin='12:00'))
+        self.assertEqual(self.horarios('Disponible'), [(8, 10), (12, 18)])
+        self.assertEqual(self.horarios('Bloqueado'), [(10, 12)])
+
+    def test_bloqueo_al_inicio_acorta_la_disponibilidad(self):
+        self.bloque(inicio=8, fin=18)
+        self.client.post(self.url, self.datos(inicio='07:00', fin='10:00'))
+        self.assertEqual(self.horarios('Disponible'), [(10, 18)])
+
+    def test_bloqueo_al_final_acorta_la_disponibilidad(self):
+        self.bloque(inicio=8, fin=18)
+        self.client.post(self.url, self.datos(inicio='16:00', fin='20:00'))
+        self.assertEqual(self.horarios('Disponible'), [(8, 16)])
+
+    def test_bloqueo_total_elimina_la_disponibilidad(self):
+        self.bloque(inicio=9, fin=12)
+        self.client.post(self.url, self.datos(inicio='08:00', fin='13:00'))
+        self.assertEqual(self.horarios('Disponible'), [])
+        self.assertEqual(self.horarios('Bloqueado'), [(8, 13)])
+
+    def test_el_mensaje_avisa_que_se_ajusto_la_disponibilidad(self):
+        self.bloque(inicio=8, fin=18)
+        respuesta = self.client.post(self.url, self.datos(inicio='10:00', fin='12:00'), follow=True)
+        self.assertContains(respuesta, 'se ajustó')
+
+    def test_no_se_registra_disponibilidad_sobre_un_bloqueo(self):
+        self.bloque(inicio=10, fin=12, tipo='Bloqueado')
+        respuesta = self.client.post(self.url, self.datos(inicio='09:00', fin='11:00', tipo='Disponible'))
+        self.assertContains(respuesta, 'Ese horario está bloqueado')
+        self.assertEqual(self.horarios('Disponible'), [])
+
+    def test_al_editar_un_bloque_a_bloqueado_tambien_se_recorta(self):
+        self.bloque(inicio=8, fin=18)
+        otro = self.bloque(inicio=19, fin=21)
+        otro.hora_inicio = datetime.time(10)
+        otro.hora_fin = datetime.time(12)
+        url = reverse('simulactores:editar_disponibilidad', args=[otro.pk])
+        self.client.post(url, self.datos(inicio='10:00', fin='12:00', tipo='Bloqueado'))
+        self.assertEqual(self.horarios('Disponible'), [(8, 10), (12, 18)])
+        self.assertEqual(self.horarios('Bloqueado'), [(10, 12)])
+
+    def test_nunca_quedan_bloques_de_distinto_tipo_encimados(self):
+        self.bloque(inicio=8, fin=18)
+        self.client.post(self.url, self.datos(inicio='10:00', fin='12:00'))
+        for d in Disponibilidad.objects.filter(tipo_bloque='Disponible'):
+            for b in Disponibilidad.objects.filter(tipo_bloque='Bloqueado', fecha=d.fecha):
+                self.assertFalse(d.hora_inicio < b.hora_fin and b.hora_inicio < d.hora_fin)

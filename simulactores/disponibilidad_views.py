@@ -3,6 +3,7 @@ import datetime
 
 from django import forms
 from django.contrib import messages
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -26,6 +27,47 @@ def simulaciones_en_rango(actor, fecha, hora_inicio, hora_fin):
         .exclude(solicitud__estado=Solicitud.Estado.CANCELADA)
         .select_related('solicitud')
     )
+
+
+def recortar_disponibilidad(actor, fecha, hora_inicio, hora_fin, excluir_pk=None):
+    """Quita de los bloques «Disponible» la parte que ocupa un bloqueo nuevo.
+
+    Así el mismo horario nunca queda Disponible y Bloqueado a la vez:
+      - si el bloqueo cubre todo el bloque, el bloque se elimina;
+      - si cubre una punta, el bloque se acorta;
+      - si cae en medio, el bloque se parte en dos.
+    Devuelve True si se ajustó alguna disponibilidad.
+    """
+    ajustado = False
+    bloques = Disponibilidad.objects.filter(
+        actor=actor, fecha=fecha, tipo_bloque=Disponibilidad.TipoBloque.DISPONIBLE,
+        hora_inicio__lt=hora_fin, hora_fin__gt=hora_inicio,
+    )
+    if excluir_pk:
+        bloques = bloques.exclude(pk=excluir_pk)
+
+    for bloque in bloques:
+        ajustado = True
+        queda_antes = bloque.hora_inicio < hora_inicio
+        queda_despues = bloque.hora_fin > hora_fin
+        fin_original = bloque.hora_fin
+
+        if queda_antes and queda_despues:
+            bloque.hora_fin = hora_inicio
+            bloque.save()
+            Disponibilidad.objects.create(
+                actor=actor, fecha=fecha, hora_inicio=hora_fin, hora_fin=fin_original,
+                tipo_bloque=Disponibilidad.TipoBloque.DISPONIBLE,
+            )
+        elif queda_antes:
+            bloque.hora_fin = hora_inicio
+            bloque.save()
+        elif queda_despues:
+            bloque.hora_inicio = hora_fin
+            bloque.save()
+        else:
+            bloque.delete()
+    return ajustado
 
 
 class DisponibilidadForm(forms.ModelForm):
@@ -68,16 +110,27 @@ class DisponibilidadForm(forms.ModelForm):
             self.add_error('hora_fin', 'La hora final debe ser posterior a la hora inicial.')
             return cleaned
 
-        # Un bloqueo puede ir encima de un bloque disponible; solo se evitan
-        # cruces entre bloques del mismo tipo.
-        otros_bloques = Disponibilidad.objects.filter(
-            actor=self.actor, fecha=fecha, tipo_bloque=tipo,
+        # Un mismo horario nunca puede quedar como Disponible y Bloqueado a la vez.
+        #   - Mismo tipo: no se permiten cruces.
+        #   - Bloquear sobre una disponibilidad: se permite; al guardar, la
+        #     disponibilidad se recorta para que no queden bloques encimados.
+        #   - Registrar disponibilidad sobre un bloqueo: no se permite.
+        cruzados = Disponibilidad.objects.filter(
+            actor=self.actor, fecha=fecha,
             hora_inicio__lt=fin, hora_fin__gt=inicio,
         )
         if self.instance.pk:
-            otros_bloques = otros_bloques.exclude(pk=self.instance.pk)
-        if otros_bloques.exists():
+            cruzados = cruzados.exclude(pk=self.instance.pk)
+
+        if cruzados.filter(tipo_bloque=tipo).exists():
             raise forms.ValidationError('Ya tienes otro bloque de ese tipo que se cruza con ese horario.')
+
+        if tipo == Disponibilidad.TipoBloque.DISPONIBLE and cruzados.filter(
+            tipo_bloque=Disponibilidad.TipoBloque.BLOQUEADO
+        ).exists():
+            raise forms.ValidationError(
+                'Ese horario está bloqueado. Edita o elimina el bloqueo antes de registrar disponibilidad.'
+            )
 
         # #37 escenario 2: no se puede bloquear un horario con una simulación asignada.
         if tipo == Disponibilidad.TipoBloque.BLOQUEADO:
@@ -130,9 +183,17 @@ def mi_disponibilidad_view(request):
         if form.is_valid():
             bloque = form.save(commit=False)
             bloque.actor = actor
-            bloque.save()
+            ajustado = False
+            with transaction.atomic():
+                bloque.save()
+                if bloque.tipo_bloque == Disponibilidad.TipoBloque.BLOQUEADO:
+                    ajustado = recortar_disponibilidad(
+                        actor, bloque.fecha, bloque.hora_inicio, bloque.hora_fin, excluir_pk=bloque.pk)
             if bloque.tipo_bloque == Disponibilidad.TipoBloque.BLOQUEADO:
-                messages.success(request, 'Fecha bloqueada. No se te asignarán simulaciones en ese horario.')
+                mensaje = 'Fecha bloqueada. No se te asignarán simulaciones en ese horario.'
+                if ajustado:
+                    mensaje += ' Tu disponibilidad en ese horario se ajustó para no cruzarse con el bloqueo.'
+                messages.success(request, mensaje)
             else:
                 messages.success(request, 'Disponibilidad guardada.')
             return redirect('simulactores:mi_disponibilidad')
@@ -167,7 +228,11 @@ def editar_disponibilidad_view(request, bloque_id):
     if request.method == 'POST':
         form = DisponibilidadForm(request.POST, instance=bloque, actor=bloque.actor)
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                bloque = form.save()
+                if bloque.tipo_bloque == Disponibilidad.TipoBloque.BLOQUEADO:
+                    recortar_disponibilidad(
+                        bloque.actor, bloque.fecha, bloque.hora_inicio, bloque.hora_fin, excluir_pk=bloque.pk)
             messages.success(request, 'Bloque actualizado correctamente.')
             return redirect('simulactores:mi_disponibilidad')
     else:
