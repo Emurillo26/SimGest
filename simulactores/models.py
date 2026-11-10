@@ -140,6 +140,23 @@ class Actor(models.Model):
     tipo_tarifa = models.CharField(max_length=20, choices=TipoTarifa.choices, null=True, blank=True)
     estado = models.CharField(max_length=20, choices=EstadoActor.choices, default=EstadoActor.ACTIVO)
 
+    # Características físicas: las llena el propio actor desde «Mi perfil».
+    COLORES_CABELLO = ['Negro', 'Castaño oscuro', 'Castaño claro', 'Rubio', 'Pelirrojo', 'Canoso', 'Otro']
+    COLORES_OJOS = ['Café oscuro', 'Café claro', 'Negros', 'Verdes', 'Azules', 'Grises', 'Miel', 'Otro']
+    CONTEXTURAS = ['Delgada/o', 'Atlética/o', 'Media', 'Robusta/o', 'Corpulenta/o']
+    TONOS_PIEL = ['Muy clara', 'Clara', 'Media', 'Trigueña', 'Morena', 'Oscura']
+    TALLAS_ROPA = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+
+    estatura_cm = models.PositiveSmallIntegerField(null=True, blank=True)
+    peso_kg = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    color_cabello = models.CharField(max_length=30, null=True, blank=True)
+    color_ojos = models.CharField(max_length=30, null=True, blank=True)
+    contextura = models.CharField(max_length=30, null=True, blank=True)
+    tono_piel = models.CharField(max_length=30, null=True, blank=True)
+    talla_ropa = models.CharField(max_length=10, null=True, blank=True)
+    talla_calzado = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    otras_caracteristicas = models.TextField(max_length=500, blank=True, default='')
+
     class Meta:
         db_table = 'actor'
 

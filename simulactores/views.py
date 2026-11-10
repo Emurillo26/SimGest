@@ -27,6 +27,8 @@ from .models import (
     Solicitud, TipoSimulacion, Usuario,
 )
 from . import asignacion_service
+from .actor_propio import PerfilActorForm, valores_actor
+from .perfil_actor_views import _actualizar_historial_tarifas as actualizar_historial_tarifas
 from .permisos import modulo_requerido
 from .utils import notificar, registrar_cambios
 
@@ -146,19 +148,35 @@ def home_view(request):
     return redirect('simulactores:perfil')
 
 
+def _contexto_perfil(request, perfil_form, password_form, actor_form, actor):
+    return {
+        'usuario': request.user,
+        'perfil_form': perfil_form,
+        'password_form': password_form,
+        'actor': actor,
+        'actor_form': actor_form,
+    }
+
+
 @login_required(login_url='simulactores:login')
 def perfil_view(request):
     usuario = request.user
+    actor = Actor.objects.filter(usuario=usuario).first()
 
     if request.method == 'POST':
         perfil_form = PerfilForm(request.POST, usuario=usuario)
         password_form = CambiarPasswordForm(request.POST, usuario=usuario)
 
-        # Se validan los dos formularios para mostrar todos los errores a la vez.
+        # Copia aparte: validar el formulario ya modifica la instancia en memoria.
+        previo = valores_actor(Actor.objects.get(pk=actor.pk)) if actor else None
+        actor_form = PerfilActorForm(request.POST, instance=actor) if actor else None
+
+        # Se validan todos los formularios para mostrar todos los errores a la vez.
         perfil_valido = perfil_form.is_valid()
         password_valido = password_form.is_valid()
+        actor_valido = actor_form.is_valid() if actor_form else True
 
-        if perfil_valido and password_valido:
+        if perfil_valido and password_valido and actor_valido:
             datos = perfil_form.cleaned_data
             anteriores = {
                 'nombre': usuario.nombre,
@@ -173,7 +191,23 @@ def perfil_view(request):
             if nueva_password:
                 usuario.set_password(nueva_password)
 
-            usuario.save()
+            with transaction.atomic():
+                usuario.save()
+
+                cambios_actor = []
+                if actor_form:
+                    actor = actor_form.save()
+                    despues = valores_actor(actor)
+                    if (str(previo['tarifa']), str(previo['tipo_tarifa'])) != (
+                            str(despues['tarifa']), str(despues['tipo_tarifa'])):
+                        actualizar_historial_tarifas(
+                            actor, actor.tarifa, actor.tipo_tarifa, timezone.localdate())
+                    cambios_actor = [
+                        (campo, previo[campo], despues[campo])
+                        for campo in previo
+                        if str(previo[campo] if previo[campo] is not None else '')
+                        != str(despues[campo] if despues[campo] is not None else '')
+                    ]
 
             if nueva_password:
                 # Mantiene la sesión abierta después de cambiar la contraseña.
@@ -191,26 +225,31 @@ def perfil_view(request):
                 usuario, 'Edición de perfil propio', cambios,
                 realizado_por=usuario, ip_origen=_ip_del_request(request),
             )
+            if cambios_actor:
+                registrar_cambios(
+                    usuario, 'Perfil de actor actualizado por el actor', cambios_actor,
+                    realizado_por=usuario, ip_origen=_ip_del_request(request),
+                )
             messages.success(request, 'Perfil actualizado correctamente.')
             return redirect('simulactores:perfil')
 
-        return render(request, 'simulactores/perfil.html', {
-            'usuario': usuario,
-            'perfil_form': perfil_form,
-            'password_form': password_form,
-        })
+        messages.error(request, 'Revisa los campos marcados en rojo. No se guardó ningún cambio.')
+        return render(request, 'simulactores/perfil.html', _contexto_perfil(
+            request, perfil_form, password_form, actor_form, actor))
 
-    return render(request, 'simulactores/perfil.html', {
-        'usuario': usuario,
-        'perfil_form': PerfilForm(
+    return render(request, 'simulactores/perfil.html', _contexto_perfil(
+        request,
+        PerfilForm(
             initial={
                 'nombre': usuario.nombre,
                 'telefono': usuario.telefono or '',
             },
             usuario=usuario,
         ),
-        'password_form': CambiarPasswordForm(usuario=usuario),
-    })
+        CambiarPasswordForm(usuario=usuario),
+        PerfilActorForm(instance=actor) if actor else None,
+        actor,
+    ))
 
 
 @modulo_requerido('listado_usuarios')

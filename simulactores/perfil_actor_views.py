@@ -258,6 +258,7 @@ def _actualizar_historial_tarifas(actor, tarifa, tipo, hoy):
 
 @modulo_requerido('perfil_actores')
 def editar_perfil_actor_view(request, actor_id):
+    from .actor_propio import resumen_fisico
     """HU-37: editar el perfil operativo de un actor."""
     actor = get_object_or_404(Actor.objects.select_related('usuario'), pk=actor_id)
 
@@ -320,4 +321,5 @@ def editar_perfil_actor_view(request, actor_id):
         'form': form,
         'edad': edad_de(actor),
         'bloques': _resumen_disponibilidad(actor),
+        'fisicos': resumen_fisico(actor),
     })

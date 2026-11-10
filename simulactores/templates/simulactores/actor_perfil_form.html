@@ -82,6 +82,16 @@
       </form>
 
       <section class="panel-tarjeta">
+        <h2>Características físicas</h2>
+        <dl class="ficha-fisica">
+          {% for etiqueta, valor in fisicos %}
+            <div><dt>{{ etiqueta }}</dt><dd>{% if valor %}{{ valor }}{% else %}<span class="sin-dato">Sin completar</span>{% endif %}</dd></div>
+          {% endfor %}
+        </dl>
+        <p class="panel-sub mb-0">Las características físicas, la tarifa y las habilidades las completa el propio actor desde «Mi perfil»; aquí puedes corregirlas si hace falta.</p>
+      </section>
+
+      <section class="panel-tarjeta">
         <h2>Disponibilidad registrada</h2>
         {% for b in bloques %}
           <div class="bloque-resumen">
