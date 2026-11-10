@@ -843,7 +843,7 @@ def historial_solicitudes_view(request):
 def crear_solicitud_view(request):
 
     if request.method == 'POST':
-        form = SolicitudForm(request.POST)
+        form = SolicitudForm(request.POST, cliente=request.user)
         if form.is_valid():
             solicitud = form.save(commit=False)
             solicitud.cliente = request.user
@@ -870,7 +870,7 @@ def crear_solicitud_view(request):
             messages.success(request, f'Solicitud {solicitud.numero_solicitud} creada correctamente.')
             return redirect('simulactores:detalle_solicitud', solicitud_uuid=solicitud.uuid)
     else:
-        form = SolicitudForm()
+        form = SolicitudForm(cliente=request.user)
 
     return render(request, 'simulactores/solicitud_form.html', {'form': form})
 

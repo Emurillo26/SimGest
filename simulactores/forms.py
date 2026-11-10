@@ -240,6 +240,12 @@ class CambiarPasswordForm(forms.Form):
 
 class SolicitudForm(forms.ModelForm):
 
+    def __init__(self, *args, cliente=None, **kwargs):
+        # El cliente que está creando la solicitud: el choque de horario
+        # solo se revisa contra sus propias solicitudes.
+        self.cliente = cliente
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Solicitud
 
@@ -341,12 +347,17 @@ class SolicitudForm(forms.ModelForm):
                 estado=Solicitud.Estado.CANCELADA
             )
 
+            # Cada cliente solo choca con sus propias solicitudes; la
+            # capacidad real la define la disponibilidad de los actores.
+            if self.cliente is not None:
+                traslape = traslape.filter(cliente=self.cliente)
+
             if traslape.exists():
 
                 self.add_error(
                     'fecha_evento',
                     (
-                        'Ese horario ya está ocupado por otra solicitud. '
+                        'Ya tienes otra solicitud en ese horario. '
                         'Por favor elige otra fecha u horario.'
                     )
                 )
