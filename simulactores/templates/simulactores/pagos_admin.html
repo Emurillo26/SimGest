@@ -31,42 +31,38 @@
         {% endfor %}
       {% endif %}
 
-      <section class="panel-tarjeta panel-formulario">
-        <form method="get">
-          <div class="row align-items-end">
-            <div class="col-md-4 mb-2">
-              <label class="form-label" for="f-actor">Actor</label>
-              <select id="f-actor" name="actor" class="form-select">
-                <option value="">Todos</option>
-                {% for a in actores %}<option value="{{ a.pk }}" {% if filtro.actor == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.usuario.nombre }}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-3 mb-2">
-              <label class="form-label" for="f-mes">Mes</label>
-              <select id="f-mes" name="mes" class="form-select">
-                <option value="">Todos</option>
-                {% for numero, nombre in meses %}<option value="{{ numero }}" {% if filtro.mes == numero|stringformat:"s" %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2 mb-2">
-              <label class="form-label" for="f-anio">Año</label>
-              <input id="f-anio" name="anio" type="number" class="form-control" value="{{ filtro.anio }}">
-            </div>
-            <div class="col-md-3 mb-2 d-flex gap-2">
-              <button type="submit" class="btn btn-claro btn-pildora">Filtrar</button>
-              <a href="{% url 'simulactores:pagos_admin' %}" class="btn btn-claro btn-pildora">Limpiar</a>
-            </div>
+      <section class="panel-tabla">
+        <form method="get" class="filtros-linea">
+          <div class="campo">
+            <label for="f-actor">Actor</label>
+            <select id="f-actor" name="actor" class="form-select">
+              <option value="">Todos</option>
+              {% for a in actores %}<option value="{{ a.pk }}" {% if filtro.actor == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.usuario.nombre }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="campo">
+            <label for="f-mes">Mes</label>
+            <select id="f-mes" name="mes" class="form-select">
+              <option value="">Todos</option>
+              {% for numero, nombre in meses %}<option value="{{ numero }}" {% if filtro.mes == numero|stringformat:"s" %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="campo campo-chico">
+            <label for="f-anio">Año</label>
+            <input id="f-anio" name="anio" type="number" class="form-control" value="{{ filtro.anio }}">
+          </div>
+          <div class="acciones">
+            <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
+            <a href="{% url 'simulactores:pagos_admin' %}" class="btn btn-claro btn-pildora">Limpiar</a>
           </div>
         </form>
-      </section>
 
-      <section class="panel-tabla">
         {% if pagos %}
           <div class="table-responsive">
             <table class="table align-middle">
               <thead>
                 <tr>
-                  <th>Actor</th><th>Período</th><th>Monto</th><th>Método</th>
+                  <th>Actor</th><th>Período</th><th class="col-monto">Monto</th><th>Método</th>
                   <th>Referencia</th><th>Fecha de pago</th><th>Estado</th><th></th>
                 </tr>
               </thead>
@@ -75,7 +71,7 @@
                   <tr>
                     <td class="fw-semibold">{{ pago.actor.usuario.nombre }}</td>
                     <td>{{ pago.periodo_mes|stringformat:"02d" }}/{{ pago.periodo_anio }}</td>
-                    <td>₡{{ pago.monto_total|floatformat:2 }}</td>
+                    <td class="col-monto">₡{{ pago.monto_total|floatformat:2 }}</td>
                     <td>{{ pago.metodo_pago|default:"—" }}</td>
                     <td>{{ pago.referencia|default:"—" }}</td>
                     <td>{{ pago.fecha_pago|date:"d/m/Y"|default:"—" }}</td>

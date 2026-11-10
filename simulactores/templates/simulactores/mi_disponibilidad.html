@@ -33,7 +33,7 @@
         </div>
       {% else %}
 
-        <section class="panel-tarjeta panel-formulario">
+        <section class="panel-tarjeta">
           <h2>{% if editando %}Editar bloque{% else %}Nuevo bloque{% endif %}</h2>
 
           {% if form.non_field_errors %}
@@ -42,39 +42,38 @@
 
           <form method="post" action="{% if editando %}{% url 'simulactores:editar_disponibilidad' editando.pk %}{% else %}{% url 'simulactores:mi_disponibilidad' %}{% endif %}">
             {% csrf_token %}
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label class="form-label" for="{{ form.fecha.id_for_label }}">{{ form.fecha.label }}</label>
+            <div class="filtros-linea">
+              <div class="campo">
+                <label for="{{ form.fecha.id_for_label }}">{{ form.fecha.label }}</label>
                 {{ form.fecha }}
                 {% for error in form.fecha.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
               </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label" for="{{ form.hora_inicio.id_for_label }}">{{ form.hora_inicio.label }}</label>
+              <div class="campo">
+                <label for="{{ form.hora_inicio.id_for_label }}">{{ form.hora_inicio.label }}</label>
                 {{ form.hora_inicio }}
                 {% for error in form.hora_inicio.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
               </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label" for="{{ form.hora_fin.id_for_label }}">{{ form.hora_fin.label }}</label>
+              <div class="campo">
+                <label for="{{ form.hora_fin.id_for_label }}">{{ form.hora_fin.label }}</label>
                 {{ form.hora_fin }}
                 {% for error in form.hora_fin.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
               </div>
+              {% if editando %}
+                <div class="campo">
+                  <label for="{{ form.tipo_bloque.id_for_label }}">{{ form.tipo_bloque.label }}</label>
+                  {{ form.tipo_bloque }}
+                </div>
+                <div class="acciones">
+                  <button type="submit" class="btn btn-granate btn-pildora">Guardar cambios</button>
+                  <a href="{% url 'simulactores:mi_disponibilidad' %}" class="btn btn-claro btn-pildora">Cancelar</a>
+                </div>
+              {% else %}
+                <div class="acciones">
+                  <button type="submit" name="tipo_bloque" value="Disponible" class="btn btn-granate btn-pildora">Guardar disponibilidad</button>
+                  <button type="submit" name="tipo_bloque" value="Bloqueado" class="btn btn-claro btn-pildora">Bloquear fecha</button>
+                </div>
+              {% endif %}
             </div>
-
-            {% if editando %}
-              <div class="mb-3">
-                <label class="form-label" for="{{ form.tipo_bloque.id_for_label }}">{{ form.tipo_bloque.label }}</label>
-                {{ form.tipo_bloque }}
-              </div>
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-granate btn-pildora">Guardar cambios</button>
-                <a href="{% url 'simulactores:mi_disponibilidad' %}" class="btn btn-claro btn-pildora">Cancelar</a>
-              </div>
-            {% else %}
-              <div class="d-flex flex-wrap gap-2">
-                <button type="submit" name="tipo_bloque" value="Disponible" class="btn btn-granate btn-pildora">Guardar disponibilidad</button>
-                <button type="submit" name="tipo_bloque" value="Bloqueado" class="btn btn-claro btn-pildora">Bloquear fecha</button>
-              </div>
-            {% endif %}
           </form>
         </section>
 

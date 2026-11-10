@@ -22,50 +22,46 @@
         <a href="{% url 'simulactores:pagos_admin' %}" class="btn btn-claro btn-pildora">Volver a pagos</a>
       </header>
 
-      <section class="panel-tarjeta panel-formulario">
-        <form method="get">
-          <div class="row align-items-end">
-            <div class="col-md-4 mb-2">
-              <label class="form-label" for="f-mes">Mes</label>
-              {{ form.mes }}
-              {% for error in form.mes.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-            </div>
-            <div class="col-md-3 mb-2">
-              <label class="form-label" for="f-anio">Año</label>
-              {{ form.anio }}
-              {% for error in form.anio.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-            </div>
-            <div class="col-md-3 mb-2">
-              <button type="submit" class="btn btn-granate btn-pildora">Generar reporte</button>
-            </div>
+      <section class="panel-tarjeta">
+        <form method="get" class="filtros-linea">
+          <div class="campo">
+            <label for="f-mes">Mes</label>
+            {{ form.mes }}
+            {% for error in form.mes.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="campo campo-chico">
+            <label for="f-anio">Año</label>
+            {{ form.anio }}
+            {% for error in form.anio.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="acciones">
+            <button type="submit" class="btn btn-granate btn-pildora">Generar reporte</button>
           </div>
         </form>
       </section>
 
       {% if resultado %}
         {% if resultado.hay_registros %}
-          <section class="panel-tarjeta mb-3">
-            <div class="row text-center">
-              <div class="col-md-4">
-                <div class="fs-5 fw-semibold">{{ resultado.mes_nombre }} {{ resultado.anio }}</div>
-                <div class="text-muted">Período del reporte</div>
-              </div>
-              <div class="col-md-4">
-                <div class="fs-5 fw-semibold">{{ resultado.total_horas|floatformat:2 }} h</div>
-                <div class="text-muted">Horas totales ejecutadas</div>
-              </div>
-              <div class="col-md-4">
-                <div class="fs-5 fw-semibold">₡{{ resultado.total_monto|floatformat:2 }}</div>
-                <div class="text-muted">Total pagable del período</div>
-              </div>
+          <div class="resumen-grid">
+            <div class="resumen-item">
+              <div class="valor">{{ resultado.mes_nombre }} {{ resultado.anio }}</div>
+              <div class="etiqueta">Período del reporte</div>
             </div>
-          </section>
+            <div class="resumen-item">
+              <div class="valor">{{ resultado.total_horas|floatformat:2 }} h</div>
+              <div class="etiqueta">Horas totales ejecutadas</div>
+            </div>
+            <div class="resumen-item">
+              <div class="valor">₡{{ resultado.total_monto|floatformat:2 }}</div>
+              <div class="etiqueta">Total pagable del período</div>
+            </div>
+          </div>
 
           <section class="panel-tabla">
             <div class="table-responsive">
               <table class="table align-middle">
                 <thead>
-                  <tr><th>Actor</th><th>Simulaciones ejecutadas</th><th>Horas</th><th>Monto pagable</th><th></th></tr>
+                  <tr><th>Actor</th><th>Simulaciones ejecutadas</th><th>Horas</th><th class="col-monto">Monto pagable</th><th></th></tr>
                 </thead>
                 <tbody>
                   {% for fila in resultado.filas %}
@@ -73,7 +69,7 @@
                       <td class="fw-semibold">{{ fila.actor.usuario.nombre }}</td>
                       <td>{{ fila.detalle|length }}</td>
                       <td>{{ fila.horas|floatformat:2 }} h</td>
-                      <td>₡{{ fila.monto|floatformat:2 }}</td>
+                      <td class="col-monto">₡{{ fila.monto|floatformat:2 }}</td>
                       <td class="text-end">
                         <a href="{% url 'simulactores:registrar_pago' %}?actor={{ fila.actor.pk }}" class="btn btn-sm btn-ver">Registrar pago</a>
                       </td>
@@ -81,11 +77,11 @@
                   {% endfor %}
                 </tbody>
                 <tfoot>
-                  <tr class="fw-semibold">
+                  <tr class="tabla-total">
                     <td>Total</td>
                     <td></td>
                     <td>{{ resultado.total_horas|floatformat:2 }} h</td>
-                    <td>₡{{ resultado.total_monto|floatformat:2 }}</td>
+                    <td class="col-monto">₡{{ resultado.total_monto|floatformat:2 }}</td>
                     <td></td>
                   </tr>
                 </tfoot>

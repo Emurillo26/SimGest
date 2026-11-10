@@ -2094,3 +2094,123 @@ a.auth-boton {
   .auth-card .form-floating > .form-control { height: 3.2rem; min-height: 3.2rem; padding: 1.4rem 1.1rem 0.4rem; font-size: 0.98rem; }
   .auth-card .form-floating > label { padding: 0.85rem 1.1rem; font-size: 0.98rem; }
 }
+
+
+/* Rediseño de pantallas de administración y disponibilidad
+   (Pagos, Reporte mensual, Usuarios, Mi disponibilidad) */
+.filtros-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #E3E9EE;
+}
+
+.panel-tarjeta .filtros-linea {
+  padding: 0;
+  border-bottom: 0;
+}
+
+.filtros-linea .campo {
+  display: flex;
+  flex: 1 1 170px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filtros-linea .campo.campo-chico {
+  flex: 0 1 130px;
+}
+
+.filtros-linea .campo label {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--gris-azul);
+}
+
+.filtros-linea .form-select,
+.filtros-linea .form-control {
+  height: 44px;
+  border-radius: 14px;
+}
+
+.filtros-linea .acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filtros-linea .acciones .btn {
+  white-space: nowrap;
+}
+
+.campo-error {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: #9C2A1E;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.resumen-item {
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(59, 16, 23, 0.07);
+}
+
+.resumen-item .valor {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--vino);
+}
+
+.resumen-item .etiqueta {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--gris-azul);
+}
+
+.panel-tabla .tabs-filtro {
+  padding: 18px 24px 0;
+}
+
+.tabla-total td {
+  border-top: 2px solid #E3E9EE;
+  background: #F3F6F9;
+  font-weight: 600;
+}
+
+.panel-tabla .table td.col-monto,
+.panel-tabla .table th.col-monto {
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+  .filtros-linea .campo,
+  .filtros-linea .campo.campo-chico {
+    flex-basis: 100%;
+  }
+}
+
+/* Usuarios: buscador, estado y botones en una sola línea */
+.barra-filtros .form-select {
+  flex: 0 0 210px;
+  width: 210px;
+}
+
+@media (max-width: 767.98px) {
+  .barra-filtros .form-select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}

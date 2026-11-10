@@ -27,14 +27,13 @@
         {% endfor %}
       {% endif %}
 
-      <nav class="tabs-filtro" aria-label="Filtrar por rol">
+      <section class="panel-tabla">
+        <nav class="tabs-filtro" aria-label="Filtrar por rol">
         <a class="tab-filtro{% if not filtro_rol %} activa{% endif %}" href="?q={{ busqueda|default_if_none:''|urlencode }}&estado={{ filtro_estado|default_if_none:''|urlencode }}">Todos</a>
         {% for rol in roles %}
           <a class="tab-filtro{% if filtro_rol == rol.id_rol|stringformat:"s" %} activa{% endif %}" href="?rol={{ rol.id_rol }}&q={{ busqueda|default_if_none:''|urlencode }}&estado={{ filtro_estado|default_if_none:''|urlencode }}">{{ rol.nombre }}</a>
         {% endfor %}
       </nav>
-
-      <section class="panel-tabla">
         <form method="get" class="barra-filtros">
           <input type="hidden" name="rol" value="{{ filtro_rol|default_if_none:'' }}">
           <div class="buscador">
