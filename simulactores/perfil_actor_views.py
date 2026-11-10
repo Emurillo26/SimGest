@@ -124,13 +124,93 @@ def _perfil_completo(actor):
     return bool(actor.fecha_nacimiento and actor.genero and actor.tarifa and actor.tipo_tarifa)
 
 
+def _fecha_hace(anios, hoy):
+    try:
+        return hoy.replace(year=hoy.year - anios)
+    except ValueError:  # 29 de febrero
+        return hoy.replace(year=hoy.year - anios, day=28)
+
+
+class FiltroActoresForm(forms.Form):
+    """HU-36: filtros por perfil (rango de edad, género, habilidades y estado)."""
+
+    edad_min = forms.IntegerField(
+        label='Edad desde', required=False, min_value=0, max_value=120,
+        error_messages={'invalid': 'La edad debe ser un número entero.',
+                        'min_value': 'La edad no puede ser negativa.',
+                        'max_value': 'Revisa la edad: es demasiado alta.'},
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Mín.'}),
+    )
+    edad_max = forms.IntegerField(
+        label='Edad hasta', required=False, min_value=0, max_value=120,
+        error_messages={'invalid': 'La edad debe ser un número entero.',
+                        'min_value': 'La edad no puede ser negativa.',
+                        'max_value': 'Revisa la edad: es demasiado alta.'},
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Máx.'}),
+    )
+    genero = forms.ChoiceField(
+        label='Género', required=False,
+        choices=[('', 'Todos')] + [(g, g) for g in GENEROS],
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    estado = forms.ChoiceField(
+        label='Estado', required=False,
+        choices=[('', 'Todos')] + list(Actor.EstadoActor.choices),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    habilidades = forms.ModelMultipleChoiceField(
+        label='Habilidades', required=False, queryset=Habilidad.objects.order_by('nombre'),
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    def clean(self):
+        datos = super().clean()
+        minimo, maximo = datos.get('edad_min'), datos.get('edad_max')
+        if minimo is not None and maximo is not None and minimo > maximo:
+            self.add_error('edad_max', 'La edad máxima no puede ser menor que la mínima.')
+        return datos
+
+    def filtrar(self, queryset, hoy=None):
+        hoy = hoy or timezone.localdate()
+        datos = self.cleaned_data
+        if datos.get('edad_min') is not None:
+            queryset = queryset.filter(fecha_nacimiento__lte=_fecha_hace(datos['edad_min'], hoy))
+        if datos.get('edad_max') is not None:
+            queryset = queryset.filter(fecha_nacimiento__gt=_fecha_hace(datos['edad_max'] + 1, hoy))
+        if datos.get('genero'):
+            queryset = queryset.filter(genero=datos['genero'])
+        if datos.get('estado'):
+            queryset = queryset.filter(estado=datos['estado'])
+        for habilidad in datos.get('habilidades') or []:
+            queryset = queryset.filter(habilidades=habilidad)  # debe tener todas las elegidas
+        return queryset
+
+    def hay_criterios(self):
+        d = self.cleaned_data
+        return (
+            d.get('edad_min') is not None or d.get('edad_max') is not None
+            or bool(d.get('genero')) or bool(d.get('estado')) or bool(d.get('habilidades'))
+        )
+
+
 @modulo_requerido('perfil_actores')
 def actores_admin_view(request):
-    """Lista de actores con su perfil operativo y acceso para editarlo."""
+    """Lista de actores con su perfil operativo (HU-37) y filtros por perfil (HU-36)."""
     actores = (
         Actor.objects.select_related('usuario').prefetch_related('habilidades')
         .order_by('usuario__nombre')
     )
+    total_actores = actores.count()
+
+    filtro = FiltroActoresForm(request.GET or None)
+    filtrando = False
+    if filtro.is_bound:
+        if filtro.is_valid():
+            actores = filtro.filtrar(actores).distinct()
+            filtrando = filtro.hay_criterios()
+        else:
+            messages.error(request, 'Revisa los filtros: hay datos que no son válidos.')
+
     filas = [
         {
             'actor': a,
@@ -140,7 +220,12 @@ def actores_admin_view(request):
         }
         for a in actores
     ]
-    return render(request, 'simulactores/actores_admin.html', {'filas': filas})
+    return render(request, 'simulactores/actores_admin.html', {
+        'filas': filas,
+        'filtro': filtro,
+        'filtrando': filtrando,
+        'total_actores': total_actores,
+    })
 
 
 def _resumen_disponibilidad(actor):

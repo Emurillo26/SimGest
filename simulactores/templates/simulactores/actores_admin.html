@@ -16,6 +16,13 @@
     .chip-estado { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; }
     .chip-estado.activo { background: #e3f4e8; color: #1d6b3a; }
     .chip-estado.inactivo { background: #eceff1; color: #52616b; }
+    .filtros-actores { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; padding: 16px 22px; border-bottom: 1px solid #e8edf0; }
+    .filtros-actores .campo { min-width: 120px; }
+    .filtros-actores .campo-edad { max-width: 110px; }
+    .filtros-actores label.etq { display: block; font-size: .8rem; font-weight: 600; margin-bottom: 4px; color: #4a2a30; }
+    .filtros-habilidades { flex: 1 1 100%; }
+    .filtros-habilidades ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+    .filtros-habilidades label { margin-left: 6px; font-size: .9rem; }
     .chip-incompleto { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: #fff4d6; color: #8a5a00; font-size: .72rem; font-weight: 600; }
   </style>
 </head>
@@ -38,6 +45,37 @@
       {% endif %}
 
       <section class="panel-tabla">
+        <form method="get" class="filtros-actores">
+          <div class="campo campo-edad">
+            <label class="etq" for="{{ filtro.edad_min.id_for_label }}">Edad desde</label>
+            {{ filtro.edad_min }}
+            {% for e in filtro.edad_min.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="campo campo-edad">
+            <label class="etq" for="{{ filtro.edad_max.id_for_label }}">Edad hasta</label>
+            {{ filtro.edad_max }}
+            {% for e in filtro.edad_max.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="campo">
+            <label class="etq" for="{{ filtro.genero.id_for_label }}">Género</label>
+            {{ filtro.genero }}
+          </div>
+          <div class="campo">
+            <label class="etq" for="{{ filtro.estado.id_for_label }}">Estado</label>
+            {{ filtro.estado }}
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
+            <a href="{% url 'simulactores:actores_admin' %}" class="btn btn-claro btn-pildora">Limpiar</a>
+          </div>
+          {% if filtro.habilidades.field.queryset %}
+          <div class="filtros-habilidades">
+            <label class="etq">Habilidades (debe tener todas las marcadas)</label>
+            {{ filtro.habilidades }}
+          </div>
+          {% endif %}
+        </form>
+
         {% if filas %}
         <div class="table-responsive">
           <table class="table align-middle">
@@ -56,17 +94,26 @@
                 <td>{% for h in f.habilidades %}<span class="chip-habilidad">{{ h }}</span>{% empty %}—{% endfor %}</td>
                 <td>{% if f.actor.tarifa %}₡{{ f.actor.tarifa|floatformat:2 }}<div class="panel-sub">{{ f.actor.tipo_tarifa|default:"" }}</div>{% else %}—{% endif %}</td>
                 <td><span class="chip-estado {% if f.actor.estado == 'Activo' %}activo{% else %}inactivo{% endif %}">{{ f.actor.estado }}</span></td>
-                <td class="text-end"><a href="{% url 'simulactores:editar_perfil_actor' f.actor.pk %}" class="btn btn-sm btn-ver">Editar perfil</a></td>
+                <td class="text-end text-nowrap">
+                  <a href="{% url 'simulactores:historial_actor' f.actor.pk %}" class="btn btn-sm btn-ver">Historial</a>
+                  <a href="{% url 'simulactores:editar_perfil_actor' f.actor.pk %}" class="btn btn-sm btn-ver">Editar perfil</a>
+                </td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-        <div class="tabla-pie">{{ filas|length }} actor{{ filas|length|pluralize:"es" }}</div>
+        <div class="tabla-pie">{% if filtrando %}{{ filas|length }} de {{ total_actores }} actor{{ total_actores|pluralize:"es" }}{% else %}{{ filas|length }} actor{{ filas|length|pluralize:"es" }}{% endif %}</div>
         {% else %}
         <div class="panel-vacio">
-          <strong>Todavía no hay actores</strong>
-          <p>Crea un usuario con rol Actor y su perfil aparecerá aquí.</p>
+          {% if filtrando %}
+            <strong>No se encontraron actores con ese perfil</strong>
+            <p>Prueba quitando algún criterio o ampliando el rango de edad.</p>
+            <a href="{% url 'simulactores:actores_admin' %}" class="btn btn-claro btn-pildora mt-3">Limpiar filtros</a>
+          {% else %}
+            <strong>Todavía no hay actores</strong>
+            <p>Crea un usuario con rol Actor y su perfil aparecerá aquí.</p>
+          {% endif %}
         </div>
         {% endif %}
       </section>

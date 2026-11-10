@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulactores - Historial de {{ actor.usuario.nombre }}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <style>
+    .resumen-historial { display: flex; flex-wrap: wrap; gap: 12px; }
+    .resumen-historial .dato { flex: 1 1 110px; padding: 12px 16px; border-radius: 14px; background: #f7f1f2; }
+    .resumen-historial .numero { display: block; font-size: 1.6rem; font-weight: 700; color: #79242F; line-height: 1.1; }
+    .resumen-historial .rotulo { font-size: .8rem; color: #6c7a82; }
+    .chip-asig { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; background: #eceff1; color: #52616b; }
+    .chip-asig.Confirmada { background: #e3f4e8; color: #1d6b3a; }
+    .chip-asig.Ejecutada { background: #e1ecf8; color: #1d4f8a; }
+    .chip-asig.Pendiente { background: #fff4d6; color: #8a5a00; }
+    .chip-asig.Rechazada, .chip-asig.Cancelada { background: #fbe3e3; color: #9a1c1c; }
+  </style>
+</head>
+<body>
+<div class="d-flex">
+  {% include 'simulactores/_sidebar.html' %}
+  <div class="flex-fill panel-columna">
+    <main class="panel-contenido">
+      <header class="panel-encabezado">
+        <div>
+          <a href="{% url 'simulactores:actores_admin' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Actores</a>
+          <h1>Historial de {{ actor.usuario.nombre }}</h1>
+          <p class="panel-sub mb-0">Simulaciones asignadas, sus fechas y el estado de cada una.</p>
+        </div>
+        <a href="{% url 'simulactores:editar_perfil_actor' actor.pk %}" class="btn btn-claro btn-pildora">Editar perfil</a>
+      </header>
+
+      <section class="panel-tarjeta">
+        <div class="resumen-historial">
+          <div class="dato"><span class="numero">{{ resumen.total }}</span><span class="rotulo">Asignaciones</span></div>
+          <div class="dato"><span class="numero">{{ resumen.ejecutadas }}</span><span class="rotulo">Ejecutadas</span></div>
+          <div class="dato"><span class="numero">{{ resumen.confirmadas }}</span><span class="rotulo">Confirmadas</span></div>
+          <div class="dato"><span class="numero">{{ resumen.pendientes }}</span><span class="rotulo">Pendientes</span></div>
+          <div class="dato"><span class="numero">{{ resumen.rechazadas }}</span><span class="rotulo">Rechazadas</span></div>
+          <div class="dato"><span class="numero">{{ resumen.canceladas }}</span><span class="rotulo">Canceladas</span></div>
+        </div>
+      </section>
+
+      {% if resumen.total %}
+      <nav class="tabs-filtro" aria-label="Filtrar por estado">
+        <a href="?" class="{% if not estado %}activo{% endif %}">Todas</a>
+        {% for valor, etiqueta in estados %}
+          <a href="?estado={{ valor }}" class="{% if estado == valor %}activo{% endif %}">{{ valor }}</a>
+        {% endfor %}
+      </nav>
+      {% endif %}
+
+      <section class="panel-tabla">
+        {% if pagina.object_list %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr><th>Solicitud</th><th>Cliente</th><th>Fecha del evento</th><th>Horario</th><th>Estado de la asignación</th></tr>
+            </thead>
+            <tbody>
+              {% for a in pagina %}
+              <tr>
+                <td>
+                  <a href="{% url 'simulactores:solicitud_admin_detalle' a.solicitud.uuid %}" class="fw-semibold">{{ a.solicitud.numero_solicitud }}</a>
+                  <div class="panel-sub">{{ a.solicitud.tipo_simulacion }}</div>
+                </td>
+                <td>{{ a.solicitud.cliente.nombre }}</td>
+                <td>{{ a.solicitud.fecha_evento|date:"d/m/Y" }}</td>
+                <td>{{ a.solicitud.hora_inicio|time:"H:i" }} - {{ a.solicitud.hora_fin|time:"H:i" }}</td>
+                <td>
+                  <span class="chip-asig {{ a.estado }}">{{ a.get_estado_display }}</span>
+                  {% if a.estado == 'Rechazada' and a.motivo_rechazo %}<div class="panel-sub">{{ a.motivo_rechazo }}</div>{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="tabla-pie d-flex justify-content-between align-items-center">
+          <span>Mostrando {{ pagina.start_index }}–{{ pagina.end_index }} de {{ pagina.paginator.count }}</span>
+          {% if pagina.has_other_pages %}
+          <span class="d-flex gap-2">
+            {% if pagina.has_previous %}<a class="btn btn-sm btn-ver" href="?{% if estado %}estado={{ estado }}&{% endif %}page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+            {% if pagina.has_next %}<a class="btn btn-sm btn-ver" href="?{% if estado %}estado={{ estado }}&{% endif %}page={{ pagina.next_page_number }}">Siguiente</a>{% endif %}
+          </span>
+          {% endif %}
+        </div>
+        {% elif resumen.total %}
+        <div class="panel-vacio">
+          <strong>Sin asignaciones en ese estado</strong>
+          <p>Prueba con otro estado o muestra todas.</p>
+        </div>
+        {% else %}
+        <div class="panel-vacio">
+          <strong>Este actor no registra asignaciones anteriores</strong>
+          <p>Cuando se le asigne una simulación, aparecerá aquí con su fecha y estado.</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

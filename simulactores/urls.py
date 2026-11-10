@@ -17,6 +17,7 @@ from .disponibilidad_views import (
 )
 
 from .asignacion_views import asignar_actor_view, reasignar_actor_view
+from .historial_actor_views import historial_actor_view
 from .perfil_actor_views import actores_admin_view, editar_perfil_actor_view
 from .escenario_estado_views import (
     archivar_escenario_view,
@@ -314,6 +315,13 @@ urlpatterns = [
         'actores/<int:actor_id>/perfil/',
         editar_perfil_actor_view,
         name='editar_perfil_actor'
+    ),
+
+    # HU-38: historial de asignaciones del actor
+    path(
+        'actores/<int:actor_id>/historial/',
+        historial_actor_view,
+        name='historial_actor'
     ),
 
     # HU-44 y HU-45

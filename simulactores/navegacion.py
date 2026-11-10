@@ -120,6 +120,7 @@ VISTA_A_SECCION = {
     'simulactores:asignar_actor': 'gestion_solicitudes',
     'simulactores:actores_admin': 'perfil_actores',
     'simulactores:editar_perfil_actor': 'perfil_actores',
+    'simulactores:historial_actor': 'perfil_actores',
     'simulactores:reasignar_actor': 'gestion_solicitudes',
     'simulactores:pagos_admin': 'pagos_actores',
     'simulactores:registrar_pago': 'pagos_actores',

@@ -29,6 +29,7 @@
           <h1>Perfil operativo de {{ actor.usuario.nombre }}</h1>
           <p class="panel-sub mb-0">{{ actor.usuario.email }}{% if edad %} · {{ edad }} años{% endif %}</p>
         </div>
+        <a href="{% url 'simulactores:historial_actor' actor.pk %}" class="btn btn-claro btn-pildora">Ver historial de asignaciones</a>
       </header>
 
       {% if messages %}
