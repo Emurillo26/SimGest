@@ -19,6 +19,12 @@ MENU_LATERAL = [
         'url_name': 'simulactores:solicitudes_admin',
     },
     {
+        'modulo': 'perfil_actores',
+        'seccion': 'perfil_actores',
+        'etiqueta': 'Actores',
+        'url_name': 'simulactores:actores_admin',
+    },
+    {
         'modulo': 'disponibilidad_actores',
         'seccion': 'disponibilidad_actores',
         'etiqueta': 'Disponibilidad de actores',
@@ -112,6 +118,8 @@ VISTA_A_SECCION = {
     'simulactores:solicitudes_admin': 'gestion_solicitudes',
     'simulactores:solicitud_admin_detalle': 'gestion_solicitudes',
     'simulactores:asignar_actor': 'gestion_solicitudes',
+    'simulactores:actores_admin': 'perfil_actores',
+    'simulactores:editar_perfil_actor': 'perfil_actores',
     'simulactores:reasignar_actor': 'gestion_solicitudes',
     'simulactores:pagos_admin': 'pagos_actores',
     'simulactores:registrar_pago': 'pagos_actores',

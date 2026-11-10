@@ -99,7 +99,7 @@ MATRIZ_PERMISOS = {
         'dashboard_administrador', 'listado_usuarios', 'actualizar_rol',
         'bitacora_actividad', 'perfil', 'biblioteca_escenarios',
         'gestion_solicitudes', 'disponibilidad_actores', 'notificaciones',
-        'pagos_actores',
+        'pagos_actores', 'perfil_actores',
     },
     'Actor': {'perfil', 'dashboard_actor', 'disponibilidad_actor', 'notificaciones'},
     'Cliente': {'perfil', 'dashboard_cliente', 'notificaciones'},

@@ -17,6 +17,7 @@ from .disponibilidad_views import (
 )
 
 from .asignacion_views import asignar_actor_view, reasignar_actor_view
+from .perfil_actor_views import actores_admin_view, editar_perfil_actor_view
 from .escenario_estado_views import (
     archivar_escenario_view,
     biblioteca_escenarios_hu24_view,
@@ -301,6 +302,18 @@ urlpatterns = [
         'gestion-solicitudes/<uuid:solicitud_uuid>/estado/',
         views.cambiar_estado_solicitud_view,
         name='cambiar_estado_solicitud'
+    ),
+
+    # HU-37: perfil operativo del actor
+    path(
+        'actores/',
+        actores_admin_view,
+        name='actores_admin'
+    ),
+    path(
+        'actores/<int:actor_id>/perfil/',
+        editar_perfil_actor_view,
+        name='editar_perfil_actor'
     ),
 
     # HU-44 y HU-45
