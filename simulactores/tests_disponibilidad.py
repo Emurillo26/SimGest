@@ -244,3 +244,98 @@ class SinBloquesEncimadosTests(BaseDisponibilidad):
         for d in Disponibilidad.objects.filter(tipo_bloque='Disponible'):
             for b in Disponibilidad.objects.filter(tipo_bloque='Bloqueado', fecha=d.fecha):
                 self.assertFalse(d.hora_inicio < b.hora_fin and b.hora_inicio < d.hora_fin)
+
+class ConsultaPorRangoTests(BaseDisponibilidad):
+    """Consulta del administrador por día, semana o rango de fechas."""
+
+    url = reverse('simulactores:consulta_disponibilidad')
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.admin)
+
+    def bloque_en(self, dias, inicio=8, fin=18, actor=None):
+        return Disponibilidad.objects.create(
+            actor=actor or self.actor, fecha=self.fecha + datetime.timedelta(days=dias),
+            hora_inicio=datetime.time(inicio), hora_fin=datetime.time(fin), tipo_bloque='Disponible')
+
+    def consultar(self, dias_hasta=None, **extra):
+        datos = {'fecha': self.fecha.isoformat()}
+        if dias_hasta is not None:
+            datos['fecha_hasta'] = (self.fecha + datetime.timedelta(days=dias_hasta)).isoformat()
+        datos.update(extra)
+        return self.client.get(self.url, datos)
+
+    def test_un_rango_agrupa_los_resultados_por_dia(self):
+        self.bloque_en(0)
+        self.bloque_en(2)
+        r = self.consultar(dias_hasta=3)
+        self.assertTrue(r.context['es_rango'])
+        self.assertEqual(len(r.context['resultados']), 4)
+        self.assertEqual(r.context['dias_con_actores'], 2)
+        self.assertContains(r, 'Actor Disp')
+        self.assertContains(r, '2 de 4 días con actores disponibles')
+
+    def test_los_dias_sin_actores_se_indican(self):
+        self.bloque_en(0)
+        r = self.consultar(dias_hasta=2)
+        self.assertContains(r, 'Sin actores')
+        self.assertContains(r, 'No hay actores disponibles para esta fecha')
+
+    def test_si_nadie_esta_disponible_en_todo_el_rango_muestra_el_mensaje(self):
+        r = self.consultar(dias_hasta=6)
+        self.assertContains(r, 'No hay actores disponibles en ese rango de fechas')
+
+    def test_el_rango_respeta_el_horario(self):
+        self.bloque_en(0, 8, 12)
+        self.bloque_en(1, 14, 18)
+        r = self.consultar(dias_hasta=1, hora_inicio='09:00', hora_fin='11:00')
+        self.assertEqual(r.context['dias_con_actores'], 1)
+
+    def test_una_semana_completa_tiene_siete_dias(self):
+        r = self.consultar(dias_hasta=6)
+        self.assertEqual(len(r.context['resultados']), 7)
+
+    def test_fecha_final_anterior_a_la_inicial_da_error(self):
+        r = self.consultar(dias_hasta=-2)
+        self.assertContains(r, 'no puede ser anterior')
+        self.assertIsNone(r.context['filas'])
+
+    def test_el_rango_maximo_es_de_31_dias(self):
+        r = self.consultar(dias_hasta=31)
+        self.assertContains(r, 'rango máximo es de 31 días')
+        self.assertIsNone(r.context['filas'])
+        self.assertEqual(len(self.consultar(dias_hasta=30).context['resultados']), 31)
+
+    def test_sin_fecha_final_funciona_como_antes(self):
+        self.bloque_en(0)
+        r = self.consultar()
+        self.assertFalse(r.context['es_rango'])
+        self.assertContains(r, 'Actor Disp')
+
+    def test_misma_fecha_inicial_y_final_es_una_consulta_de_un_dia(self):
+        self.bloque_en(0)
+        r = self.consultar(dias_hasta=0)
+        self.assertFalse(r.context['es_rango'])
+
+    def test_los_atajos_aparecen_y_conservan_el_horario(self):
+        r = self.client.get(self.url, {'fecha': self.fecha.isoformat(), 'hora_inicio': '09:00', 'hora_fin': '11:00'})
+        atajos = {a['etiqueta']: a['query'] for a in r.context['atajos']}
+        self.assertEqual(set(atajos), {'Hoy', 'Mañana', 'Esta semana', 'Próximos 7 días', 'Este mes'})
+        self.assertIn('hora_inicio=09%3A00', atajos['Esta semana'])
+        self.assertIn('fecha_hasta=', atajos['Próximos 7 días'])
+        self.assertContains(r, 'Próximos 7 días')
+
+    def test_el_atajo_de_esta_semana_cubre_de_lunes_a_domingo(self):
+        r = self.client.get(self.url)
+        semana = next(a['query'] for a in r.context['atajos'] if a['etiqueta'] == 'Esta semana')
+        from urllib.parse import parse_qs
+        q = parse_qs(semana)
+        desde = datetime.date.fromisoformat(q['fecha'][0])
+        hasta = datetime.date.fromisoformat(q['fecha_hasta'][0])
+        self.assertEqual(desde.weekday(), 0)
+        self.assertEqual((hasta - desde).days, 6)
+
+    def test_solo_el_administrador_consulta_rangos(self):
+        self.client.force_login(self.usuario_actor)
+        self.assertEqual(self.consultar(dias_hasta=3).status_code, 403)

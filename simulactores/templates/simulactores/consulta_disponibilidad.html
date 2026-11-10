@@ -14,6 +14,13 @@
       border-radius: 999px; background: #e3f4e8; color: #1d6b3a; font-size: .8rem; font-weight: 600;
     }
     .compromiso { font-size: .82rem; color: #8a5a00; }
+    .atajos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+    .atajos span { font-size: .8rem; font-weight: 600; color: #4a2a30; margin-right: 4px; }
+    .atajos a { padding: 4px 14px; border-radius: 999px; background: #f1ecee; color: #4a2a30; font-size: .85rem; text-decoration: none; }
+    .atajos a:hover { background: #e6dadd; }
+    .dia-cabecera { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px; background: #f7f1f2; border-top: 1px solid #e8edf0; }
+    .dia-cabecera strong { color: #2b1418; text-transform: capitalize; }
+    .dia-sin-actores { padding: 12px 22px; color: #6c7a82; font-size: .9rem; }
   </style>
 </head>
 <body>
@@ -34,10 +41,15 @@
         {% endif %}
         <form method="get">
           <div class="row align-items-end">
-            <div class="col-md-4 mb-3">
+            <div class="col-md mb-3">
               <label class="form-label" for="{{ form.fecha.id_for_label }}">{{ form.fecha.label }}</label>
               {{ form.fecha }}
               {% for error in form.fecha.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md mb-3">
+              <label class="form-label" for="{{ form.fecha_hasta.id_for_label }}">{{ form.fecha_hasta.label }}</label>
+              {{ form.fecha_hasta }}
+              {% for error in form.fecha_hasta.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
             </div>
             <div class="col-md mb-3">
               <label class="form-label" for="{{ form.hora_inicio.id_for_label }}">{{ form.hora_inicio.label }}</label>
@@ -53,6 +65,10 @@
             </div>
           </div>
         </form>
+        <div class="atajos">
+          <span>Atajos:</span>
+          {% for a in atajos %}<a href="?{{ a.query }}">{{ a.etiqueta }}</a>{% endfor %}
+        </div>
       </section>
 
       {% if filas is not None %}
@@ -61,12 +77,44 @@
             <div>
               <h2>Actores disponibles</h2>
               <p class="text-muted mb-0">
-                {{ form.cleaned_data.fecha|date:"d/m/Y" }}{% if form.cleaned_data.hora_inicio %}, de {{ form.cleaned_data.hora_inicio|time:"H:i" }} a {{ form.cleaned_data.hora_fin|time:"H:i" }}{% endif %}
+                {% if es_rango %}Del {{ form.cleaned_data.fecha|date:"d/m/Y" }} al {{ form.cleaned_data.fecha_hasta|date:"d/m/Y" }}{% else %}{{ form.cleaned_data.fecha|date:"d/m/Y" }}{% endif %}{% if form.cleaned_data.hora_inicio %}, de {{ form.cleaned_data.hora_inicio|time:"H:i" }} a {{ form.cleaned_data.hora_fin|time:"H:i" }}{% endif %}
+                {% if es_rango and filas %} · {{ dias_con_actores }} de {{ resultados|length }} día{{ resultados|length|pluralize }} con actores disponibles{% endif %}
               </p>
             </div>
           </div>
 
-          {% if filas %}
+          {% if es_rango and filas %}
+            {% for r in resultados %}
+              <div class="dia-cabecera">
+                <strong>{{ r.fecha|date:"l d/m/Y" }}</strong>
+                <span class="text-muted small">{% if r.filas %}{{ r.filas|length }} actor{{ r.filas|length|pluralize:"es" }}{% else %}Sin actores{% endif %}</span>
+              </div>
+              {% if r.filas %}
+                <div class="table-responsive">
+                  <table class="table align-middle mb-0">
+                    <tbody>
+                      {% for fila in r.filas %}
+                        <tr>
+                          <td style="width:32%">
+                            <div class="fw-semibold">{{ fila.actor.usuario.nombre }}</div>
+                            <div class="text-muted small">{{ fila.actor.usuario.email }}</div>
+                          </td>
+                          <td>{% for b in fila.bloques %}<span class="chip-hora">{{ b.hora_inicio|time:"H:i" }} - {{ b.hora_fin|time:"H:i" }}</span>{% endfor %}</td>
+                          <td>
+                            {% for b in fila.bloqueos %}<div class="compromiso">Bloqueado {{ b.hora_inicio|time:"H:i" }} - {{ b.hora_fin|time:"H:i" }}</div>{% endfor %}
+                            {% for a in fila.simulaciones %}<div class="compromiso">{{ a.solicitud.numero_solicitud }}: {{ a.solicitud.hora_inicio|time:"H:i" }} - {{ a.solicitud.hora_fin|time:"H:i" }}</div>{% endfor %}
+                            {% if not fila.bloqueos and not fila.simulaciones %}<span class="text-muted">Sin compromisos</span>{% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="dia-sin-actores">No hay actores disponibles para esta fecha</div>
+              {% endif %}
+            {% endfor %}
+          {% elif filas %}
             <div class="table-responsive">
               <table class="table align-middle">
                 <thead>
@@ -105,8 +153,8 @@
               <div class="panel-vacio-icono" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>
               </div>
-              <strong>{{ mensaje_sin_actores }}</strong>
-              <p>Prueba con otra fecha u otro horario.</p>
+              <strong>{% if es_rango %}No hay actores disponibles en ese rango de fechas{% else %}{{ mensaje_sin_actores }}{% endif %}</strong>
+              <p>Prueba con otras fechas u otro horario.</p>
             </div>
           {% endif %}
         </section>

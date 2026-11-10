@@ -1,5 +1,6 @@
 """Disponibilidad: bloquear fechas (#37), editar o eliminar bloques (#40) y consulta del admin (#38)."""
 import datetime
+from urllib.parse import urlencode
 
 from django import forms
 from django.contrib import messages
@@ -266,9 +267,16 @@ def eliminar_disponibilidad_view(request, bloque_id):
 MENSAJE_SIN_ACTORES_FECHA = 'No hay actores disponibles para esta fecha'
 
 
+MAX_DIAS_CONSULTA = 31
+
+
 class ConsultaDisponibilidadForm(forms.Form):
     fecha = forms.DateField(
-        label='Fecha',
+        label='Fecha (desde)',
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+    )
+    fecha_hasta = forms.DateField(
+        label='Fecha hasta (opcional)', required=False,
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
     )
     hora_inicio = forms.TimeField(
@@ -284,6 +292,15 @@ class ConsultaDisponibilidadForm(forms.Form):
         cleaned = super().clean()
         inicio = cleaned.get('hora_inicio')
         fin = cleaned.get('hora_fin')
+
+        desde = cleaned.get('fecha')
+        hasta = cleaned.get('fecha_hasta')
+        if desde and hasta:
+            if hasta < desde:
+                self.add_error('fecha_hasta', 'La fecha final no puede ser anterior a la inicial.')
+            elif (hasta - desde).days + 1 > MAX_DIAS_CONSULTA:
+                self.add_error('fecha_hasta', f'El rango máximo es de {MAX_DIAS_CONSULTA} días.')
+
         if bool(inicio) != bool(fin):
             raise forms.ValidationError('Indica las dos horas o deja ambas vacías.')
         if inicio and fin and fin <= inicio:
@@ -341,21 +358,65 @@ def actores_disponibles(fecha, hora_inicio=None, hora_fin=None):
     return list(filas.values())
 
 
+def _atajos_de_fechas(request):
+    """Enlaces rápidos (hoy, mañana, esta semana...) que conservan el horario elegido."""
+    hoy = timezone.localdate()
+    lunes = hoy - datetime.timedelta(days=hoy.weekday())
+    if hoy.month == 12:
+        fin_de_mes = datetime.date(hoy.year, 12, 31)
+    else:
+        fin_de_mes = datetime.date(hoy.year, hoy.month + 1, 1) - datetime.timedelta(days=1)
+
+    horario = {
+        k: request.GET.get(k) for k in ('hora_inicio', 'hora_fin') if request.GET.get(k)
+    }
+
+    def enlace(etiqueta, desde, hasta=None):
+        datos = {'fecha': desde.isoformat(), **horario}
+        if hasta and hasta != desde:
+            datos['fecha_hasta'] = hasta.isoformat()
+        return {'etiqueta': etiqueta, 'query': urlencode(datos)}
+
+    return [
+        enlace('Hoy', hoy),
+        enlace('Mañana', hoy + datetime.timedelta(days=1)),
+        enlace('Esta semana', lunes, lunes + datetime.timedelta(days=6)),
+        enlace('Próximos 7 días', hoy, hoy + datetime.timedelta(days=6)),
+        enlace('Este mes', hoy, fin_de_mes),
+    ]
+
+
 @modulo_requerido('disponibilidad_actores')
 def consulta_disponibilidad_view(request):
-    """#38: el administrador consulta qué actores están disponibles en una fecha y horario."""
+    """#38: el administrador consulta qué actores están disponibles en una fecha, o en un
+    rango de fechas (por día, semana o mes), con o sin horario."""
     form = ConsultaDisponibilidadForm(request.GET or None)
     filas = None
+    resultados = []
+    es_rango = False
 
     if form.is_bound and form.is_valid():
-        filas = actores_disponibles(
-            form.cleaned_data['fecha'],
-            form.cleaned_data.get('hora_inicio'),
-            form.cleaned_data.get('hora_fin'),
-        )
+        desde = form.cleaned_data['fecha']
+        hasta = form.cleaned_data.get('fecha_hasta') or desde
+        inicio = form.cleaned_data.get('hora_inicio')
+        fin = form.cleaned_data.get('hora_fin')
+        es_rango = hasta != desde
+
+        for i in range((hasta - desde).days + 1):
+            dia = desde + datetime.timedelta(days=i)
+            resultados.append({'fecha': dia, 'filas': actores_disponibles(dia, inicio, fin)})
+
+        if es_rango:
+            filas = [f for r in resultados for f in r['filas']]  # vacío = nadie en todo el rango
+        else:
+            filas = resultados[0]['filas']
 
     return render(request, 'simulactores/consulta_disponibilidad.html', {
         'form': form,
         'filas': filas,
+        'es_rango': es_rango,
+        'resultados': resultados,
+        'dias_con_actores': sum(1 for r in resultados if r['filas']),
+        'atajos': _atajos_de_fechas(request),
         'mensaje_sin_actores': MENSAJE_SIN_ACTORES_FECHA,
     })
