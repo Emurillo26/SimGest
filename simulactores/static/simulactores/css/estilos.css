@@ -2202,15 +2202,102 @@ a.auth-boton {
   }
 }
 
-/* Usuarios: buscador, estado y botones en una sola línea */
-.barra-filtros .form-select {
+/* Usuarios: buscador, estado y botones en una sola línea
+   (solo los selects directos de la barra; los que van dentro de un
+   campo con etiqueta, como en Bitácora, no se tocan) */
+.barra-filtros > .form-select {
   flex: 0 0 210px;
   width: 210px;
 }
 
 @media (max-width: 767.98px) {
-  .barra-filtros .form-select {
+  .barra-filtros > .form-select {
     flex: 1 1 100%;
     width: 100%;
   }
+}
+
+
+/* Mi perfil de actor: datos, habilidades y características físicas */
+.perfil-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px 18px;
+}
+
+.perfil-campos-4 {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.panel-tarjeta .form-label {
+  margin-bottom: 4px;
+}
+
+.chips-habilidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip-check {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.chip-check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chip-check span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid #D2DCE4;
+  border-radius: 999px;
+  background: #fff;
+  color: #4B5A63;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.chip-check:hover span {
+  border-color: #B5C4CF;
+}
+
+.chip-check input:checked + span {
+  border-color: var(--vino);
+  background: var(--vino);
+  color: #fff;
+}
+
+.chip-check input:focus-visible + span {
+  outline: 2px solid var(--vino);
+  outline-offset: 2px;
+}
+
+.ficha-fisica {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px 18px;
+  margin: 0;
+}
+
+.ficha-fisica dt {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--gris-azul);
+}
+
+.ficha-fisica dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.ficha-fisica .sin-dato {
+  font-weight: 400;
+  color: #9AA7AF;
 }
