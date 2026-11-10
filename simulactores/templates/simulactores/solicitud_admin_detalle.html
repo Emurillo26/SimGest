@@ -98,6 +98,9 @@
           {% for a in vigentes %}
             {% if a.estado == 'Pendiente' or a.estado == 'Confirmada' or a.estado == 'Rechazada' %}
               <p class="mb-1"><strong>{{ a.actor.usuario.nombre }}</strong> — {{ a.get_estado_display }}{% if a.estado == 'Rechazada' and a.motivo_rechazo %}: {{ a.motivo_rechazo }}{% endif %}</p>
+              {% if a.estado == 'Rechazada' and puede_asignar_actor %}
+                <div class="alert alert-warning py-2 mb-2" role="alert">Esta simulación se quedó sin actor. Asigna un reemplazo.</div>
+              {% endif %}
             {% endif %}
           {% empty %}
             <p class="text-muted mb-1">Todavía no hay un actor asignado a esta solicitud.</p>
@@ -105,7 +108,7 @@
         {% endwith %}
         <div class="d-flex flex-wrap gap-2 mt-2">
           {% if puede_asignar_actor %}
-            <a href="{% url 'simulactores:asignar_actor' solicitud.uuid %}" class="btn btn-granate btn-pildora">Asignar actor</a>
+            <a href="{% url 'simulactores:asignar_actor' solicitud.uuid %}" class="btn btn-granate btn-pildora">{% if solicitud.estado == 'Aprobada' %}Asignar actor{% else %}Asignar reemplazo{% endif %}</a>
           {% endif %}
           {% if puede_reasignar_actor %}
             <a href="{% url 'simulactores:reasignar_actor' solicitud.uuid %}" class="btn btn-claro btn-pildora">Reasignar actor</a>

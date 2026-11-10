@@ -294,8 +294,61 @@ class HU45ReasignarActorTests(BaseAsignacion):
         r = self.client.post(self.url_asignar(), {'actor': self.reemplazo.pk}, follow=True)
         self.assertContains(r, 'Actor asignado correctamente')
 
-    def test_no_se_reasigna_si_no_hay_actor_vigente(self):
+    def test_si_el_actor_rechazo_reasignar_lleva_a_asignar_un_reemplazo(self):
         self.anterior.estado = 'Rechazada'
+        self.anterior.save()
+        r = self.client.get(self.url_reasignar())
+        self.assertRedirects(r, self.url_asignar())
+
+    def test_no_se_reasigna_si_no_hay_ningun_actor_ni_rechazo(self):
+        self.anterior.estado = 'Cancelada'
         self.anterior.save()
         r = self.client.get(self.url_reasignar(), follow=True)
         self.assertContains(r, 'no tiene un actor asignado')
+
+
+class ReasignarTrasRechazoTests(BaseAsignacion):
+    """Cuando el actor rechaza, el administrador debe poder asignar un reemplazo sin errores confusos."""
+
+    def setUp(self):
+        super().setUp()
+        self.segundo = self.crear_actor('dos@simgest.com', 'Actor Dos')
+        self.client.post(self.url_asignar(), {'actor': self.actor.pk})
+        asignacion = Asignacion.objects.get(solicitud=self.solicitud, actor=self.actor)
+        asignacion.estado = 'Rechazada'
+        asignacion.motivo_rechazo = 'Me enfermé'
+        asignacion.save()
+
+    def test_reasignar_tras_rechazo_lleva_a_elegir_reemplazo(self):
+        r = self.client.get(self.url_reasignar())
+        self.assertRedirects(r, self.url_asignar())
+
+    def test_la_pantalla_explica_quien_rechazo_y_el_motivo(self):
+        r = self.client.get(self.url_asignar())
+        self.assertContains(r, 'Actor Uno')
+        self.assertContains(r, 'rechazó esta simulación')
+        self.assertContains(r, 'Me enfermé')
+        self.assertContains(r, 'Reasignar actor')
+
+    def test_el_actor_que_rechazo_no_aparece_pero_el_otro_si(self):
+        r = self.client.get(self.url_asignar())
+        self.assertContains(r, 'aria-label="Elegir a Actor Dos"')
+        self.assertNotContains(r, 'aria-label="Elegir a Actor Uno"')
+
+    def test_el_reemplazo_se_asigna_correctamente(self):
+        r = self.client.post(self.url_asignar(), {'actor': self.segundo.pk}, follow=True)
+        self.assertContains(r, 'Actor asignado correctamente')
+        self.assertTrue(Asignacion.objects.filter(
+            solicitud=self.solicitud, actor=self.segundo, estado='Pendiente').exists())
+
+    def test_sin_otros_actores_el_mensaje_aclara_que_quien_rechazo_no_se_ofrece(self):
+        self.segundo.disponibilidades.all().delete()
+        r = self.client.get(self.url_asignar())
+        self.assertContains(r, 'No hay actores disponibles')
+        self.assertContains(r, 'quien rechazó')
+
+    def test_el_detalle_avisa_que_falta_un_actor_y_ofrece_asignar_reemplazo(self):
+        detalle = reverse('simulactores:solicitud_admin_detalle', args=[self.solicitud.uuid])
+        r = self.client.get(detalle)
+        self.assertContains(r, 'se quedó sin actor')
+        self.assertContains(r, 'Asignar reemplazo')

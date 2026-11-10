@@ -56,6 +56,12 @@ def reasignar_actor_view(request, solicitud_uuid):
     solicitud = get_object_or_404(Solicitud.objects.select_related('cliente', 'escenario'), uuid=solicitud_uuid)
 
     vigentes = list(servicio.asignaciones_vigentes(solicitud))
+
+    # Si el actor rechazó, ya no hay a quién reemplazar: lo que falta es asignar a otro.
+    if not vigentes and servicio.rechazos(solicitud) and servicio.cupos_libres(solicitud) > 0 \
+            and solicitud.estado in servicio.ESTADOS_PARA_ASIGNAR:
+        return redirect('simulactores:asignar_actor', solicitud_uuid=solicitud.uuid)
+
     if solicitud.estado not in servicio.ESTADOS_PARA_REASIGNAR or not vigentes:
         messages.error(
             request,
@@ -84,6 +90,7 @@ def _pantalla(request, solicitud, modo, vigentes=()):
     salientes = [a.actor_id for a in vigentes]
     filas = servicio.candidatos(solicitud, excluir_actor_ids=salientes)
     hay_disponibles = any(f['disponible'] for f in filas)
+    rechazos = servicio.rechazos(solicitud)
     return render(request, 'simulactores/asignar_actor.html', {
         'solicitud': solicitud,
         'modo': modo,
@@ -91,6 +98,8 @@ def _pantalla(request, solicitud, modo, vigentes=()):
         'hay_disponibles': hay_disponibles,
         'mensaje_sin_actores': servicio.MENSAJE_SIN_ACTORES,
         'vigentes': vigentes,
+        'rechazos': rechazos,
+        'es_reemplazo': modo == 'reasignar' or bool(rechazos),
         'asignacion_elegida': request.POST.get('asignacion') or (str(vigentes[0].pk) if len(vigentes) == 1 else ''),
         'actor_elegido': request.POST.get('actor', ''),
     })

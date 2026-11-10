@@ -84,6 +84,14 @@ def asignaciones_vigentes(solicitud):
     return solicitud.asignaciones.filter(estado__in=ESTADOS_VIGENTES).select_related('actor__usuario')
 
 
+def rechazos(solicitud):
+    """Asignaciones que el actor rechazó (para explicarle al administrador por qué falta un actor)."""
+    return list(
+        solicitud.asignaciones.filter(estado=Asignacion.Estado.RECHAZADA)
+        .select_related('actor__usuario').order_by('-id_asignacion')
+    )
+
+
 def cupos_libres(solicitud):
     return max(solicitud.cantidad_interpretes - asignaciones_vigentes(solicitud).count(), 0)
 
