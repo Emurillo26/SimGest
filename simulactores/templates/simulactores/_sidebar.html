@@ -1,5 +1,9 @@
 {% load static %}
-<nav class="sidebar p-3" style="width:230px;" aria-label="Menú principal">
+<button type="button" class="menu-movil-boton" id="menu-movil-boton" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-principal">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+</button>
+<div class="menu-movil-fondo" id="menu-movil-fondo" hidden></div>
+<nav class="sidebar p-3" id="menu-principal" style="width:230px;" aria-label="Menú principal">
   {# Íconos del menú: se llaman con <use href="#ic-NOMBRE"> #}
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="ic-dashboard_administrador" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
@@ -37,15 +41,39 @@
     {% endif %}{% endfor %}
   </div>
 
-  <div class="nav flex-column gap-1 sidebar-pie">
-    <div class="sidebar-seccion">Mi cuenta</div>
+  <div class="sidebar-pie">
     {% for item in menu_lateral %}{% if item.seccion == 'perfil' %}
-      <a href="{% url item.url_name %}" class="nav-link {% if item.activo %}active{% else %}text-white-50{% endif %}"{% if item.activo %} aria-current="page"{% endif %}>
-        <svg aria-hidden="true"><use href="#ic-perfil"/></svg><span>{{ item.etiqueta }}</span>
+      <a href="{% url item.url_name %}" class="sidebar-usuario{% if item.activo %} activo{% endif %}"{% if item.activo %} aria-current="page"{% endif %}>
+        <span class="sidebar-avatar" aria-hidden="true">{{ user.nombre|first|upper }}</span>
+        <span class="sidebar-usuario-texto">
+          <strong>{{ user.nombre }}</strong>
+          <small>Mi perfil</small>
+        </span>
       </a>
     {% endif %}{% endfor %}
+    <div class="sidebar-divisor" role="separator"></div>
     <a href="{% url 'simulactores:logout' %}" class="nav-link text-white-50">
       <svg aria-hidden="true"><use href="#ic-logout"/></svg><span>Cerrar sesión</span>
     </a>
   </div>
 </nav>
+<script>
+  /* Menú móvil: se abre desde el botón y se cierra con el fondo o con Escape */
+  (function () {
+    var boton = document.getElementById('menu-movil-boton');
+    var menu = document.getElementById('menu-principal');
+    var fondo = document.getElementById('menu-movil-fondo');
+    if (!boton || !menu || !fondo) return;
+
+    function alternar(abrir) {
+      menu.classList.toggle('abierto', abrir);
+      fondo.hidden = !abrir;
+      boton.setAttribute('aria-expanded', String(abrir));
+      boton.setAttribute('aria-label', abrir ? 'Cerrar menú' : 'Abrir menú');
+    }
+
+    boton.addEventListener('click', function () { alternar(!menu.classList.contains('abierto')); });
+    fondo.addEventListener('click', function () { alternar(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') alternar(false); });
+  })();
+</script>
