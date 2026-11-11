@@ -30,10 +30,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
         </div>
 
-        <h2 class="auth-titulo">Permisos insuficientes</h2>
-        <p class="auth-sub">Tu rol no tiene acceso a este módulo del sistema. Si crees que esto es un error, contacta a un administrador.</p>
+        <h2 class="auth-titulo">Acceso restringido</h2>
+        <p class="auth-sub">No tienes permisos para ver esta sección. Si crees que deberías tener acceso, contacta al administrador del sistema.</p>
 
-        <a href="{% url 'simulactores:login' %}" class="auth-boton">Volver al inicio de sesión</a>
+        {% if menu_lateral %}
+          <a href="{% url menu_lateral.0.url_name %}" class="auth-boton">Volver a mi panel</a>
+        {% else %}
+          <a href="{% url 'simulactores:login' %}" class="auth-boton">Volver al inicio de sesión</a>
+        {% endif %}
       </section>
 
     </div>
