@@ -10,7 +10,8 @@ from .permisos import modulo_requerido
 @modulo_requerido('notificaciones')
 def notificaciones_view(request):
     """HU-30: bandeja de notificaciones del usuario (todas o solo las no leídas)."""
-    notificaciones = request.user.notificaciones.order_by('-fecha', '-id_notificacion')
+    # Primero las nuevas (no leídas) y luego las anteriores, cada grupo de la más reciente a la más antigua.
+    notificaciones = request.user.notificaciones.order_by('leido', '-fecha', '-id_notificacion')
 
     filtro_estado = request.GET.get('estado', '')
     if filtro_estado == 'no_leidas':
@@ -23,8 +24,11 @@ def notificaciones_view(request):
 
     return render(request, 'simulactores/notificaciones.html', {
         'notificaciones': pagina,
+        'nuevas': [n for n in pagina if not n.leido],
+        'anteriores': [n for n in pagina if n.leido],
         'filtro_estado': filtro_estado,
         'total_no_leidas': request.user.notificaciones.filter(leido=False).count(),
+        'total_leidas': request.user.notificaciones.filter(leido=True).count(),
     })
 
 

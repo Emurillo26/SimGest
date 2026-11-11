@@ -1,0 +1,23 @@
+<li class="notif-item{% if not notificacion.leido %} no-leida{% endif %}">
+  <span class="notif-icono" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  </span>
+  <div class="notif-cuerpo">
+    <p class="notif-mensaje">{{ notificacion.mensaje }}</p>
+    <span class="notif-meta">{{ notificacion.fecha|date:"d/m/Y H:i" }}{% if not notificacion.leido %} · No leída{% endif %}</span>
+    {% if notificacion.correo_enviado is False %}
+      <div><span class="notif-aviso">El aviso por correo no pudo enviarse; queda disponible aquí.</span></div>
+    {% endif %}
+  </div>
+  <div class="notif-acciones">
+    {% if notificacion.enlace %}
+      <a href="{% url 'simulactores:abrir_notificacion' notificacion.id_notificacion %}" class="btn btn-sm btn-granate btn-pildora">Abrir</a>
+    {% endif %}
+    {% if not notificacion.leido %}
+    <form method="post" action="{% url 'simulactores:marcar_notificacion_leida' notificacion.id_notificacion %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-ver">Marcar como leída</button>
+    </form>
+    {% endif %}
+  </div>
+</li>
