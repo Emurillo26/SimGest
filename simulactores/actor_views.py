@@ -43,9 +43,21 @@ def dashboard_actor_view(request):
         'confirmadas': 0,
     }
 
+    realizadas = 0
+    del_mes = 0
+
     if actor:
         ahora = timezone.localtime()
         hoy = ahora.date()
+        realizadas = Asignacion.objects.filter(
+            actor=actor, estado=Asignacion.Estado.EJECUTADA).count()
+        del_mes = Asignacion.objects.filter(
+            actor=actor,
+            estado__in=[Asignacion.Estado.PENDIENTE, Asignacion.Estado.CONFIRMADA,
+                        Asignacion.Estado.EJECUTADA],
+            solicitud__fecha_evento__year=hoy.year,
+            solicitud__fecha_evento__month=hoy.month,
+        ).exclude(solicitud__estado=Solicitud.Estado.CANCELADA).count()
         hora_actual = ahora.time()
 
         asignaciones = (
@@ -95,6 +107,9 @@ def dashboard_actor_view(request):
             'actor': actor,
             'asignaciones': asignaciones,
             'resumen': resumen,
+            'proxima': asignaciones.first() if actor else None,
+            'realizadas': realizadas,
+            'asignadas_mes': del_mes,
         }
     )
 
