@@ -23,7 +23,7 @@ from .forms import (
     RegistroClienteForm, SolicitudForm,
 )
 from .models import (
-    Actor, Asignacion, Bitacora, Categoria, Escenario, HistorialAcceso, Rol,
+    Actor, Asignacion, Bitacora, Categoria, Escenario, HistorialAcceso, Pago, Rol,
     Solicitud, TipoSimulacion, Usuario,
 )
 from . import asignacion_service
@@ -421,9 +421,34 @@ def dashboard_administrador_view(request):
 
     solicitudes_recientes = solicitudes.select_related('cliente', 'escenario').order_by('-fecha_solicitud')[:5]
 
+    # Tareas pendientes y tarjetas del panel (todo calculado con datos reales).
+    pendientes = {
+        'solicitudes': resumen['solicitudes_pendientes'],
+        'pagos': Pago.objects.filter(estado=Pago.Estado.PENDIENTE).count(),
+        'por_asignar': solicitudes.filter(estado=Solicitud.Estado.APROBADA).count(),
+    }
+    totales = {
+        'actores': Actor.objects.count(),
+        'escenarios': Escenario.objects.filter(estado='Activo').count(),
+    }
+    por_estado = [
+        {'etiqueta': estado.label, 'cantidad': solicitudes.filter(estado=estado.value).count(), 'clase': clase}
+        for estado, clase in (
+            (Solicitud.Estado.PENDIENTE, 'pe'), (Solicitud.Estado.EN_REVISION, 'rv'),
+            (Solicitud.Estado.APROBADA, 'ap'), (Solicitud.Estado.ACTOR_ASIGNADO, 'as'),
+            (Solicitud.Estado.CONFIRMADA, 'ok'), (Solicitud.Estado.COMPLETADA, 'co'),
+            (Solicitud.Estado.CANCELADA, 'ca'),
+        )
+    ]
+    por_estado = [e for e in por_estado if e['cantidad']]
+
     return render(request, 'simulactores/dashboard_administrador.html', {
         'resumen': resumen,
         'solicitudes_recientes': solicitudes_recientes,
+        'pendientes': pendientes,
+        'totales': totales,
+        'por_estado': por_estado,
+        'actividad': Bitacora.objects.select_related('usuario').order_by('-fecha', '-id_bitacora')[:4],
     })
 
 
@@ -796,6 +821,7 @@ def dashboard_cliente_view(request):
         'solicitudes': activas,
         'resumen': resumen,
         'indicador': indicador,
+        'recientes': request.user.notificaciones.order_by('-fecha', '-id_notificacion')[:3],
     })
 
 

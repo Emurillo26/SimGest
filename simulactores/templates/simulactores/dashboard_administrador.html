@@ -3,125 +3,80 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Simulactores - Panel</title>
+  <title>Simulactores - Panel de administración</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'simulactores/img/logo-simulactores.svg' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <link href="{% static 'simulactores/css/admin.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
+{% include 'simulactores/_mensajes.html' %}
 
-      <!-- Bienvenida -->
-      <section class="panel-bienvenida">
-        <div class="panel-bienvenida-texto">
-          <h1>{% if request.user.nombre %}Hola, {{ request.user.nombre.split.0 }}{% else %}Hola de nuevo{% endif %}</h1>
-          <p>
-            {% if resumen.solicitudes_pendientes %}
-              Tienes {{ resumen.solicitudes_pendientes }} solicitud{{ resumen.solicitudes_pendientes|pluralize:"es" }} esperando tu revisión.
-            {% else %}
-              Todo al día: no hay solicitudes esperando tu revisión.
-            {% endif %}
-          </p>
-          <a href="{% url 'simulactores:solicitudes_admin' %}" class="panel-boton-claro">Ver solicitudes</a>
-        </div>
+      <header class="cabecera-pagina">
+        <div><h1>Panel de administración</h1><p>Resumen general de la operación y próximas acciones en Simulactores.</p></div>
+      </header>
+
+      <section class="kpi-grid" aria-label="Resumen">
+        <a class="kpi" href="{% url 'simulactores:solicitudes_admin' %}?estado=Pendiente"><span class="kpi-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span><div><div class="kpi-num">{{ pendientes.solicitudes }}</div><div class="kpi-eti">Solicitudes pendientes</div></div></a>
+        <a class="kpi" href="{% url 'simulactores:pagos_admin' %}"><span class="kpi-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6.5" rx="7" ry="3"/><path d="M5 6.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5M5 11.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg></span><div><div class="kpi-num">{{ pendientes.pagos }}</div><div class="kpi-eti">Pagos por revisar</div></div></a>
+        <a class="kpi" href="{% url 'simulactores:actores_admin' %}"><span class="kpi-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.6-3.2 3-4.9 6-4.9s5.4 1.7 6 4.9"/><circle cx="17" cy="9.5" r="2.5"/><path d="M17 14.8c2.2.2 3.7 1.6 4.2 4"/></svg></span><div><div class="kpi-num">{{ totales.actores }}</div><div class="kpi-eti">Actores registrados</div></div></a>
+        <a class="kpi" href="{% url 'simulactores:biblioteca_escenarios' %}"><span class="kpi-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></span><div><div class="kpi-num">{{ totales.escenarios }}</div><div class="kpi-eti">Escenarios disponibles</div></div></a>
       </section>
 
-      <!-- Resumen -->
-      <section class="panel-resumen">
-
-        <article class="panel-tarjeta panel-tarjeta-ancha">
-          <h2>Solicitudes</h2>
-          <div class="panel-stats">
-            <div class="panel-stat">
-              <div class="panel-numero num-pe">{{ resumen.solicitudes_pendientes }}</div>
-              <div class="panel-etiqueta">Pendientes</div>
-            </div>
-            <div class="panel-stat">
-              <div class="panel-numero num-rv">{{ resumen.solicitudes_en_revision }}</div>
-              <div class="panel-etiqueta">En revisión</div>
-            </div>
-            <div class="panel-stat">
-              <div class="panel-numero num-ok">{{ resumen.solicitudes_confirmadas }}</div>
-              <div class="panel-etiqueta">Confirmadas</div>
-            </div>
+      <section class="dos-columnas">
+        <article class="caja">
+          <div class="caja-titulo"><h2>Próximas acciones</h2></div>
+          <div class="filas">
+            <a class="fila tarea" href="{% url 'simulactores:solicitudes_admin' %}?estado=Pendiente"><span class="fila-cuerpo"><strong>Revisar {{ pendientes.solicitudes }} solicitud{{ pendientes.solicitudes|pluralize:"es" }} pendiente{{ pendientes.solicitudes|pluralize }}</strong></span><span class="fila-flecha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="fila tarea" href="{% url 'simulactores:pagos_admin' %}"><span class="fila-cuerpo"><strong>Validar {{ pendientes.pagos }} pago{{ pendientes.pagos|pluralize }} pendiente{{ pendientes.pagos|pluralize }}</strong></span><span class="fila-flecha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="fila tarea" href="{% url 'simulactores:solicitudes_admin' %}?estado=Aprobada"><span class="fila-cuerpo"><strong>Asignar actores a {{ pendientes.por_asignar }} simulaci{{ pendientes.por_asignar|pluralize:"ón,ones" }}</strong></span><span class="fila-flecha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
           </div>
-          <a href="{% url 'simulactores:solicitudes_admin' %}" class="panel-enlace">
-            Gestionar solicitudes
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          </a>
+          {% if resumen.intentos_fallidos_recientes %}
+            <p class="aviso-seguridad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.8v.1"/></svg> Hay {{ resumen.intentos_fallidos_recientes }} intento{{ resumen.intentos_fallidos_recientes|pluralize }} de acceso fallido{{ resumen.intentos_fallidos_recientes|pluralize }}. <a href="{% url 'simulactores:bitacora_actividad' %}">Revisar en la bitácora</a></p>
+          {% endif %}
         </article>
 
-        <article class="panel-tarjeta">
-          <h2>Usuarios</h2>
-          <div>
-            <div class="panel-numero">{{ resumen.usuarios_total }}</div>
-            <div class="panel-etiqueta">{{ resumen.usuarios_activos }} con cuenta activa</div>
-          </div>
-          <a href="{% url 'simulactores:listado_usuarios' %}" class="panel-enlace">
-            Administrar roles y estados
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          </a>
+        <article class="caja">
+          <div class="caja-titulo"><h2>Actividad reciente</h2><a href="{% url 'simulactores:bitacora_actividad' %}" class="enlace-flecha">Ver bitácora</a></div>
+          {% if actividad %}
+            <ul class="linea-tiempo-mini">
+              {% for a in actividad %}<li><span class="punto"></span><div><strong>{{ a.accion }}{% if a.usuario %} · {{ a.usuario.nombre }}{% endif %}</strong><small>{{ a.fecha|date:"d/m/Y H:i" }}</small></div></li>{% endfor %}
+            </ul>
+          {% else %}<p class="text-muted mb-0">Todavía no hay actividad registrada.</p>{% endif %}
         </article>
-
-        <article class="panel-tarjeta{% if resumen.intentos_fallidos_recientes %} panel-alerta{% endif %}">
-          <h2>
-            {% if resumen.intentos_fallidos_recientes %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5"/><path d="M12 18v.01"/></svg>
-            {% endif %}
-            Accesos fallidos
-          </h2>
-          <div>
-            <div class="panel-numero">{{ resumen.intentos_fallidos_recientes }}</div>
-            <div class="panel-etiqueta">intentos recientes</div>
-          </div>
-          <a href="{% url 'simulactores:bitacora_actividad' %}" class="panel-enlace">
-            Revisar en la bitácora
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          </a>
-        </article>
-
       </section>
 
-      <!-- Solicitudes recientes -->
-      <section class="panel-tabla">
-        <div class="panel-tabla-cabecera">
-          <h2>Solicitudes recientes</h2>
-          <a href="{% url 'simulactores:solicitudes_admin' %}" class="panel-enlace" style="margin-top:0;">Ver todas</a>
-        </div>
+      <section class="caja">
+        <div class="caja-titulo"><h2>Solicitudes por estado</h2></div>
+        {% if por_estado %}
+          <div class="barra-estados" role="img" aria-label="Solicitudes por estado">
+            {% for e in por_estado %}<span class="seg-{{ e.clase }}" style="flex: {{ e.cantidad }};" title="{{ e.etiqueta }}: {{ e.cantidad }}"></span>{% endfor %}
+          </div>
+          <div class="leyenda-estados mt-3">
+            {% for e in por_estado %}<span class="estado estado-{{ e.clase }}"><i></i>{{ e.etiqueta }} ({{ e.cantidad }})</span>{% endfor %}
+          </div>
+        {% else %}<p class="text-muted mb-0">Aún no hay solicitudes.</p>{% endif %}
+      </section>
 
+      <section class="caja">
+        <div class="caja-titulo"><h2>Solicitudes recientes</h2><a href="{% url 'simulactores:solicitudes_admin' %}" class="enlace-flecha">Ver todas</a></div>
         {% if solicitudes_recientes %}
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr><th>N° Solicitud</th><th>Cliente</th><th>Estado</th><th>Fecha del evento</th><th></th></tr>
-            </thead>
-            <tbody>
-              {% for solicitud in solicitudes_recientes %}
-              <tr>
-                <td class="fw-semibold">{{ solicitud.numero_solicitud }}</td>
-                <td>{{ solicitud.cliente.nombre }}</td>
-                <td>{% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</td>
-                <td>{{ solicitud.fecha_evento }}</td>
-                <td class="text-end">
-                  <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="btn btn-sm btn-ver">Ver</a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="panel-vacio">
-          <div class="panel-vacio-icono" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+          <div class="filas">
+            {% for solicitud in solicitudes_recientes %}
+              <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="fila">
+                <span class="fila-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M14 3.5V8h4M9 13h6M9 16.5h4"/></svg></span>
+                <div class="fila-cuerpo"><strong>{{ solicitud.numero_solicitud }}</strong><small>{{ solicitud.cliente.nombre }} · {{ solicitud.fecha_evento|date:"d/m/Y" }}</small></div>
+                {% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}
+              </a>
+            {% endfor %}
           </div>
-          <strong>Aún no hay solicitudes</strong>
-          <p>Cuando un cliente envíe una, aparecerá aquí para que la revises.</p>
-        </div>
+        {% else %}
+          <div class="vacio-grande"><div class="vacio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M14 3.5V8h4M9 13h6M9 16.5h4"/></svg></div><strong>No hay solicitudes todavía</strong><p>Cuando los clientes creen solicitudes, aparecerán aquí.</p></div>
         {% endif %}
       </section>
 
