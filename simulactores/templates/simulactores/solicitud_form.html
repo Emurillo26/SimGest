@@ -8,73 +8,167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <link href="{% static 'simulactores/css/portales.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-      <header class="panel-encabezado">
-        <div>
-          <a href="{% url 'simulactores:mis_solicitudes' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mis solicitudes</a>
-          <h1>Nueva solicitud</h1>
-          <p>Cuéntanos qué simulación necesitas y cuándo.</p>
-        </div>
-      </header>
+{% include 'simulactores/_mensajes.html' %}
+
+      <div>
+        <nav class="migas" aria-label="Ruta"><a href="{% url 'simulactores:mis_solicitudes' %}">Mis solicitudes</a><span aria-hidden="true">›</span><span>Nueva solicitud</span></nav>
+        <div class="cabecera-pagina"><div><h1>Nueva solicitud de simulación</h1><p>Completa la información de tu evento en cuatro pasos.</p></div></div>
+      </div>
 
       {% if form.non_field_errors %}
         <div class="alert alert-danger py-2 mb-0" role="alert">{{ form.non_field_errors }}</div>
       {% endif %}
 
-      <section class="panel-tarjeta panel-formulario">
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label">{{ form.tipo_simulacion.label }}</label>
-            {{ form.tipo_simulacion }}
-            {% for error in form.tipo_simulacion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">{{ form.fecha_evento.label }}</label>
+      <ol class="pasos" id="pasos" aria-label="Pasos de la solicitud">
+        <li class="activo" data-paso="1"><span>1</span>Evento</li>
+        <li data-paso="2"><span>2</span>Escenario</li>
+        <li data-paso="3"><span>3</span>Contacto</li>
+        <li data-paso="4"><span>4</span>Revisión</li>
+      </ol>
+
+      <form method="post" id="form-solicitud" novalidate>
+        {% csrf_token %}
+
+        <section class="caja paso-panel" data-paso="1">
+          <h2 class="paso-titulo">Evento</h2>
+          <p class="caja-sub">Cuéntanos la información general de tu evento de simulación.</p>
+          <div class="grid-2">
+            <div class="span-2">
+              <label class="form-label" for="{{ form.tipo_simulacion.id_for_label }}">{{ form.tipo_simulacion.label }} {% if form.tipo_simulacion.field.required %}*{% endif %}</label>
+              {{ form.tipo_simulacion }}
+              {% for error in form.tipo_simulacion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="">
+              <label class="form-label" for="{{ form.fecha_evento.id_for_label }}">{{ form.fecha_evento.label }} {% if form.fecha_evento.field.required %}*{% endif %}</label>
               {{ form.fecha_evento }}
               {% for error in form.fecha_evento.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
             </div>
-            <div class="col-md-3 mb-3">
-              <label class="form-label">{{ form.hora_inicio.label }}</label>
+            <div class="grid-2 interno">
+              <div class="">
+              <label class="form-label" for="{{ form.hora_inicio.id_for_label }}">{{ form.hora_inicio.label }} {% if form.hora_inicio.field.required %}*{% endif %}</label>
               {{ form.hora_inicio }}
               {% for error in form.hora_inicio.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
             </div>
-            <div class="col-md-3 mb-3">
-              <label class="form-label">{{ form.hora_fin.label }}</label>
+              <div class="">
+              <label class="form-label" for="{{ form.hora_fin.id_for_label }}">{{ form.hora_fin.label }} {% if form.hora_fin.field.required %}*{% endif %}</label>
               {{ form.hora_fin }}
               {% for error in form.hora_fin.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
             </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">{{ form.cantidad_interpretes.label }}</label>
-            {{ form.cantidad_interpretes }}
-            {% for error in form.cantidad_interpretes.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+        </section>
+
+        <section class="caja paso-panel" data-paso="2" hidden>
+          <h2 class="paso-titulo">Escenario</h2>
+          <p class="caja-sub">El equipo propondrá un escenario según lo que necesites. Cuéntanos cuántos intérpretes requieres y el objetivo del evento.</p>
+          <div class="grid-2">
+            <div class="">
+              <label class="form-label" for="{{ form.cantidad_interpretes.id_for_label }}">{{ form.cantidad_interpretes.label }} {% if form.cantidad_interpretes.field.required %}*{% endif %}</label>
+              {{ form.cantidad_interpretes }}
+              {% for error in form.cantidad_interpretes.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div></div>
+            <div class="span-2">
+              <label class="form-label" for="{{ form.observaciones.id_for_label }}">{{ form.observaciones.label }} {% if form.observaciones.field.required %}*{% endif %}</label>
+              {{ form.observaciones }}
+              {% for error in form.observaciones.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
           </div>
-                    <div class="mb-3">
-            <label class="form-label">{{ form.ubicacion.label }}</label>
-            {{ form.ubicacion }}
-            {% for error in form.ubicacion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+        </section>
+
+        <section class="caja paso-panel" data-paso="3" hidden>
+          <h2 class="paso-titulo">Contacto</h2>
+          <p class="caja-sub">Indica dónde será el evento. Usaremos los datos de tu cuenta para contactarte.</p>
+          <div class="grid-2">
+            <div class="span-2">
+              <label class="form-label" for="{{ form.ubicacion.id_for_label }}">{{ form.ubicacion.label }} {% if form.ubicacion.field.required %}*{% endif %}</label>
+              {{ form.ubicacion }}
+              {% for error in form.ubicacion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div><span class="form-label d-block">Nombre</span><div class="dato-fijo">{{ request.user.nombre }}</div></div>
+            <div><span class="form-label d-block">Correo electrónico</span><div class="dato-fijo">{{ request.user.email }}</div></div>
+            {% if request.user.telefono %}<div><span class="form-label d-block">Teléfono</span><div class="dato-fijo">{{ request.user.telefono }}</div></div>{% endif %}
           </div>
-          <div class="mb-4">
-            <label class="form-label">{{ form.observaciones.label }}</label>
-            {{ form.observaciones }}
-          </div>
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-granate btn-pildora">Crear solicitud</button>
-            <a href="{% url 'simulactores:mis_solicitudes' %}" class="btn btn-claro btn-pildora">Cancelar</a>
-          </div>
-        </form>
-      </section>
+          <p class="perfil-nota mt-2 mb-0">Puedes actualizar tu teléfono en <a href="{% url 'simulactores:perfil' %}">Mi perfil</a>.</p>
+        </section>
+
+        <section class="caja paso-panel" data-paso="4" hidden>
+          <h2 class="paso-titulo">Revisión</h2>
+          <p class="caja-sub">Revisa la información antes de crear la solicitud.</p>
+          <dl class="dl-filas" id="resumen-revision"></dl>
+        </section>
+
+        <div class="paso-acciones">
+          <button type="button" class="btn-contorno btn-ico" id="btn-atras" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Regresar</button>
+          <a href="{% url 'simulactores:mis_solicitudes' %}" class="btn-contorno" id="btn-cancelar">Cancelar</a>
+          <span class="flex-fill"></span>
+          <button type="button" class="btn btn-granate btn-pildora btn-ico" id="btn-sigue">Continuar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <button type="submit" class="btn btn-granate btn-pildora" id="btn-crear" hidden>Crear solicitud</button>
+        </div>
+      </form>
 
     </main>
   </div>
 </div>
 
+<script>
+(function () {
+  var form = document.getElementById('form-solicitud');
+  var paneles = form.querySelectorAll('.paso-panel');
+  var pasos = document.querySelectorAll('#pasos li');
+  var atras = document.getElementById('btn-atras'), sigue = document.getElementById('btn-sigue');
+  var crear = document.getElementById('btn-crear'), cancelar = document.getElementById('btn-cancelar');
+  var actual = 1;
+
+  function texto(c) {
+    if (!c) return '';
+    if (c.tagName === 'SELECT') return c.selectedIndex >= 0 ? c.options[c.selectedIndex].text : '';
+    return c.value;
+  }
+  function resumen() {
+    var filas = [
+      ['Tipo de simulación', 'id_tipo_simulacion'], ['Fecha del evento', 'id_fecha_evento'],
+      ['Hora de inicio', 'id_hora_inicio'], ['Hora de fin', 'id_hora_fin'],
+      ['Cantidad de intérpretes', 'id_cantidad_interpretes'], ['Ubicación', 'id_ubicacion'],
+      ['Observaciones', 'id_observaciones']
+    ];
+    var dl = document.getElementById('resumen-revision');
+    dl.innerHTML = '';
+    filas.forEach(function (f) {
+      var dt = document.createElement('dt'), dd = document.createElement('dd');
+      dt.textContent = f[0];
+      dd.textContent = texto(document.getElementById(f[1])) || '—';
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+  }
+  function ir(n) {
+    actual = n;
+    paneles.forEach(function (p) { p.hidden = Number(p.dataset.paso) !== n; });
+    pasos.forEach(function (li) {
+      var v = Number(li.dataset.paso);
+      li.classList.toggle('activo', v === n);
+      li.classList.toggle('hecho', v < n);
+    });
+    atras.hidden = n === 1; cancelar.hidden = n !== 1;
+    sigue.hidden = n === 4; crear.hidden = n !== 4;
+    if (n === 4) resumen();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  sigue.addEventListener('click', function () { ir(Math.min(4, actual + 1)); });
+  atras.addEventListener('click', function () { ir(Math.max(1, actual - 1)); });
+  pasos.forEach(function (li) { li.addEventListener('click', function () { ir(Number(li.dataset.paso)); }); });
+
+  /* Si el servidor devolvió errores, se abre el primer paso que los tenga (los valores se conservan). */
+  var error = form.querySelector('.campo-error');
+  if (error) { ir(Number(error.closest('.paso-panel').dataset.paso)); }
+})();
+</script>
 </body>
 </html>
