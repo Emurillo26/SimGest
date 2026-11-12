@@ -8,13 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <link href=\"{% static 'simulactores/css/admin.css' %}\" rel=\"stylesheet\">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-      <header class="panel-encabezado">
+      <header class="panel-encabezado cabecera-pagina">
         <div>
           <h1>Solicitudes</h1>
           <p>Revisa y gestiona las solicitudes de todos los clientes.</p>

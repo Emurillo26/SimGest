@@ -8,32 +8,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
-  <style>
-    .actor-fila.no-disponible { opacity: .6; }
-    .actor-motivo { font-size: .8rem; color: #8a5a00; }
-    .chip-habilidad {
-      display: inline-block; margin: 0 4px 4px 0; padding: 2px 10px;
-      border-radius: 999px; background: #f1ecee; color: #4a2a30; font-size: .78rem;
-    }
-    .etiqueta-disp {
-      display: inline-block; padding: 2px 10px; border-radius: 999px;
-      font-size: .78rem; font-weight: 600;
-    }
-    .etiqueta-disp.si { background: #e3f4e8; color: #1d6b3a; }
-    .etiqueta-disp.no { background: #fff4d6; color: #8a5a00; }
-  </style>
+  <link href="{% static 'simulactores/css/admin.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-      <header class="panel-encabezado">
-        <div>
-          <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Solicitud {{ solicitud.numero_solicitud }}</a>
-          <h1>{% if es_reemplazo %}Reasignar actor{% else %}Asignar actor{% endif %}</h1>
+      <div>
+        <nav class="migas" aria-label="Ruta"><a href="{% url 'simulactores:solicitudes_admin' %}">Solicitudes</a><span aria-hidden="true">›</span><a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}">{{ solicitud.numero_solicitud }}</a><span aria-hidden="true">›</span><span>{% if es_reemplazo %}Reasignar actor{% else %}Asignar actor{% endif %}</span></nav>
+        <div class="cabecera-pagina">
+          <div><h1>{% if es_reemplazo %}Reasignar actor{% else %}Asignar o reasignar actor{% endif %}</h1><p>Solicitud N.º {{ solicitud.numero_solicitud }}{% if solicitud.escenario %} – {{ solicitud.escenario.nombre }}{% endif %}</p></div>
+          <div>{% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</div>
         </div>
-      </header>
+      </div>
 
       {% if messages %}
         {% for message in messages %}
@@ -50,16 +38,14 @@
         </div>
       {% endif %}
 
-      <section class="panel-tarjeta">
-        <dl class="dl-detalle detalle-grid">
-          <div><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
-          <div><dt>Fecha del evento</dt><dd>{{ solicitud.fecha_evento }}</dd></div>
-          <div><dt>Horario</dt><dd>{{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</dd></div>
-          <div><dt>Intérpretes requeridos</dt><dd>{{ solicitud.cantidad_interpretes }}</dd></div>
-        </dl>
+      <section class="caja resumen-linea">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>{{ solicitud.fecha_evento|date:"d/m/Y" }}</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>{{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>{{ solicitud.tipo_simulacion }}</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.6-3.2 3-4.9 6-4.9s5.4 1.7 6 4.9"/><circle cx="17" cy="9.5" r="2.5"/><path d="M17 14.8c2.2.2 3.7 1.6 4.2 4"/></svg>{{ solicitud.cantidad_interpretes }} requerido{{ solicitud.cantidad_interpretes|pluralize }}</span>
       </section>
 
-      <form method="post" class="panel-tabla">
+      <form method="post" class="caja caja-tabla">
         {% csrf_token %}
 
         {% if modo == 'reasignar' %}
@@ -78,7 +64,7 @@
           <div class="table-responsive">
             <table class="table align-middle">
               <thead>
-                <tr><th></th><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Disponibilidad</th></tr>
+                <tr><th></th><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Disponibilidad</th><th>Tarifa</th></tr>
               </thead>
               <tbody>
                 {% for f in filas %}
@@ -89,25 +75,26 @@
                            {% if actor_elegido == f.actor.pk|stringformat:"s" %}checked{% endif %}
                            aria-label="Elegir a {{ f.actor.usuario.nombre }}">
                   </td>
-                  <td><label for="actor-{{ f.actor.pk }}" class="fw-semibold mb-0">{{ f.actor.usuario.nombre }}</label></td>
+                  <td><label for="actor-{{ f.actor.pk }}" class="actor-mini mb-0"><span class="avatar-mini">{{ f.actor.usuario.nombre|first|upper }}</span><strong>{{ f.actor.usuario.nombre }}</strong></label></td>
                   <td>{{ f.edad|default_if_none:"—" }}</td>
                   <td>{{ f.actor.genero|default:"—" }}</td>
                   <td>{% for h in f.habilidades %}<span class="chip-habilidad">{{ h }}</span>{% empty %}—{% endfor %}</td>
                   <td>
                     {% if f.disponible %}
-                      <span class="etiqueta-disp si">Disponible</span>
+                      <span class="etiqueta-disp si">✓ Disponible</span>
                     {% else %}
                       <span class="etiqueta-disp no">No disponible</span>
                       <div class="actor-motivo">{{ f.motivo }}</div>
                     {% endif %}
                   </td>
+                  <td>{% if f.actor.tarifa %}₡{{ f.actor.tarifa|floatformat:"0" }}{% if f.actor.tipo_tarifa %}<small class="d-block text-muted">{{ f.actor.get_tipo_tarifa_display }}</small>{% endif %}{% else %}—{% endif %}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
           <div class="p-3 d-flex gap-2 justify-content-end">
-            <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="btn btn-claro btn-pildora">Cancelar</a>
+            <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="btn-contorno">Volver al detalle</a>
             <button type="submit" class="btn btn-granate btn-pildora">{% if es_reemplazo %}Confirmar reemplazo{% else %}Asignar actor{% endif %}</button>
           </div>
         {% else %}
