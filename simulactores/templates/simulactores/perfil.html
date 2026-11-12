@@ -8,133 +8,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <link href="{% static 'simulactores/css/portales.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-      <header class="panel-encabezado">
+{% include 'simulactores/_mensajes.html' %}
+
+      <header class="cabecera-pagina">
         <div>
           <h1>Mi perfil</h1>
           <p>{% if actor_form %}Mantén al día tus datos personales, tus características físicas y tus habilidades: el equipo los usa para asignarte simulaciones.{% else %}Actualiza tus datos y, si quieres, tu contraseña.{% endif %}</p>
         </div>
       </header>
 
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-
       <form method="post" class="d-flex flex-column gap-4" novalidate>
         {% csrf_token %}
 
-        <!-- Identidad -->
-        <section class="perfil-identidad">
-          <div class="perfil-banner"></div>
-          <div class="perfil-datos">
-            <div class="perfil-avatar" aria-hidden="true">{{ usuario.nombre|first|upper }}</div>
-            <div class="perfil-texto">
-              <h2>{{ usuario.nombre }}</h2>
-              <div class="perfil-correo">{{ usuario.email }}</div>
-              <div class="perfil-etiquetas">
-                {% if usuario.rol %}<span class="etiqueta">{{ usuario.rol.nombre }}</span>{% endif %}
-                {% if usuario.estado == 'Activo' %}
-                  <span class="etiqueta ok">Cuenta activa</span>
-                {% elif usuario.estado %}
-                  <span class="etiqueta">{{ usuario.estado }}</span>
-                {% endif %}
-              </div>
+        <section class="perfil-cabecera caja">
+          <div class="perfil-avatar-grande" aria-hidden="true">{{ usuario.nombre|first|upper }}</div>
+          <div>
+            <h2>{{ usuario.nombre }}</h2>
+            <div class="perfil-correo">{{ usuario.email }}</div>
+            <div class="perfil-etiquetas">
+              {% if usuario.rol %}<span class="chip">{{ usuario.rol.nombre }}</span>{% endif %}
+              {% if usuario.estado == 'Activo' %}<span class="estado estado-ok"><i></i>Cuenta activa</span>{% elif usuario.estado %}<span class="chip">{{ usuario.estado }}</span>{% endif %}
             </div>
           </div>
         </section>
 
-        <div class="perfil-grid">
+        {% if actor_form %}
+        <nav class="perfil-pestanas" aria-label="Secciones del perfil">
+          <a href="#cuenta" class="activa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg>Cuenta</a>
+          <a href="#perfil-actoral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>Perfil actoral</a>
+          <a href="#habilidades"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg>Habilidades</a>
+          <a href="#fisicas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg>Características físicas</a>
+        </nav>
+        {% endif %}
 
-          <!-- Datos personales -->
-          <section class="panel-tarjeta">
-            <div>
-              <h2>Datos personales</h2>
-              <p class="perfil-nota">Así te ven los demás usuarios del sistema.</p>
-            </div>
-
-            <div>
-              <div class="form-floating">
+        <section id="cuenta" class="perfil-seccion">
+          <div class="perfil-seccion-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg><div><h2>Cuenta</h2><p>Gestiona los datos de tu cuenta y la seguridad de acceso.</p></div></div>
+          <div class="perfil-grid">
+            <div class="caja d-flex flex-column gap-3">
+              <div><h3>Datos personales</h3><p class="perfil-nota">Así te ven los demás usuarios del sistema.</p></div>
+              <div>
+                <label class="form-label" for="id_nombre">Nombre completo</label>
                 <input type="text" name="nombre" id="id_nombre" class="form-control{% if perfil_form.nombre.errors %} is-invalid{% endif %}" placeholder="Nombre completo" value="{{ perfil_form.nombre.value|default_if_none:'' }}" autocomplete="name" required{% if perfil_form.nombre.errors %} aria-invalid="true"{% endif %}>
-                <label for="id_nombre">Nombre completo</label>
+                {% for error in perfil_form.nombre.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
               </div>
-              {% for error in perfil_form.nombre.errors %}<div class="campo-error ms-2">{{ error }}</div>{% endfor %}
-            </div>
-
-            <div>
-              <div class="form-floating">
-                <input type="email" id="id_correo" class="form-control" placeholder="Correo electrónico" value="{{ usuario.email }}" readonly>
-                <label for="id_correo">Correo electrónico</label>
-                <svg class="perfil-candado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <div>
+                <label class="form-label" for="id_correo">Correo electrónico</label>
+                <div class="campo-bloqueado"><input type="email" id="id_correo" class="form-control" value="{{ usuario.email }}" readonly><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5"/></svg></div>
+                <p class="perfil-nota mb-0">Es tu usuario de acceso, por eso no se puede editar.</p>
               </div>
-              <p class="perfil-nota ms-2 mb-0">Es tu usuario de acceso, por eso no se puede editar.</p>
-            </div>
-
-            <div>
-              <div class="form-floating">
-                <input type="text" name="telefono" id="id_telefono" class="form-control{% if perfil_form.telefono.errors %} is-invalid{% endif %}" placeholder="Teléfono" value="{{ perfil_form.telefono.value|default_if_none:'' }}" autocomplete="tel">
-                <label for="id_telefono">Teléfono</label>
+              <div>
+                <label class="form-label" for="id_telefono">Teléfono</label>
+                <input type="text" name="telefono" id="id_telefono" class="form-control{% if perfil_form.telefono.errors %} is-invalid{% endif %}" placeholder="Ej. 8888-8888" value="{{ perfil_form.telefono.value|default_if_none:'' }}" autocomplete="tel">
+                {% for error in perfil_form.telefono.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
               </div>
-              {% for error in perfil_form.telefono.errors %}<div class="campo-error ms-2">{{ error }}</div>{% endfor %}
-            </div>
-          </section>
-
-          <!-- Contraseña -->
-          <section class="panel-tarjeta">
-            <div>
-              <h2>Contraseña</h2>
-              <p class="perfil-nota">Déjala en blanco si no quieres cambiarla.</p>
             </div>
 
-            <div>
-              <div class="form-floating position-relative">
-                <input type="password" name="password" id="id_password" class="form-control con-ojo{% if password_form.password.errors %} is-invalid{% endif %}" placeholder="Nueva contraseña" autocomplete="new-password">
-                <label for="id_password">Nueva contraseña</label>
-                <button type="button" class="auth-ojo" data-objetivo="id_password" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/><path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button>
-              </div>
-              {% if password_form.password.errors %}
-                <div class="campo-error ms-2">{{ password_form.password.errors|join:" " }}</div>
-              {% endif %}
+            <div class="caja d-flex flex-column gap-3">
+              <div class="perfil-seguridad-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.4-3 7.6-7 9.5-4-1.9-7-5.1-7-9.5V6l7-3z"/></svg><div><h3>Seguridad</h3><p class="perfil-nota">Actualiza tu contraseña cuando lo necesites.</p></div></div>
+              <details class="desplegable" {% if password_form.password.errors or password_form.password2.errors %}open{% endif %}>
+                <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5"/></svg><span>Cambiar contraseña</span><em aria-hidden="true">⌄</em></summary>
+                <div class="d-flex flex-column gap-3 pt-3">
+                  <p class="perfil-nota mb-0">Déjala en blanco si no quieres cambiarla.</p>
+                  <div>
+                    <div class="position-relative">
+                      <input type="password" name="password" id="id_password" class="form-control con-ojo{% if password_form.password.errors %} is-invalid{% endif %}" placeholder="Nueva contraseña" autocomplete="new-password" aria-label="Nueva contraseña">
+                      <button type="button" class="auth-ojo" data-objetivo="id_password" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/><path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button>
+                    </div>
+                    {% if password_form.password.errors %}<div class="campo-error">{{ password_form.password.errors|join:" " }}</div>{% endif %}
+                  </div>
+                  <div class="auth-reglas m-0" id="reglas_password" hidden aria-live="polite">
+                    <p class="auth-reglas-titulo">Tu contraseña debe tener:</p>
+                    <div class="auth-reglas-barra" id="barra_password"><span></span></div>
+                    <div class="auth-regla" data-regla="longitud"><span class="punto"></span>Mínimo 8 caracteres</div>
+                    <div class="auth-regla" data-regla="mayuscula"><span class="punto"></span>Al menos una letra mayúscula</div>
+                    <div class="auth-regla" data-regla="numero"><span class="punto"></span>Al menos un número</div>
+                  </div>
+                  <div>
+                    <div class="position-relative">
+                      <input type="password" name="password2" id="id_password2" class="form-control con-ojo{% if password_form.password2.errors %} is-invalid{% endif %}" placeholder="Confirmar nueva contraseña" autocomplete="new-password" aria-label="Confirmar nueva contraseña">
+                      <button type="button" class="auth-ojo" data-objetivo="id_password2" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/><path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button>
+                    </div>
+                    {% if password_form.password2.errors %}<div class="campo-error">{{ password_form.password2.errors|join:" " }}</div>{% endif %}
+                  </div>
+                </div>
+              </details>
             </div>
-
-            <div class="auth-reglas m-0" id="reglas_password" hidden aria-live="polite">
-              <p class="auth-reglas-titulo">Tu contraseña debe tener:</p>
-              <div class="auth-reglas-barra" id="barra_password"><span></span></div>
-              <div class="auth-regla" data-regla="longitud"><span class="punto"></span>Mínimo 8 caracteres</div>
-              <div class="auth-regla" data-regla="mayuscula"><span class="punto"></span>Al menos una letra mayúscula</div>
-              <div class="auth-regla" data-regla="numero"><span class="punto"></span>Al menos un número</div>
-            </div>
-
-            <div>
-              <div class="form-floating position-relative">
-                <input type="password" name="password2" id="id_password2" class="form-control con-ojo{% if password_form.password2.errors %} is-invalid{% endif %}" placeholder="Confirmar nueva contraseña" autocomplete="new-password">
-                <label for="id_password2">Confirmar nueva contraseña</label>
-                <button type="button" class="auth-ojo" data-objetivo="id_password2" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19C5.5 19 1.5 12 1.5 12a18.5 18.5 0 0 1 4.56-5.94"/><path d="M9.9 5.24A9.7 9.7 0 0 1 12 5c6.5 0 10.5 7 10.5 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button>
-              </div>
-              {% if password_form.password2.errors %}
-                <div class="campo-error ms-2">{{ password_form.password2.errors|join:" " }}</div>
-              {% endif %}
-            </div>
-          </section>
-        </div>
-
+          </div>
+        </section>
 
         {% if actor_form %}
-        <div class="perfil-grid">
-
-          <!-- Datos del actor -->
-          <section class="panel-tarjeta">
-            <div>
-              <h2>Datos del actor</h2>
-              <p class="perfil-nota">Los usa el administrador para asignarte y calcular tus pagos.</p>
-            </div>
-            <div class="perfil-campos">
+        <section id="perfil-actoral" class="perfil-seccion">
+          <div class="perfil-seccion-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><div><h2>Perfil actoral</h2><p>Datos del actor: los usa el administrador para asignarte y calcular tus pagos.</p></div></div>
+          <div class="caja"><div class="perfil-campos">
             <div>
               <label class="form-label" for="{{ actor_form.fecha_nacimiento.id_for_label }}">{{ actor_form.fecha_nacimiento.label }}</label>
               {{ actor_form.fecha_nacimiento }}
@@ -155,15 +127,12 @@
               {{ actor_form.tipo_tarifa }}
               {% for e in actor_form.tipo_tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
             </div>
-            </div>
-          </section>
+          </div></div>
+        </section>
 
-          <!-- Habilidades -->
-          <section class="panel-tarjeta">
-            <div>
-              <h2>Habilidades</h2>
-              <p class="perfil-nota">Marca todas las que tengas.</p>
-            </div>
+        <section id="habilidades" class="perfil-seccion">
+          <div class="perfil-seccion-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg><div><h2>Habilidades</h2><p>Marca todas las que tengas.</p></div></div>
+          <div class="caja">
             <div class="chips-habilidades">
               {% for opcion in actor_form.habilidades %}
                 <label class="chip-check" for="{{ opcion.id_for_label }}">{{ opcion.tag }}<span>{{ opcion.choice_label }}</span></label>
@@ -172,69 +141,60 @@
               {% endfor %}
             </div>
             {% for e in actor_form.habilidades.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-          </section>
-        </div>
-
-        <!-- Características físicas -->
-        <section class="panel-tarjeta">
-          <div>
-            <h2>Características físicas</h2>
-            <p class="perfil-nota">Ayudan a elegir al actor adecuado para cada personaje. Todos los campos son opcionales, pero entre más completos, mejor.</p>
           </div>
-          <div class="perfil-campos perfil-campos-4">
-            <div>
+        </section>
+
+        <section id="fisicas" class="perfil-seccion">
+          <div class="perfil-seccion-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg><div><h2>Características físicas</h2><p>Ayudan a elegir al actor adecuado para cada personaje. Todos los campos son opcionales, pero entre más completos, mejor.</p></div></div>
+          <div class="caja d-flex flex-column gap-3">
+            <div class="perfil-campos perfil-campos-4"><div>
               <label class="form-label" for="{{ actor_form.estatura_cm.id_for_label }}">{{ actor_form.estatura_cm.label }}</label>
               {{ actor_form.estatura_cm }}
               {% for e in actor_form.estatura_cm.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.peso_kg.id_for_label }}">{{ actor_form.peso_kg.label }}</label>
               {{ actor_form.peso_kg }}
               {% for e in actor_form.peso_kg.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.color_cabello.id_for_label }}">{{ actor_form.color_cabello.label }}</label>
               {{ actor_form.color_cabello }}
               {% for e in actor_form.color_cabello.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.color_ojos.id_for_label }}">{{ actor_form.color_ojos.label }}</label>
               {{ actor_form.color_ojos }}
               {% for e in actor_form.color_ojos.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.contextura.id_for_label }}">{{ actor_form.contextura.label }}</label>
               {{ actor_form.contextura }}
               {% for e in actor_form.contextura.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.tono_piel.id_for_label }}">{{ actor_form.tono_piel.label }}</label>
               {{ actor_form.tono_piel }}
               {% for e in actor_form.tono_piel.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.talla_ropa.id_for_label }}">{{ actor_form.talla_ropa.label }}</label>
               {{ actor_form.talla_ropa }}
               {% for e in actor_form.talla_ropa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
+            </div><div>
               <label class="form-label" for="{{ actor_form.talla_calzado.id_for_label }}">{{ actor_form.talla_calzado.label }}</label>
               {{ actor_form.talla_calzado }}
               {% for e in actor_form.talla_calzado.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-          </div>
+            </div></div>
             <div>
               <label class="form-label" for="{{ actor_form.otras_caracteristicas.id_for_label }}">{{ actor_form.otras_caracteristicas.label }}</label>
               {{ actor_form.otras_caracteristicas }}
               {% for e in actor_form.otras_caracteristicas.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
             </div>
+          </div>
         </section>
         {% endif %}
 
-        <div class="perfil-acciones">
+        <div class="pie-acciones perfil-pie">
+          <a href="{% url menu_lateral.0.url_name %}" class="btn-contorno">Cancelar</a>
           <button type="submit" class="btn btn-granate btn-pildora">Guardar cambios</button>
         </div>
       </form>
+
 
     </main>
   </div>
@@ -279,6 +239,20 @@
 
     campo.addEventListener('input', revisar);
     revisar();
+  })();
+</script>
+<script>
+  (function () {
+    var enlaces = document.querySelectorAll('.perfil-pestanas a');
+    if (!enlaces.length || !('IntersectionObserver' in window)) return;
+    var obs = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        if (e.isIntersecting) {
+          enlaces.forEach(function (a) { a.classList.toggle('activa', a.getAttribute('href') === '#' + e.target.id); });
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    document.querySelectorAll('.perfil-seccion').forEach(function (s) { obs.observe(s); });
   })();
 </script>
 </body>
