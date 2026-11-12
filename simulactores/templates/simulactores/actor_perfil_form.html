@@ -8,29 +8,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
-  <style>
-    .habilidades-lista ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
-    .habilidades-lista label { margin-left: 6px; }
-    .bloque-resumen { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8edf0; }
-    .bloque-resumen:last-child { border-bottom: 0; }
-    .etiqueta-disp { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; }
-    .etiqueta-disp.si { background: #e3f4e8; color: #1d6b3a; }
-    .etiqueta-disp.no { background: #fbe3e3; color: #9a1c1c; }
-  </style>
+  <link href="{% static 'simulactores/css/admin.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-      <header class="panel-encabezado">
-        <div>
-          <a href="{% url 'simulactores:actores_admin' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Actores</a>
-          <h1>Perfil operativo de {{ actor.usuario.nombre }}</h1>
-          <p class="panel-sub mb-0">{{ actor.usuario.email }}{% if edad %} · {{ edad }} años{% endif %}</p>
+      <div>
+        <nav class="migas" aria-label="Ruta"><a href="{% url 'simulactores:actores_admin' %}">Actores</a><span aria-hidden="true">›</span><span>Perfil operativo</span></nav>
+        <div class="cabecera-pagina">
+          <div><h1>Perfil operativo del actor</h1><p>{{ actor.usuario.nombre }}{% if edad %} · {{ edad }} años{% endif %}</p></div>
+          <div class="cabecera-acciones"><span class="estado {% if actor.estado == 'Activo' %}estado-ok{% else %}estado-ca{% endif %}"><i></i>{{ actor.estado }}</span></div>
         </div>
-        <a href="{% url 'simulactores:historial_actor' actor.pk %}" class="btn btn-claro btn-pildora">Ver historial de asignaciones</a>
-      </header>
+      </div>
 
       {% if messages %}
         {% for message in messages %}
@@ -38,71 +29,94 @@
         {% endfor %}
       {% endif %}
 
-      <form method="post" class="panel-tarjeta" novalidate>
-        {% csrf_token %}
-        <div class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label" for="{{ form.fecha_nacimiento.id_for_label }}">{{ form.fecha_nacimiento.label }}</label>
+      <div class="ficha-layout">
+        <aside class="caja ficha-lateral">
+          <div class="perfil-avatar-grande" aria-hidden="true">{{ actor.usuario.nombre|first|upper }}</div>
+          <h2>{{ actor.usuario.nombre }}</h2>
+          <ul class="ficha-contacto">
+            {% if actor.usuario.telefono %}<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg>{{ actor.usuario.telefono }}</li>{% endif %}
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M14 3.5V8h4M9 13h6M9 16.5h4"/></svg>{{ actor.usuario.email }}</li>
+          </ul>
+          <a href="{% url 'simulactores:historial_actor' actor.pk %}" class="btn-contorno-vino mt-3">Ver historial de asignaciones</a>
+        </aside>
+
+        <div class="d-flex flex-column gap-3 min-w-0">
+          <form method="post" class="d-flex flex-column gap-3" novalidate>
+            {% csrf_token %}
+            <section class="caja">
+              <div class="caja-titulo"><h2>Datos operativos</h2></div>
+              <div class="grid-2">
+                <div>
+            <label class="form-label" for="{{ form.fecha_nacimiento.id_for_label }}">{{ form.fecha_nacimiento.label }} *</label>
             {{ form.fecha_nacimiento }}
             {% for e in form.fecha_nacimiento.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
           </div>
-          <div class="col-md-4">
-            <label class="form-label" for="{{ form.genero.id_for_label }}">{{ form.genero.label }}</label>
+                <div>
+            <label class="form-label" for="{{ form.genero.id_for_label }}">{{ form.genero.label }} *</label>
             {{ form.genero }}
             {% for e in form.genero.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
           </div>
-          <div class="col-md-4">
+                <div>
             <label class="form-label" for="{{ form.estado.id_for_label }}">{{ form.estado.label }}</label>
             {{ form.estado }}
             {% for e in form.estado.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
           </div>
-
-          <div class="col-md-4">
-            <label class="form-label" for="{{ form.tarifa.id_for_label }}">{{ form.tarifa.label }} (₡)</label>
+                <div></div>
+                <div>
+            <label class="form-label" for="{{ form.tarifa.id_for_label }}">{{ form.tarifa.label }} (₡) *</label>
             {{ form.tarifa }}
             {% for e in form.tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
           </div>
-          <div class="col-md-4">
-            <label class="form-label" for="{{ form.tipo_tarifa.id_for_label }}">{{ form.tipo_tarifa.label }}</label>
+                <div>
+            <label class="form-label" for="{{ form.tipo_tarifa.id_for_label }}">{{ form.tipo_tarifa.label }} *</label>
             {{ form.tipo_tarifa }}
             {% for e in form.tipo_tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
           </div>
+              </div>
+            </section>
 
-          <div class="col-12">
-            <label class="form-label">{{ form.habilidades.label }}</label>
-            <div class="habilidades-lista">{{ form.habilidades }}</div>
-            {% for e in form.habilidades.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-          </div>
+            <section class="caja">
+              <div class="caja-titulo"><h2>Habilidades del actor</h2></div>
+              <div class="chips-habilidades">
+                {% for opcion in form.habilidades %}
+                  <label class="chip-check" for="{{ opcion.id_for_label }}">{{ opcion.tag }}<span>{{ opcion.choice_label }}</span></label>
+                {% empty %}
+                  <p class="text-muted mb-0">Todavía no hay habilidades registradas.</p>
+                {% endfor %}
+              </div>
+              {% for e in form.habilidades.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
+            </section>
+
+            <div class="pie-acciones">
+              <a href="{% url 'simulactores:actores_admin' %}" class="btn-contorno">Cancelar</a>
+              <button type="submit" class="btn btn-granate btn-pildora">Guardar cambios</button>
+            </div>
+          </form>
+
+          <section class="caja">
+            <div class="caja-titulo"><h2>Características físicas</h2></div>
+            <dl class="ficha-fisica">
+              {% for etiqueta, valor in fisicos %}
+                <div><dt>{{ etiqueta }}</dt><dd>{% if valor %}{{ valor }}{% else %}<span class="sin-dato">Sin completar</span>{% endif %}</dd></div>
+              {% endfor %}
+            </dl>
+            <p class="perfil-nota mb-0">Las características físicas, la tarifa y las habilidades las completa el propio actor desde «Mi perfil»; aquí puedes corregirlas si hace falta.</p>
+          </section>
+
+          <section class="caja">
+            <div class="caja-titulo"><h2>Disponibilidad registrada</h2></div>
+            {% for b in bloques %}
+              <div class="bloque-resumen">
+                <span><strong>{{ b.fecha|date:"d/m/Y" }}</strong> · {{ b.hora_inicio|time:"H:i" }} - {{ b.hora_fin|time:"H:i" }}</span>
+                <span class="etiqueta-disp {% if b.tipo_bloque == 'Disponible' %}si{% else %}no{% endif %}">{{ b.tipo_bloque }}</span>
+              </div>
+            {% empty %}
+              <p class="text-muted mb-0">Este actor todavía no tiene bloques de disponibilidad por venir.</p>
+            {% endfor %}
+            <p class="perfil-nota mt-3 mb-0">La disponibilidad la registra el propio actor. Puedes consultarla por fecha en <a href="{% url 'simulactores:consulta_disponibilidad' %}">Disponibilidad de actores</a>.</p>
+          </section>
         </div>
-
-        <div class="d-flex gap-2 justify-content-end mt-4">
-          <a href="{% url 'simulactores:actores_admin' %}" class="btn btn-claro btn-pildora">Cancelar</a>
-          <button type="submit" class="btn btn-granate btn-pildora">Guardar cambios</button>
-        </div>
-      </form>
-
-      <section class="panel-tarjeta">
-        <h2>Características físicas</h2>
-        <dl class="ficha-fisica">
-          {% for etiqueta, valor in fisicos %}
-            <div><dt>{{ etiqueta }}</dt><dd>{% if valor %}{{ valor }}{% else %}<span class="sin-dato">Sin completar</span>{% endif %}</dd></div>
-          {% endfor %}
-        </dl>
-        <p class="panel-sub mb-0">Las características físicas, la tarifa y las habilidades las completa el propio actor desde «Mi perfil»; aquí puedes corregirlas si hace falta.</p>
-      </section>
-
-      <section class="panel-tarjeta">
-        <h2>Disponibilidad registrada</h2>
-        {% for b in bloques %}
-          <div class="bloque-resumen">
-            <span><strong>{{ b.fecha|date:"d/m/Y" }}</strong> · {{ b.hora_inicio|time:"H:i" }} - {{ b.hora_fin|time:"H:i" }}</span>
-            <span class="etiqueta-disp {% if b.tipo_bloque == 'Disponible' %}si{% else %}no{% endif %}">{{ b.tipo_bloque }}</span>
-          </div>
-        {% empty %}
-          <p class="text-muted mb-0">Este actor todavía no tiene bloques de disponibilidad por venir.</p>
-        {% endfor %}
-        <p class="panel-sub mt-3 mb-0">La disponibilidad la registra el propio actor. Puedes consultarla por fecha en <a href="{% url 'simulactores:consulta_disponibilidad' %}">Disponibilidad de actores</a>.</p>
-      </section>
+      </div>
     </main>
   </div>
 </div>
