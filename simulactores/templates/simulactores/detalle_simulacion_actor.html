@@ -8,27 +8,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'simulactores/css/estilos.css' %}" rel="stylesheet">
+  <link href="{% static 'simulactores/css/portales.css' %}" rel="stylesheet">
 </head>
 <body>
 <div class="d-flex">
   {% include 'simulactores/_sidebar.html' %}
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
-      <header class="panel-encabezado">
-        <div>
-          <a href="{% url 'simulactores:dashboard_actor' %}" class="panel-volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mi panel</a>
-          <h1>Simulación {{ solicitud.numero_solicitud }} {% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</h1>
+{% include 'simulactores/_mensajes.html' %}
+
+      <div>
+        <nav class="migas" aria-label="Ruta"><a href="{% url 'simulactores:dashboard_actor' %}">Mi panel</a><span aria-hidden="true">›</span><span>Simulación {{ solicitud.numero_solicitud }}</span></nav>
+        <div class="cabecera-pagina">
+          <div>
+            <h1>Simulación {{ solicitud.numero_solicitud }}</h1>
+            <p>Detalle de la simulación y tu participación.</p>
+          </div>
         </div>
-      </header>
+      </div>
 
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'info' %}alert-info{% else %}alert-success{% endif %} py-2 mb-0" role="alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+      <section class="estados-doble" aria-label="Estados">
+        <article class="caja estado-caja"><span class="fila-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span><div><h2>Estado del evento</h2>{% include 'simulactores/_estado_badge.html' with estado=solicitud.estado %}</div></article>
+        <article class="caja estado-caja"><span class="fila-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg></span><div><h2>Estado de tu asignación</h2>{% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}</div></article>
+      </section>
 
-      <section class="panel-tarjeta" id="mi-participacion">
-        <h2>Mi participación</h2>
+      <section class="caja caja-banda" id="mi-participacion">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg>Mi participación</h2>
 
         {% if asignacion.estado == 'Pendiente' %}
           <p class="mb-3">Esta simulación está <strong>pendiente de tu confirmación</strong>. Avísale al administrador si puedes asistir.</p>
@@ -39,22 +44,21 @@
         {% endif %}
 
         {% if puede_responder %}
-          <div class="d-flex flex-wrap gap-2 align-items-start">
+          <div class="acciones-participacion">
             {% if asignacion.estado == 'Pendiente' %}
               <form method="post" action="{% url 'simulactores:confirmar_participacion' solicitud.uuid %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-granate btn-pildora">Confirmar participación</button>
+                <button type="submit" class="btn btn-celeste-fuerte btn-pildora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Confirmar participación</button>
               </form>
             {% endif %}
-
-            <details class="flex-fill" {% if abrir_rechazo %}open{% endif %}>
-              <summary class="btn btn-claro btn-pildora">{% if asignacion.estado == 'Confirmada' %}Ya no puedo asistir{% else %}Rechazar{% endif %}</summary>
+            <details class="rechazo" {% if abrir_rechazo %}open{% endif %}>
+              <summary class="btn-contorno-vino"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg> {% if asignacion.estado == 'Confirmada' %}Ya no puedo asistir{% else %}Rechazar{% endif %}</summary>
               <form method="post" action="{% url 'simulactores:rechazar_participacion' solicitud.uuid %}" class="mt-3">
                 {% csrf_token %}
                 <label class="form-label" for="motivo">Motivo (obligatorio)</label>
                 <textarea id="motivo" name="motivo" class="form-control" rows="3" maxlength="500" placeholder="Cuéntale al administrador por qué no puedes asistir">{{ motivo_previo }}</textarea>
                 {% if error_motivo %}<div class="campo-error">{{ error_motivo }}</div>{% endif %}
-                <button type="submit" class="btn btn-claro btn-pildora mt-2">Enviar rechazo</button>
+                <button type="submit" class="btn btn-granate btn-pildora mt-2">Enviar rechazo</button>
               </form>
             </details>
           </div>
@@ -63,31 +67,31 @@
         {% endif %}
       </section>
 
-      <section class="panel-tarjeta">
-        <h2>Datos del evento</h2>
-        <dl class="dl-detalle detalle-grid">
-          <div><dt>Fecha</dt><dd>{{ solicitud.fecha_evento|date:"d/m/Y" }}</dd></div>
-          <div><dt>Horario</dt><dd>{{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</dd></div>
-          <div><dt>Ubicación</dt><dd>{{ solicitud.ubicacion|default:"Por definir" }}</dd></div>
-          <div><dt>Tipo de simulación</dt><dd>{{ solicitud.tipo_simulacion }}</dd></div>
-          <div><dt>Mi asignación</dt><dd>{% include 'simulactores/_estado_badge.html' with estado=asignacion.estado %}</dd></div>
-          <div class="detalle-ancho"><dt>Observaciones</dt><dd class="fw-normal">{{ solicitud.observaciones|default:"Sin observaciones" }}</dd></div>
+      <section class="caja caja-banda">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>Datos del evento</h2>
+        <dl class="dl-icono">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><dt>Fecha:</dt><dd>{{ solicitud.fecha_evento|date:"d/m/Y" }}</dd>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><dt>Hora:</dt><dd>{{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</dd>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 10-13 0C5.5 15.4 12 21 12 21z"/><circle cx="12" cy="10" r="2.3"/></svg><dt>Lugar:</dt><dd>{{ solicitud.ubicacion|default:"Por definir" }}</dd>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><dt>Tipo:</dt><dd>{{ solicitud.tipo_simulacion }}</dd>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M14 3.5V8h4M9 13h6M9 16.5h4"/></svg><dt>Observaciones:</dt><dd>{{ solicitud.observaciones|default:"Sin observaciones" }}</dd>
         </dl>
       </section>
 
-      <section class="panel-tarjeta">
-        <h2>Escenario y perfil a preparar</h2>
+      <section class="caja caja-banda">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>Escenario y perfil a preparar</h2>
         {% if escenario %}
-          <dl class="dl-detalle detalle-grid">
-            <div><dt>Escenario</dt><dd>{{ escenario.nombre }}</dd></div>
-            <div><dt>Tipo</dt><dd>{{ escenario.tipo }}</dd></div>
-            <div class="detalle-ancho"><dt>Descripción</dt><dd class="fw-normal">{{ escenario.descripcion|default:"—" }}</dd></div>
-            <div class="detalle-ancho"><dt>Perfil a preparar (guion)</dt><dd class="fw-normal">{{ escenario.guion|default:"El administrador aún no cargó el guion."|linebreaksbr }}</dd></div>
+          <dl class="dl-filas">
+            <dt>Escenario:</dt><dd>{{ escenario.nombre }}</dd>
+            <dt>Tipo:</dt><dd>{{ escenario.tipo }}</dd>
+            <dt>Descripción:</dt><dd>{{ escenario.descripcion|default:"—" }}</dd>
+            <dt>Tu perfil (guion):</dt><dd>{{ escenario.guion|default:"El administrador aún no cargó el guion."|linebreaksbr }}</dd>
           </dl>
         {% else %}
           <div class="alert alert-info mb-0">El escenario de esta simulación aún está por definir.</div>
         {% endif %}
       </section>
+
     </main>
   </div>
 </div>
