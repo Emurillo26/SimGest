@@ -1,0 +1,15 @@
+{% load static %}
+{# Modo oscuro: va al final del <head> de cada página, después de las demás hojas de estilos. #}
+<script>
+  (function () {
+    var tema = null;
+    try { tema = localStorage.getItem('simgest-tema'); } catch (e) {}
+    if (tema !== 'oscuro' && tema !== 'claro') {
+      tema = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro';
+    }
+    document.documentElement.setAttribute('data-tema', tema);
+    document.documentElement.setAttribute('data-bs-theme', tema === 'oscuro' ? 'dark' : 'light');
+  })();
+</script>
+<link href="{% static 'simulactores/css/tema-oscuro.css' %}" rel="stylesheet">
+<script src="{% static 'simulactores/js/tema.js' %}" defer></script>
