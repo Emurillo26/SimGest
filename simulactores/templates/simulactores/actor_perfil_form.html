@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,7 +32,7 @@
 
       <div class="ficha-layout">
         <aside class="caja ficha-lateral">
-          <div class="perfil-avatar-grande" aria-hidden="true">{{ actor.usuario.nombre|first|upper }}</div>
+          {% avatar actor.usuario 'perfil-avatar-grande' 'div' %}
           <h2>{{ actor.usuario.nombre }}</h2>
           <ul class="ficha-contacto">
             {% if actor.usuario.telefono %}<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg>{{ actor.usuario.telefono }}</li>{% endif %}

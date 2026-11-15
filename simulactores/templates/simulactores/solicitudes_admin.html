@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -63,7 +63,7 @@
                 <td><span class="fw-semibold">{{ solicitud.numero_solicitud }}</span><div class="panel-sub">{{ solicitud.tipo_simulacion }}</div></td>
                 <td>
                   <div class="celda-usuario">
-                    <span class="avatar-iniciales" aria-hidden="true">{{ solicitud.cliente.nombre|first|upper }}</span>
+                    {% avatar solicitud.cliente 'avatar-iniciales' %}
                     <div>{{ solicitud.cliente.nombre }}<div class="panel-sub">{{ solicitud.cliente.email }}</div></div>
                   </div>
                 </td>

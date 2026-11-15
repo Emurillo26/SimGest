@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -68,7 +68,7 @@
               <tr data-usuario>
                 <td>
                   <div class="celda-usuario">
-                    <span class="avatar-iniciales" aria-hidden="true">{{ usuario.nombre|first|upper }}</span>
+                    {% avatar usuario 'avatar-iniciales' %}
                     <div><span class="fw-semibold">{{ usuario.nombre }}</span><div class="panel-sub">{{ usuario.email }}</div></div>
                   </div>
                 </td>

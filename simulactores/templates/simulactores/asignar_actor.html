@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -76,7 +76,7 @@
                            {% if actor_elegido == f.actor.pk|stringformat:"s" %}checked{% endif %}
                            aria-label="Elegir a {{ f.actor.usuario.nombre }}">
                   </td>
-                  <td><label for="actor-{{ f.actor.pk }}" class="actor-mini mb-0"><span class="avatar-mini">{{ f.actor.usuario.nombre|first|upper }}</span><strong>{{ f.actor.usuario.nombre }}</strong></label></td>
+                  <td><label for="actor-{{ f.actor.pk }}" class="actor-mini mb-0">{% avatar f.actor.usuario 'avatar-mini' %}<strong>{{ f.actor.usuario.nombre }}</strong></label></td>
                   <td>{{ f.edad|default_if_none:"—" }}</td>
                   <td>{{ f.actor.genero|default:"—" }}</td>
                   <td>{% for h in f.habilidades %}<span class="chip-habilidad">{{ h }}</span>{% empty %}—{% endfor %}</td>

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -42,7 +42,7 @@
         <div class="resumen-col resumen-actor">
           <h2 class="h6 fw-bold">Actor asignado</h2>
           {% for a in solicitud.asignaciones.all %}{% if a.estado == 'Pendiente' or a.estado == 'Confirmada' %}
-            <div class="actor-mini"><span class="avatar-mini">{{ a.actor.usuario.nombre|first|upper }}</span><div><strong>{{ a.actor.usuario.nombre }}</strong>{% if a.actor.usuario.telefono %}<small>Tel. {{ a.actor.usuario.telefono }}</small>{% endif %}</div></div>
+            <div class="actor-mini">{% avatar a.actor.usuario 'avatar-mini' %}<div><strong>{{ a.actor.usuario.nombre }}</strong>{% if a.actor.usuario.telefono %}<small>Tel. {{ a.actor.usuario.telefono }}</small>{% endif %}</div></div>
             <div class="mt-2"><span class="d-block small fw-semibold mb-1">Estado de asignación</span>{% include 'simulactores/_estado_badge.html' with estado=a.estado %}</div>
           {% endif %}{% empty %}<p class="text-muted mb-0">Todavía no hay un actor asignado.</p>{% endfor %}
         </div>

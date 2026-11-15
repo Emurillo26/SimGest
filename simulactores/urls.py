@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 
-from . import views
+from . import foto_perfil, views
 from .actor_views import (
     calendario_actor_view,
     confirmar_participacion_view,
@@ -132,6 +132,19 @@ urlpatterns = [
         'perfil/',
         views.perfil_view,
         name='perfil'
+    ),
+
+    # Foto de perfil
+    path(
+        'perfil/foto/',
+        foto_perfil.subir_foto_view,
+        name='subir_foto_perfil'
+    ),
+
+    path(
+        'perfil/foto/quitar/',
+        foto_perfil.quitar_foto_view,
+        name='quitar_foto_perfil'
     ),
 
     # ------------------------------------------------------------

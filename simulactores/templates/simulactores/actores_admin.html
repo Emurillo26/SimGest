@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -68,7 +68,7 @@
               {% for f in filas %}
               <tr>
                 <td>
-                  <div class="actor-mini"><span class="avatar-mini">{{ f.actor.usuario.nombre|first|upper }}</span><div><strong>{{ f.actor.usuario.nombre }}</strong>{% if not f.completo %}<span class="chip-incompleto">Perfil incompleto</span>{% endif %}<small>{{ f.actor.usuario.email }}</small></div></div>
+                  <div class="actor-mini">{% avatar f.actor.usuario 'avatar-mini' %}<div><strong>{{ f.actor.usuario.nombre }}</strong>{% if not f.completo %}<span class="chip-incompleto">Perfil incompleto</span>{% endif %}<small>{{ f.actor.usuario.email }}</small></div></div>
                 </td>
                 <td>{{ f.edad|default_if_none:"—" }}</td>
                 <td>{{ f.actor.genero|default:"—" }}</td>

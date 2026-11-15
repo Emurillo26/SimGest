@@ -1,4 +1,5 @@
 from django import template
+from django.utils.html import format_html
 
 register = template.Library()
 
@@ -50,3 +51,16 @@ def url_pagina(context, numero):
     parametros = context['request'].GET.copy()
     parametros['pagina'] = numero
     return '?' + parametros.urlencode()
+
+
+@register.simple_tag
+def avatar(usuario, clase, etiqueta='span'):
+    """Círculo del usuario: su foto de perfil si tiene una, o la inicial de su nombre."""
+    if usuario is not None and getattr(usuario, 'foto', None):
+        return format_html(
+            '<{0} class="{1}" aria-hidden="true" style="padding:0;overflow:hidden">'
+            '<img src="{2}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></{0}>',
+            etiqueta, clase, usuario.foto.url,
+        )
+    inicial = (getattr(usuario, 'nombre', '') or '?')[:1].upper()
+    return format_html('<{0} class="{1}" aria-hidden="true">{2}</{0}>', etiqueta, clase, inicial)

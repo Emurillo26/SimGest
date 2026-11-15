@@ -1040,6 +1040,41 @@ html[data-tema="oscuro"] .caja.destacada {
   background: #141b20;
 }
 
+html[data-tema="oscuro"] .avatar-insignia {
+  border: 2px solid #2d3a43;
+}
+
+html[data-tema="oscuro"] .menu-foto {
+  background: #182128;
+  border: 1px solid #374753;
+}
+
+html[data-tema="oscuro"] .menu-foto button {
+  color: #e7ebee;
+}
+
+html[data-tema="oscuro"] .menu-foto button:hover,
+html[data-tema="oscuro"] .menu-foto button:focus-visible {
+  background: #23303e;
+}
+
+html[data-tema="oscuro"] .menu-foto [data-accion="quitar"] {
+  color: #dd8d88;
+}
+
+html[data-tema="oscuro"] .menu-foto-divisor {
+  background: #0e1316;
+}
+
+html[data-tema="oscuro"] .recorte-zoom button + button {
+  border-top: 1px solid rgba(45, 58, 67, 0.12);
+}
+
+html[data-tema="oscuro"] .dialogo-confirmar {
+  background: #182128;
+  color: #e7ebee;
+}
+
 /* consulta_disponibilidad.html <style> */
 html[data-tema="oscuro"] .chip-hora {
   background: #1b4628;

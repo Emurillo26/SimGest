@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simulactores_extras %}
 <button type="button" class="menu-movil-boton" id="menu-movil-boton" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-principal">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
 </button>
@@ -44,7 +44,7 @@
   <div class="sidebar-pie">
     {% for item in menu_lateral %}{% if item.seccion == 'perfil' %}
       <a href="{% url item.url_name %}" class="sidebar-usuario{% if item.activo %} activo{% endif %}"{% if item.activo %} aria-current="page"{% endif %}>
-        <span class="sidebar-avatar" aria-hidden="true">{{ user.nombre|first|upper }}</span>
+        {% avatar user 'sidebar-avatar' %}
         <span class="sidebar-usuario-texto">
           <strong>{{ user.nombre }}</strong>
           <small>Mi perfil</small>

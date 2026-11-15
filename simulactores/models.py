@@ -66,6 +66,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=150, unique=True)
     nombre = models.CharField(max_length=150)
     telefono = models.CharField(max_length=20, null=True, blank=True)
+    foto = models.ImageField(upload_to='fotos_perfil/', null=True, blank=True)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT, db_column='id_rol', related_name='usuarios')
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
     fecha_creacion = models.DateTimeField(auto_now_add=True)

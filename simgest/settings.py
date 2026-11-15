@@ -169,6 +169,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Archivos que suben los usuarios (fotos de perfil)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # -------------------------------------------------------------------
 # Primary key por defecto

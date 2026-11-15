@@ -119,3 +119,62 @@
 @media (max-width: 991.98px) { .dos-columnas, .detalle-cols { grid-template-columns: 1fr; } }
 @media (max-width: 575.98px) { .banner-solicitud { padding: 22px; } .banner-pulso { display: none; } }
 .paso-titulo + .caja-sub { margin-top: 0; }
+
+/* ---- Foto de perfil ---- */
+.perfil-avatar-editable { position: relative; flex: 0 0 84px; width: 84px; height: 84px; }
+.avatar-boton { position: relative; display: block; width: 84px; height: 84px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+.avatar-boton .perfil-avatar-grande { width: 84px; height: 84px; }
+.avatar-boton::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: rgba(0, 0, 0, 0); transition: background-color .15s ease; }
+.avatar-boton:hover::after { background: rgba(0, 0, 0, .18); }
+.avatar-boton:focus-visible { outline: 3px solid var(--celeste); outline-offset: 3px; }
+.avatar-insignia { position: absolute; right: -2px; bottom: -2px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; background: var(--vino); color: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
+.avatar-insignia svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Menú: Ver, Tomar, Subir, Quitar */
+.menu-foto { position: absolute; top: calc(100% + 8px); left: 0; z-index: 30; min-width: 200px; padding: 6px; border-radius: 14px; background: #fff; border: 1px solid #e3e9ee; box-shadow: 0 12px 30px rgba(20, 10, 12, .18); }
+.menu-foto button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0; border-radius: 10px; background: none; color: var(--tinta); font: inherit; font-size: .94rem; text-align: left; cursor: pointer; }
+.menu-foto button:hover, .menu-foto button:focus-visible { background: #f1f4f7; outline: none; }
+.menu-foto svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.menu-foto [data-accion="quitar"] { color: #b3261e; }
+.menu-foto-divisor { height: 1px; margin: 6px 8px; background: #e3e9ee; }
+
+/* Ventanas de ajustar y tomar foto: oscuras siempre, como en las apps de mensajería */
+.dialogo-foto { position: relative; width: min(560px, calc(100vw - 24px)); padding: 0; border: 0; border-radius: 18px; overflow: visible; background: #1f2328; color: #e9edef; box-shadow: 0 24px 60px rgba(0, 0, 0, .45); }
+.dialogo-foto::backdrop, .dialogo-ver-foto::backdrop { background: rgba(10, 12, 14, .8); }
+.foto-barra { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.foto-barra-titulo { flex: 1; font-size: 1rem; font-weight: 500; }
+.foto-icono, .foto-texto { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: #e9edef; font: inherit; cursor: pointer; border-radius: 999px; padding: 6px; }
+.foto-texto { padding: 6px 10px; font-size: .94rem; }
+.foto-icono:hover, .foto-texto:hover { background: rgba(255, 255, 255, .1); }
+.foto-icono svg, .foto-texto svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.foto-texto svg { width: 18px; height: 18px; }
+.recorte-area { height: min(420px, 60vh); overflow: hidden; background: #111417; border-radius: 0 0 18px 18px; }
+.recorte-area img { display: block; max-width: 100%; }
+.recorte-area video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.dialogo-foto .cropper-view-box, .dialogo-foto .cropper-face { border-radius: 50%; }
+.dialogo-foto .cropper-view-box { outline: 0; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .55); }
+.dialogo-foto .cropper-modal { opacity: 0; }
+.recorte-zoom { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; overflow: hidden; border-radius: 12px; background: rgba(32, 36, 40, .92); }
+.recorte-zoom button { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 0; background: none; color: #e9edef; cursor: pointer; }
+.recorte-zoom button + button { border-top: 1px solid rgba(255, 255, 255, .12); }
+.recorte-zoom button:hover { background: rgba(255, 255, 255, .1); }
+.recorte-zoom svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.foto-listo { position: absolute; right: 22px; bottom: -26px; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; border: 0; border-radius: 50%; background: var(--vino); color: #fff; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 0, 0, .35); transition: transform .15s ease; }
+.foto-listo:hover { transform: scale(1.06); background: var(--vino-oscuro); }
+.foto-listo:disabled { opacity: .7; cursor: wait; }
+.foto-listo svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Ver foto en grande */
+.dialogo-ver-foto { padding: 0; border: 0; background: none; overflow: visible; }
+.dialogo-ver-foto img { display: block; width: min(420px, 85vw); height: auto; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, .5); }
+.dialogo-ver-foto .foto-icono { position: absolute; top: -46px; right: 0; }
+
+/* Confirmación para quitar la foto */
+.dialogo-confirmar { width: min(360px, calc(100vw - 32px)); padding: 24px 24px 20px; border: 0; border-radius: 20px; background: #fff; color: var(--tinta); text-align: center; box-shadow: 0 24px 60px rgba(20, 10, 12, .3); }
+.dialogo-confirmar::backdrop { background: rgba(20, 10, 12, .55); }
+.dialogo-confirmar h2 { margin: 4px 0 22px; font-size: 1.1rem; font-weight: 600; }
+.confirmar-acciones { display: flex; gap: 10px; justify-content: center; }
+.confirmar-acciones .btn { min-width: 120px; }
+.confirmar-peligro { background: #b3261e; border-color: #b3261e; color: #fff; }
+.confirmar-peligro:hover, .confirmar-peligro:focus-visible { background: #8f1d17; border-color: #8f1d17; color: #fff; }
+
