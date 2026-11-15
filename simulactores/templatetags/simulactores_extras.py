@@ -42,3 +42,11 @@ def seguimiento(estado):
             situacion = 'pendiente'
         resultado.append({'titulo': titulo, 'descripcion': descripcion, 'situacion': situacion})
     return resultado
+
+
+@register.simple_tag(takes_context=True)
+def url_pagina(context, numero):
+    """Enlace a otra página de un listado, conservando los filtros que ya tenga la URL."""
+    parametros = context['request'].GET.copy()
+    parametros['pagina'] = numero
+    return '?' + parametros.urlencode()

@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 
 from django import forms
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -166,10 +167,12 @@ def _pantalla(request, actor, form, editando=None):
             .filter(actor=actor, fecha__gte=timezone.localdate())
             .order_by('fecha', 'hora_inicio')
         )
+    bloques = Paginator(bloques, 10).get_page(request.GET.get('pagina'))
     return render(request, 'simulactores/mi_disponibilidad.html', {
         'actor': actor,
         'form': form,
         'bloques': bloques,
+        'pagina': bloques,
         'editando': editando,
     })
 

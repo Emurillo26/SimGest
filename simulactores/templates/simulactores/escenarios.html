@@ -282,9 +282,9 @@
 
             <p class="esc-contador px-3 pt-3 mb-0">
 
-              {{ escenarios|length }}
+              {{ escenarios.paginator.count }}
 
-              escenario{{ escenarios|length|pluralize }}
+              escenario{{ escenarios.paginator.count|pluralize }}
 
             </p>
 
@@ -432,6 +432,8 @@
 
 
             </div>
+
+            <div class="px-3 pb-3">{% include 'simulactores/_paginacion.html' %}</div>
 
 
           {% else %}

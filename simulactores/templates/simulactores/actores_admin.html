@@ -83,7 +83,8 @@
             </tbody>
           </table>
         </div>
-        <div class="tabla-pie">{% if filtrando %}{{ filas|length }} de {{ total_actores }} actor{{ total_actores|pluralize:"es" }}{% else %}{{ filas|length }} actor{{ filas|length|pluralize:"es" }}{% endif %}</div>
+        <div class="tabla-pie">{% if filtrando %}{{ pagina.paginator.count }} de {{ total_actores }} actor{{ total_actores|pluralize:"es" }}{% else %}{{ pagina.paginator.count }} actor{{ pagina.paginator.count|pluralize:"es" }}{% endif %}</div>
+        {% include 'simulactores/_paginacion.html' %}
         {% else %}
         <div class="panel-vacio">
           {% if filtrando %}

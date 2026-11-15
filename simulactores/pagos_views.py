@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -142,8 +143,10 @@ def pagos_admin_view(request):
     if anio.isdigit():
         pagos = pagos.filter(periodo_anio=int(anio))
 
+    pagos = Paginator(pagos, 10).get_page(request.GET.get('pagina'))
     return render(request, 'simulactores/pagos_admin.html', {
         'pagos': pagos,
+        'pagina': pagos,
         'actores': Actor.objects.select_related('usuario').order_by('usuario__nombre'),
         'meses': MESES,
         'filtro': {'actor': actor_id, 'mes': mes, 'anio': anio},

@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -211,6 +212,7 @@ def actores_admin_view(request):
         else:
             messages.error(request, 'Revisa los filtros: hay datos que no son válidos.')
 
+    pagina = Paginator(actores, 10).get_page(request.GET.get('pagina'))
     filas = [
         {
             'actor': a,
@@ -218,10 +220,11 @@ def actores_admin_view(request):
             'habilidades': [h.nombre for h in a.habilidades.all()],
             'completo': _perfil_completo(a),
         }
-        for a in actores
+        for a in pagina
     ]
     return render(request, 'simulactores/actores_admin.html', {
         'filas': filas,
+        'pagina': pagina,
         'filtro': filtro,
         'filtrando': filtrando,
         'total_actores': total_actores,

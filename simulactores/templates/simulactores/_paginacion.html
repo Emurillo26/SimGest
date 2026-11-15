@@ -1,0 +1,18 @@
+{% load simulactores_extras %}
+{% if pagina.paginator.num_pages > 1 %}
+<nav aria-label="Paginación" class="d-flex justify-content-center mt-3">
+  <ul class="pagination mb-0">
+    {% if pagina.has_previous %}
+      <li class="page-item"><a class="page-link" href="{% url_pagina pagina.previous_page_number %}">Anterior</a></li>
+    {% endif %}
+    {% for num in pagina.paginator.page_range %}
+      <li class="page-item {% if num == pagina.number %}active{% endif %}">
+        <a class="page-link" href="{% url_pagina num %}"{% if num == pagina.number %} aria-current="page"{% endif %}>{{ num }}</a>
+      </li>
+    {% endfor %}
+    {% if pagina.has_next %}
+      <li class="page-item"><a class="page-link" href="{% url_pagina pagina.next_page_number %}">Siguiente</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}

@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -75,13 +76,14 @@ def biblioteca_escenarios_hu24_view(request):
     else:
         filtro_tipo = ''
 
-    escenarios = escenarios.distinct()
+    escenarios = Paginator(escenarios.distinct(), 9).get_page(request.GET.get('pagina'))
 
     return render(
         request,
         'simulactores/escenarios.html',
         {
             'escenarios': escenarios,
+            'pagina': escenarios,
             'categorias': Categoria.objects.order_by('nombre'),
             'tipos': TipoSimulacion.choices,
             'filtro_categoria': filtro_categoria,
