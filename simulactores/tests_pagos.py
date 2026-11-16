@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from . import pagos_service as servicio
-from .models import Actor, Asignacion, Bitacora, Pago, Rol, Usuario
+from .models import Actor, Asignacion, Bitacora, Pago, Rol, TarifaModalidad, Usuario
 from .tests import BaseSprint2
 
 FECHA = datetime.date(2026, 11, 5)   # fecha de las simulaciones ejecutadas (noviembre 2026)
@@ -31,8 +31,10 @@ class BasePagos(BaseSprint2):
         return Actor.objects.create(usuario=usuario, tarifa=Decimal(tarifa), tipo_tarifa=tipo)
 
     def ejecutada(self, actor=None, fecha=FECHA, hora=9, estado='Ejecutada'):
-        """Simulación de 1 hora; con tarifa de ₡5000/hora vale ₡5000."""
+        """Simulación de 1 hora; con tarifa de ₡2500/hora y 1 h de preparación vale ₡5000."""
         solicitud = self.crear_solicitud(estado='Completada', fecha=fecha, hora=hora)
+        solicitud.tarifa_hora = Decimal('2500')
+        solicitud.save()
         return Asignacion.objects.create(
             solicitud=solicitud, actor=actor or self.actor, estado=estado,
             tarifa_aplicada=(actor or self.actor).tarifa)
@@ -71,13 +73,38 @@ class HU43CalculoPendienteTests(BasePagos):
         asignacion.hora_fin_real = datetime.time(11, 30)
         asignacion.save()
         total, _ = servicio.monto_pendiente(self.actor, 11, 2026)
-        self.assertEqual(total, Decimal('12500.00'))
+        self.assertEqual(total, Decimal('8750.00'))   # (2,5 h + 1 h de preparación) × ₡2500
 
-    def test_por_evento_cobra_la_tarifa_completa(self):
-        actor = self.crear_actor('evento@simgest.com', 'Actor Evento', tarifa='30000', tipo='Por Evento')
-        self.ejecutada(actor=actor)
-        total, _ = servicio.monto_pendiente(actor, 11, 2026)
-        self.assertEqual(total, Decimal('30000.00'))
+    def test_virtual_de_3_horas_paga_4_horas_a_5500(self):
+        asignacion = self.ejecutada(hora=9)
+        solicitud = asignacion.solicitud
+        solicitud.modalidad, solicitud.tarifa_hora = 'Virtual', Decimal('5500')
+        solicitud.hora_fin = datetime.time(12)
+        solicitud.save()
+        self.assertEqual(servicio.monto_asignacion(asignacion), Decimal('22000.00'))
+
+    def test_presencial_de_2_horas_paga_3_horas_a_6500(self):
+        asignacion = self.ejecutada(hora=9)
+        solicitud = asignacion.solicitud
+        solicitud.modalidad, solicitud.tarifa_hora = 'Presencial', Decimal('6500')
+        solicitud.hora_fin = datetime.time(11)
+        solicitud.save()
+        self.assertEqual(servicio.monto_asignacion(asignacion), Decimal('19500.00'))
+
+    def test_siempre_se_suma_una_hora_de_preparacion(self):
+        asignacion = self.ejecutada(hora=9)
+        d = servicio.desglose_asignacion(asignacion)
+        self.assertEqual((d['horas'], d['preparacion'], d['horas_pago']), (Decimal('1'), Decimal('1'), Decimal('2')))
+
+    def test_la_tarifa_del_actor_ya_no_influye(self):
+        otro = self.crear_actor('tarifa.alta@simgest.com', 'Actor Tarifa Alta', tarifa='99999', tipo='Por Evento')
+        a = self.ejecutada(actor=otro)
+        self.assertEqual(servicio.monto_asignacion(a), Decimal('5000.00'))
+
+    def test_cambiar_la_tarifa_despues_no_altera_una_solicitud_ya_creada(self):
+        asignacion = self.ejecutada(hora=9)
+        TarifaModalidad.objects.filter(modalidad=asignacion.solicitud.modalidad).update(monto_hora=Decimal('9999'))
+        self.assertEqual(servicio.monto_asignacion(asignacion), Decimal('5000.00'))
 
     def test_solo_cuentan_las_ejecutadas_del_periodo(self):
         self.ejecutada(hora=9)
@@ -350,7 +377,7 @@ class HU41ReporteMensualTests(BasePagos):
 
     def test_generacion_y_calculo_por_periodo(self):
 
-        self.ejecutada(hora=9)  # 1 hora a ₡5000/hora = ₡5000
+        self.ejecutada(hora=9)  # 1 h + 1 h de preparación a ₡2500/hora = ₡5000
         otro = self.crear_actor('actor.pago2@simgest.com', 'Actor Pago Dos', tarifa='8000')
         self.ejecutada(actor=otro, hora=14)
 
@@ -360,11 +387,11 @@ class HU41ReporteMensualTests(BasePagos):
         self.assertTrue(resultado['hay_registros'])
         self.assertEqual(len(resultado['filas']), 2)
         self.assertEqual(resultado['total_horas'], Decimal('2'))
-        self.assertEqual(resultado['total_monto'], Decimal('13000.00'))
+        self.assertEqual(resultado['total_monto'], Decimal('10000.00'))
         self.assertContains(r, 'Actor Pago')
-        self.assertContains(r, '₡13000.00')
+        self.assertContains(r, '₡10000.00')
 
-    def test_aplica_la_tarifa_vigente_en_la_fecha_del_evento(self):
+    def test_el_historial_de_tarifas_del_actor_no_cambia_el_monto(self):
         from .models import TarifaActor
         asignacion = self.ejecutada(hora=9)
 

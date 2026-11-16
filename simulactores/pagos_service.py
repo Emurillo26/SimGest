@@ -5,10 +5,11 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from django.db import IntegrityError, transaction
 
-from .models import Actor, Asignacion, Pago, TarifaActor
+from .models import Asignacion, Pago, TarifaModalidad
 from .utils import registrar_cambios
 
 CENTAVOS = Decimal('0.01')
+HORAS_PREPARACION = Decimal('1')
 
 
 class PagoError(Exception):
@@ -28,21 +29,36 @@ def _horas(asignacion):
     return Decimal(str((fin - inicio).total_seconds() / 3600))
 
 
+def tarifa_hora_de(asignacion):
+    """Tarifa por hora de la modalidad, fijada al crear la solicitud (T02)."""
+    solicitud = asignacion.solicitud
+    tarifa = solicitud.tarifa_hora
+    if tarifa is None:
+        tarifa = TarifaModalidad.monto_de(solicitud.modalidad)
+    return Decimal(tarifa) if tarifa is not None else Decimal('0')
+
+
+def desglose_asignacion(asignacion):
+    """Cómo se calcula el pago de una simulación (T03).
+
+    Se pagan las horas de la simulación más una hora de preparación, siempre,
+    a la tarifa por hora de la modalidad (virtual o presencial).
+    """
+    horas = _horas(asignacion)
+    horas_pago = horas + HORAS_PREPARACION
+    tarifa = tarifa_hora_de(asignacion)
+    return {
+        'horas': horas,
+        'preparacion': HORAS_PREPARACION,
+        'horas_pago': horas_pago,
+        'tarifa': tarifa,
+        'monto': (tarifa * horas_pago).quantize(CENTAVOS, rounding=ROUND_HALF_UP),
+    }
+
+
 def monto_asignacion(asignacion):
     """Cuánto se le debe al actor por una simulación ejecutada."""
-    actor = asignacion.actor
-    vigente = TarifaActor.vigente_en(actor, asignacion.solicitud.fecha_evento)
-    if asignacion.tarifa_aplicada is not None:
-        tarifa = asignacion.tarifa_aplicada
-    else:
-        tarifa = vigente.monto if vigente else actor.tarifa
-    tipo = vigente.tipo_tarifa if vigente else actor.tipo_tarifa
-
-    if tarifa is None:
-        return Decimal('0.00')
-    if tipo == Actor.TipoTarifa.POR_HORA:
-        return (Decimal(tarifa) * _horas(asignacion)).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
-    return Decimal(tarifa).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
+    return desglose_asignacion(asignacion)['monto']
 
 
 def asignaciones_ejecutadas(actor, mes, anio):
@@ -61,7 +77,10 @@ def asignaciones_ejecutadas(actor, mes, anio):
 
 def monto_pendiente(actor, mes, anio):
     """(total, [(asignacion, monto), ...]) de las simulaciones ejecutadas del período."""
-    filas = [(a, monto_asignacion(a)) for a in asignaciones_ejecutadas(actor, mes, anio)]
+    filas = []
+    for a in asignaciones_ejecutadas(actor, mes, anio):
+        a.desglose = desglose_asignacion(a)
+        filas.append((a, a.desglose['monto']))
     return sum((m for _, m in filas), Decimal('0.00')), filas
 
 
@@ -90,8 +109,9 @@ def reporte_mensual(mes, anio):
     filas_por_actor = {}
     for asignacion in asignaciones_ejecutadas_periodo(mes, anio):
         actor = asignacion.actor
-        horas = _horas(asignacion)
-        monto = monto_asignacion(asignacion)
+        desglose = desglose_asignacion(asignacion)
+        horas = desglose['horas']
+        monto = desglose['monto']
         resumen = filas_por_actor.setdefault(actor.id_actor, {
             'actor': actor,
             'horas': Decimal('0'),
@@ -100,7 +120,7 @@ def reporte_mensual(mes, anio):
         })
         resumen['horas'] += horas
         resumen['monto'] += monto
-        resumen['detalle'].append({'asignacion': asignacion, 'horas': horas, 'monto': monto})
+        resumen['detalle'].append({'asignacion': asignacion, 'horas': horas, 'desglose': desglose, 'monto': monto})
 
     filas = sorted(filas_por_actor.values(), key=lambda f: f['actor'].usuario.nombre)
     return {

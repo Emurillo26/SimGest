@@ -68,7 +68,7 @@
                   <strong>{{ pendiente.actor.usuario.nombre }} tiene ₡{{ pendiente.total|floatformat:2 }} pendientes en {{ pendiente.mes }} {{ pendiente.anio }}.</strong>
                   <ul class="mb-0 mt-2">
                     {% for asignacion, monto in pendiente.filas %}
-                      <li>{{ asignacion.solicitud.numero_solicitud }} · {{ asignacion.solicitud.fecha_evento|date:"d/m/Y" }} · ₡{{ monto|floatformat:2 }}</li>
+                      <li>{{ asignacion.solicitud.numero_solicitud }} · {{ asignacion.solicitud.fecha_evento|date:"d/m/Y" }} · ₡{{ monto|floatformat:2 }} <small>({{ asignacion.desglose.horas|floatformat:"-2" }} h + {{ asignacion.desglose.preparacion|floatformat:"-2" }} h de preparación × ₡{{ asignacion.desglose.tarifa|floatformat:2 }})</small></li>
                     {% endfor %}
                   </ul>
                 {% else %}
