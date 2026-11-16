@@ -1,0 +1,51 @@
+{# T13: editor de habilidades escritas. Recibe «campo» (el campo «habilidades» del formulario). #}
+<style>
+  .hab-lista { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 8px; }
+  .hab-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px 6px 14px; border-radius: 999px;
+    background: rgba(127,127,127,.12); border: 1px solid rgba(127,127,127,.35); font-size: .9rem; }
+  .hab-quitar { border: 0; background: transparent; color: inherit; width: 22px; height: 22px; border-radius: 50%;
+    line-height: 1; font-size: 1.1rem; cursor: pointer; opacity: .7; }
+  .hab-quitar:hover, .hab-quitar:focus-visible { opacity: 1; background: rgba(127,127,127,.25); }
+  .hab-agregar { display: flex; gap: 8px; max-width: 460px; }
+</style>
+<div class="hab-editor">
+  <div class="hab-lista" id="hab-lista" aria-live="polite">
+    {% for nombre in campo.value %}<span class="hab-chip">{{ nombre }}<input type="hidden" name="habilidades" value="{{ nombre }}"><button type="button" class="hab-quitar" aria-label="Quitar {{ nombre }}">&times;</button></span>{% endfor %}
+  </div>
+  <div class="hab-agregar">
+    <input type="text" class="form-control" id="hab-nueva" maxlength="100" placeholder="Escribe una habilidad, por ejemplo Teatro" autocomplete="off">
+    <button type="button" class="btn btn-claro btn-pildora" id="hab-btn">Agregar</button>
+  </div>
+  <div class="campo-error" id="hab-aviso" hidden></div>
+  {% for e in campo.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
+</div>
+<script>
+(function () {
+  var lista = document.getElementById('hab-lista'), caja = document.getElementById('hab-nueva');
+  var btn = document.getElementById('hab-btn'), aviso = document.getElementById('hab-aviso');
+  var MAX = 20;
+  function limpiar(t) { t = t.replace(/\s+/g, ' ').trim(); return t ? t.charAt(0).toUpperCase() + t.slice(1) : ''; }
+  function actuales() { return Array.prototype.map.call(lista.querySelectorAll('input'), function (i) { return i.value.toLowerCase(); }); }
+  function decir(m) { aviso.textContent = m; aviso.hidden = !m; }
+  function agregar() {
+    var nombre = limpiar(caja.value);
+    if (!nombre) { return; }
+    if (actuales().indexOf(nombre.toLowerCase()) !== -1) { decir('Esa habilidad ya está en tu lista.'); return; }
+    if (actuales().length >= MAX) { decir('Puedes agregar hasta ' + MAX + ' habilidades.'); return; }
+    var chip = document.createElement('span'); chip.className = 'hab-chip'; chip.appendChild(document.createTextNode(nombre));
+    var oculto = document.createElement('input'); oculto.type = 'hidden'; oculto.name = 'habilidades'; oculto.value = nombre;
+    var quitar = document.createElement('button'); quitar.type = 'button'; quitar.className = 'hab-quitar';
+    quitar.setAttribute('aria-label', 'Quitar ' + nombre); quitar.innerHTML = '&times;';
+    chip.appendChild(oculto); chip.appendChild(quitar); lista.appendChild(chip);
+    caja.value = ''; decir(''); caja.focus();
+  }
+  btn.addEventListener('click', agregar);
+  caja.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); agregar(); } });
+  lista.addEventListener('click', function (e) {
+    var q = e.target.closest('.hab-quitar'); if (q) { q.parentNode.remove(); decir(''); }
+  });
+  /* Si quedó algo escrito sin pulsar «Agregar», se agrega al guardar. */
+  var form = caja.closest('form');
+  if (form) { form.addEventListener('submit', agregar); }
+})();
+</script>

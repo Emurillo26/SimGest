@@ -7,7 +7,8 @@ administrador (HU-37), que también puede corregir estos datos.
 from django import forms
 from django.utils import timezone
 
-from .models import Actor, Habilidad
+from .habilidades import HabilidadesField, guardar_habilidades, nombres_de
+from .models import Actor
 from .perfil_actor_views import EDAD_MINIMA, GENEROS
 
 CAMPOS_FISICOS = [
@@ -56,15 +57,12 @@ class PerfilActorForm(forms.ModelForm):
         error_messages={'required': 'Selecciona tu género.'},
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    habilidades = forms.ModelMultipleChoiceField(
-        label='Habilidades', required=False, queryset=Habilidad.objects.order_by('nombre'),
-        widget=forms.CheckboxSelectMultiple,
-    )
+    habilidades = HabilidadesField()
 
     class Meta:
         model = Actor
         fields = [
-            'fecha_nacimiento', 'genero', 'habilidades',
+            'fecha_nacimiento', 'genero',
             'estatura_cm', 'peso_kg', 'color_cabello', 'color_ojos', 'contextura',
             'tono_piel', 'talla_ropa', 'talla_calzado', 'otras_caracteristicas',
         ]
@@ -102,6 +100,7 @@ class PerfilActorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['fecha_nacimiento'].required = True
+        self.initial['habilidades'] = nombres_de(self.instance)
 
         opciones = list(GENEROS)
         actual = (self.instance.genero or '').strip()
@@ -165,6 +164,12 @@ class PerfilActorForm(forms.ModelForm):
             if cleaned.get(nombre) == '':
                 cleaned[nombre] = None
         return cleaned
+
+    def save(self, commit=True):
+        actor = super().save(commit=commit)
+        if commit:
+            guardar_habilidades(actor, self.cleaned_data.get('habilidades', []))
+        return actor
 
     def full_clean(self):
         super().full_clean()

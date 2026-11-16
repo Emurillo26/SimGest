@@ -148,16 +148,9 @@
         </section>
 
         <section id="habilidades" class="perfil-seccion">
-          <div class="perfil-seccion-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg><div><h2>Habilidades</h2><p>Marca todas las que tengas.</p></div></div>
+          <div class="perfil-seccion-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg><div><h2>Habilidades</h2><p>Escribe tus habilidades y pulsa «Agregar». Puedes quitar las que ya no quieras.</p></div></div>
           <div class="caja">
-            <div class="chips-habilidades">
-              {% for opcion in actor_form.habilidades %}
-                <label class="chip-check" for="{{ opcion.id_for_label }}">{{ opcion.tag }}<span>{{ opcion.choice_label }}</span></label>
-              {% empty %}
-                <p class="perfil-nota mb-0">Todavía no hay habilidades registradas. El administrador puede agregarlas.</p>
-              {% endfor %}
-            </div>
-            {% for e in actor_form.habilidades.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
+            {% include 'simulactores/_habilidades_editor.html' with campo=actor_form.habilidades %}
           </div>
         </section>
 

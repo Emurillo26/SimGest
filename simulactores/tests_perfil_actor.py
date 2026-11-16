@@ -30,7 +30,7 @@ class BasePerfilActor(BaseSprint2):
         datos = {
             'fecha_nacimiento': '1995-04-12',
             'genero': 'Femenino',
-            'habilidades': [self.hab1.pk, self.hab2.pk],
+            'habilidades': [self.hab1.nombre, self.hab2.nombre],
             'estado': 'Activo',
         }
         datos.update(extra)

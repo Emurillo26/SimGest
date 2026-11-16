@@ -11,6 +11,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from .habilidades import HabilidadesField, guardar_habilidades, nombres_de
 from .asignacion_service import ESTADOS_VIGENTES, edad_de
 from .models import Actor, Asignacion, Disponibilidad, Habilidad, Solicitud
 from .permisos import modulo_requerido
@@ -34,14 +35,11 @@ class PerfilOperativoForm(forms.ModelForm):
         error_messages={'required': 'Selecciona el género del actor.'},
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    habilidades = forms.ModelMultipleChoiceField(
-        label='Habilidades', required=False, queryset=Habilidad.objects.order_by('nombre'),
-        widget=forms.CheckboxSelectMultiple,
-    )
+    habilidades = HabilidadesField()
 
     class Meta:
         model = Actor
-        fields = ['fecha_nacimiento', 'genero', 'habilidades', 'estado']
+        fields = ['fecha_nacimiento', 'genero', 'estado']
         labels = {
             'fecha_nacimiento': 'Fecha de nacimiento',
             'estado': 'Estado',
@@ -61,6 +59,7 @@ class PerfilOperativoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Campos obligatorios del perfil operativo.
         self.fields['fecha_nacimiento'].required = True
+        self.initial['habilidades'] = nombres_de(self.instance)
 
         opciones = list(GENEROS)
         actual = (self.instance.genero or '').strip()
@@ -81,6 +80,12 @@ class PerfilOperativoForm(forms.ModelForm):
         if edad > 100:
             raise forms.ValidationError('Revisa la fecha de nacimiento: la edad resultante es demasiado alta.')
         return fecha
+
+    def save(self, commit=True):
+        actor = super().save(commit=commit)
+        if commit:
+            guardar_habilidades(actor, self.cleaned_data.get('habilidades', []))
+        return actor
 
     def full_clean(self):
         super().full_clean()

@@ -32,7 +32,7 @@ class BasePerfilPropio(BaseSprint2):
         datos = {
             'nombre': 'Actor Propio', 'telefono': '8888-0000',
             'fecha_nacimiento': '1996-05-20', 'genero': 'Femenino',
-            'habilidades': [self.hab1.pk, self.hab2.pk],
+            'habilidades': [self.hab1.nombre, self.hab2.nombre],
             'estatura_cm': '168', 'peso_kg': '60.5',
             'color_cabello': 'Negro', 'color_ojos': 'Café oscuro',
             'contextura': 'Media', 'tono_piel': 'Trigueña',
@@ -50,7 +50,9 @@ class PerfilPropioGuardadoTests(BasePerfilPropio):
         self.assertContains(r, 'Características físicas')
         self.assertContains(r, 'Habilidades')
         self.assertContains(r, 'Datos del actor')
-        self.assertContains(r, 'Habilidad propia A')
+        self.assertContains(r, 'id="hab-nueva"')
+        self.actor.habilidades.add(self.hab1)
+        self.assertContains(self.client.get(self.url), 'Habilidad propia A')
 
     def test_guarda_todos_los_datos(self):
         r = self.client.post(self.url, self.datos(), follow=True)
