@@ -38,6 +38,12 @@ MENU_LATERAL = [
     },
     {
         'modulo': 'pagos_actores',
+        'seccion': 'tarifas_modalidad',
+        'etiqueta': 'Tarifas',
+        'url_name': 'simulactores:tarifas_modalidad',
+    },
+    {
+        'modulo': 'pagos_actores',
         'seccion': 'reporte_mensual_actores',
         'etiqueta': 'Reporte mensual',
         'url_name': 'simulactores:reporte_mensual_actores',
@@ -126,6 +132,7 @@ VISTA_A_SECCION = {
     'simulactores:registrar_pago': 'pagos_actores',
     'simulactores:editar_pago': 'pagos_actores',
     'simulactores:anular_pago': 'pagos_actores',
+    'simulactores:tarifas_modalidad': 'tarifas_modalidad',
     'simulactores:reporte_mensual_actores': 'reporte_mensual_actores',
     'simulactores:bitacora_actividad': 'bitacora_actividad',
     'simulactores:biblioteca_escenarios': 'biblioteca_escenarios',

@@ -61,7 +61,7 @@ class PortalClienteRediseñoTests(BaseSprint2):
         for paso in ('Evento', 'Escenario', 'Contacto', 'Revisión'):
             self.assertContains(r, paso)
         r = self.client.post(reverse('simulactores:crear_solicitud'), {
-            'tipo_simulacion': 'Otro', 'fecha_evento': '', 'hora_inicio': '09:00',
+            'tipo_simulacion': 'Otro', 'modalidad': 'Virtual', 'fecha_evento': '', 'hora_inicio': '09:00',
             'hora_fin': '10:00', 'cantidad_interpretes': 2, 'ubicacion': 'Hospital X'})
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'value="Hospital X"')

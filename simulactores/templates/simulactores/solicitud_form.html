@@ -46,6 +46,11 @@
               {{ form.tipo_simulacion }}
               {% for error in form.tipo_simulacion.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
             </div>
+            <div class="span-2">
+              <label class="form-label" for="{{ form.modalidad.id_for_label }}">{{ form.modalidad.label }} {% if form.modalidad.field.required %}*{% endif %}</label>
+              {{ form.modalidad }}
+              {% for error in form.modalidad.errors %}<div class="campo-error">{{ error }}</div>{% endfor %}
+            </div>
             <div class="">
               <label class="form-label" for="{{ form.fecha_evento.id_for_label }}">{{ form.fecha_evento.label }} {% if form.fecha_evento.field.required %}*{% endif %}</label>
               {{ form.fecha_evento }}
@@ -135,7 +140,7 @@
   }
   function resumen() {
     var filas = [
-      ['Tipo de simulación', 'id_tipo_simulacion'], ['Fecha del evento', 'id_fecha_evento'],
+      ['Tipo de simulación', 'id_tipo_simulacion'], ['Modalidad', 'id_modalidad'], ['Fecha del evento', 'id_fecha_evento'],
       ['Hora de inicio', 'id_hora_inicio'], ['Hora de fin', 'id_hora_fin'],
       ['Cantidad de intérpretes', 'id_cantidad_interpretes'], ['Ubicación', 'id_ubicacion'],
       ['Observaciones', 'id_observaciones']

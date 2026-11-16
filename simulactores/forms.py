@@ -251,6 +251,7 @@ class SolicitudForm(forms.ModelForm):
 
         fields = [
             'tipo_simulacion',
+            'modalidad',
             'fecha_evento',
             'hora_inicio',
             'hora_fin',
@@ -261,6 +262,11 @@ class SolicitudForm(forms.ModelForm):
 
         widgets = {
             'tipo_simulacion': forms.Select(
+                attrs={
+                    'class': 'form-select'
+                }
+            ),
+            'modalidad': forms.Select(
                 attrs={
                     'class': 'form-select'
                 }
@@ -305,6 +311,7 @@ class SolicitudForm(forms.ModelForm):
 
         labels = {
             'tipo_simulacion': 'Tipo de simulación',
+            'modalidad': 'Modalidad',
             'fecha_evento': 'Fecha del evento',
             'hora_inicio': 'Hora de inicio',
             'hora_fin': 'Hora de fin',

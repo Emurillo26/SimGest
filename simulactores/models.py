@@ -252,6 +252,31 @@ class Escenario(models.Model):
 
 
 
+class Modalidad(models.TextChoices):
+    VIRTUAL = 'Virtual', 'Virtual'
+    PRESENCIAL = 'Presencial', 'Presencial'
+
+
+class TarifaModalidad(models.Model):
+    """Tarifa por hora de cada modalidad. La edita el administrador."""
+
+    modalidad = models.CharField(max_length=20, choices=Modalidad.choices, unique=True)
+    monto_hora = models.DecimalField(max_digits=10, decimal_places=2)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'tarifa_modalidad'
+        ordering = ['modalidad']
+
+    def __str__(self):
+        return f'{self.modalidad}: {self.monto_hora}'
+
+    @classmethod
+    def monto_de(cls, modalidad):
+        tarifa = cls.objects.filter(modalidad=modalidad).first()
+        return tarifa.monto_hora if tarifa else None
+
+
 class Solicitud(models.Model):
 
     class Estado(models.TextChoices):
@@ -292,6 +317,9 @@ class Solicitud(models.Model):
     )
     tipo_simulacion = models.CharField(max_length=30, choices=TipoSimulacion.choices)
     cantidad_interpretes = models.IntegerField(default=1)
+    modalidad = models.CharField(max_length=20, choices=Modalidad.choices, default=Modalidad.PRESENCIAL)
+    # Tarifa por hora vigente al crear la solicitud; así un cambio de precio no altera pagos ya calculados.
+    tarifa_hora = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     estado = models.CharField(max_length=30, choices=Estado.choices, default=Estado.PENDIENTE)
     fecha_solicitud = models.DateTimeField(auto_now_add=True)
     fecha_evento = models.DateField()
@@ -322,6 +350,9 @@ class Solicitud(models.Model):
             ).count() + 1
             self.numero_solicitud = f'SIM-{anio}-{consecutivo:04d}'
 
+
+        if self.tarifa_hora is None:
+            self.tarifa_hora = TarifaModalidad.monto_de(self.modalidad)
 
         if self.escenario_id and not self.fecha_limite_aprobacion:
             self.fecha_limite_aprobacion = timezone.now() + timedelta(

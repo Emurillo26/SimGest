@@ -30,7 +30,7 @@ class HorarioSolicitudTests(BaseSprint2):
 
     def datos(self, inicio='09:00', fin='10:00', **extra):
         datos = {
-            'tipo_simulacion': 'Otro', 'fecha_evento': self.fecha.isoformat(),
+            'tipo_simulacion': 'Otro', 'modalidad': 'Virtual', 'fecha_evento': self.fecha.isoformat(),
             'hora_inicio': inicio, 'hora_fin': fin, 'cantidad_interpretes': 1,
             'ubicacion': 'Sede central', 'observaciones': '',
         }

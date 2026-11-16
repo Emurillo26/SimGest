@@ -41,6 +41,7 @@ from .pagos_views import (
     reporte_mensual_view,
 )
 from .password_reset_views import recuperar_contrasena_view
+from .tarifas_views import tarifas_modalidad_view
 
 
 app_name = 'simulactores'
@@ -419,6 +420,13 @@ urlpatterns = [
         'pagos/<int:pago_id>/anular/',
         anular_pago_view,
         name='anular_pago'
+    ),
+
+    # T02 - Tarifas por modalidad (administrador)
+    path(
+        'tarifas/',
+        tarifas_modalidad_view,
+        name='tarifas_modalidad'
     ),
 
     # HU-41 - Reporte mensual de horas ejecutadas por actor
