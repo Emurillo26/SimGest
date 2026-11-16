@@ -28,7 +28,6 @@ from .models import (
 )
 from . import asignacion_service
 from .actor_propio import PerfilActorForm, valores_actor
-from .perfil_actor_views import _actualizar_historial_tarifas as actualizar_historial_tarifas
 from .permisos import modulo_requerido
 from .utils import notificar, registrar_cambios
 
@@ -198,10 +197,6 @@ def perfil_view(request):
                 if actor_form:
                     actor = actor_form.save()
                     despues = valores_actor(actor)
-                    if (str(previo['tarifa']), str(previo['tipo_tarifa'])) != (
-                            str(despues['tarifa']), str(despues['tipo_tarifa'])):
-                        actualizar_historial_tarifas(
-                            actor, actor.tarifa, actor.tipo_tarifa, timezone.localdate())
                     cambios_actor = [
                         (campo, previo[campo], despues[campo])
                         for campo in previo

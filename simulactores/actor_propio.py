@@ -1,6 +1,6 @@
 """Perfil del actor editado por él mismo desde «Mi perfil».
 
-Datos personales (fecha de nacimiento, género), tarifa, habilidades y
+Datos personales (fecha de nacimiento, género), habilidades y
 características físicas. El estado activo/inactivo lo sigue manejando el
 administrador (HU-37), que también puede corregir estos datos.
 """
@@ -56,17 +56,6 @@ class PerfilActorForm(forms.ModelForm):
         error_messages={'required': 'Selecciona tu género.'},
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    tarifa = forms.DecimalField(
-        label='Tarifa (₡)', required=True, max_digits=10, decimal_places=2,
-        error_messages={
-            'required': 'Indica tu tarifa.',
-            'invalid': 'La tarifa debe ser un número (por ejemplo 15000 o 15000.50).',
-            'max_digits': 'La tarifa es demasiado grande.',
-            'max_decimal_places': 'La tarifa admite como máximo dos decimales.',
-            'max_whole_digits': 'La tarifa es demasiado grande.',
-        },
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'placeholder': 'Ej. 15000'}),
-    )
     habilidades = forms.ModelMultipleChoiceField(
         label='Habilidades', required=False, queryset=Habilidad.objects.order_by('nombre'),
         widget=forms.CheckboxSelectMultiple,
@@ -75,13 +64,12 @@ class PerfilActorForm(forms.ModelForm):
     class Meta:
         model = Actor
         fields = [
-            'fecha_nacimiento', 'genero', 'tarifa', 'tipo_tarifa', 'habilidades',
+            'fecha_nacimiento', 'genero', 'habilidades',
             'estatura_cm', 'peso_kg', 'color_cabello', 'color_ojos', 'contextura',
             'tono_piel', 'talla_ropa', 'talla_calzado', 'otras_caracteristicas',
         ]
         labels = {
             'fecha_nacimiento': 'Fecha de nacimiento',
-            'tipo_tarifa': 'Tipo de tarifa',
             'estatura_cm': 'Estatura (cm)',
             'peso_kg': 'Peso (kg)',
             'color_cabello': 'Color de cabello',
@@ -96,7 +84,6 @@ class PerfilActorForm(forms.ModelForm):
             'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'estatura_cm': forms.NumberInput(attrs={'class': 'form-control', 'min': '100', 'max': '230', 'placeholder': 'Ej. 170'}),
             'peso_kg': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '30', 'max': '250', 'placeholder': 'Ej. 65.5'}),
-            'tipo_tarifa': forms.Select(attrs={'class': 'form-select'}),
             'talla_calzado': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.5', 'min': '20', 'max': '50', 'placeholder': 'Ej. 38'}),
             'otras_caracteristicas': forms.Textarea(attrs={
                 'class': 'form-control', 'rows': 3, 'maxlength': '500',
@@ -107,7 +94,6 @@ class PerfilActorForm(forms.ModelForm):
                 'required': 'Indica tu fecha de nacimiento.',
                 'invalid': 'Escribe una fecha válida.',
             },
-            'tipo_tarifa': {'required': 'Selecciona si tu tarifa es por hora o por evento.'},
             'estatura_cm': {'invalid': 'La estatura debe ser un número entero en centímetros.'},
             'peso_kg': {'invalid': 'El peso debe ser un número (por ejemplo 65.5).'},
             'talla_calzado': {'invalid': 'La talla de calzado debe ser un número (por ejemplo 38 o 38.5).'},
@@ -116,8 +102,6 @@ class PerfilActorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['fecha_nacimiento'].required = True
-        self.fields['tipo_tarifa'].required = True
-        self.fields['tipo_tarifa'].choices = [('', 'Selecciona…')] + list(Actor.TipoTarifa.choices)
 
         opciones = list(GENEROS)
         actual = (self.instance.genero or '').strip()
@@ -152,16 +136,6 @@ class PerfilActorForm(forms.ModelForm):
         if edad > 100:
             raise forms.ValidationError('Revisa la fecha de nacimiento: la edad resultante es demasiado alta.')
         return fecha
-
-    def clean_tarifa(self):
-        tarifa = self.cleaned_data.get('tarifa')
-        if tarifa is None:
-            return tarifa
-        if tarifa < 0:
-            raise forms.ValidationError('La tarifa no puede ser negativa.')
-        if tarifa == 0:
-            raise forms.ValidationError('La tarifa debe ser mayor que cero.')
-        return tarifa
 
     def clean_estatura_cm(self):
         valor = self.cleaned_data.get('estatura_cm')

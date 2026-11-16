@@ -1,12 +1,9 @@
 """HU-37: el administrador administra el perfil operativo de los actores.
 
-Perfil operativo = fecha de nacimiento (edad), género, habilidades, tarifa
-(por hora o por evento) y estado activo/inactivo. La disponibilidad se muestra
+Perfil operativo = fecha de nacimiento (edad), género, habilidades
+y estado activo/inactivo. La disponibilidad se muestra
 como resumen y se consulta en «Disponibilidad de actores».
 """
-import datetime
-from decimal import Decimal
-
 from django import forms
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -15,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .asignacion_service import ESTADOS_VIGENTES, edad_de
-from .models import Actor, Asignacion, Disponibilidad, Habilidad, Solicitud, TarifaActor
+from .models import Actor, Asignacion, Disponibilidad, Habilidad, Solicitud
 from .permisos import modulo_requerido
 from .utils import registrar_cambios
 
@@ -37,17 +34,6 @@ class PerfilOperativoForm(forms.ModelForm):
         error_messages={'required': 'Selecciona el género del actor.'},
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    tarifa = forms.DecimalField(
-        label='Tarifa', required=True, max_digits=10, decimal_places=2,
-        error_messages={
-            'required': 'Indica la tarifa del actor.',
-            'invalid': 'La tarifa debe ser un número (por ejemplo 15000 o 15000.50).',
-            'max_digits': 'La tarifa es demasiado grande.',
-            'max_decimal_places': 'La tarifa admite como máximo dos decimales.',
-            'max_whole_digits': 'La tarifa es demasiado grande.',
-        },
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
-    )
     habilidades = forms.ModelMultipleChoiceField(
         label='Habilidades', required=False, queryset=Habilidad.objects.order_by('nombre'),
         widget=forms.CheckboxSelectMultiple,
@@ -55,15 +41,13 @@ class PerfilOperativoForm(forms.ModelForm):
 
     class Meta:
         model = Actor
-        fields = ['fecha_nacimiento', 'genero', 'habilidades', 'tarifa', 'tipo_tarifa', 'estado']
+        fields = ['fecha_nacimiento', 'genero', 'habilidades', 'estado']
         labels = {
             'fecha_nacimiento': 'Fecha de nacimiento',
-            'tipo_tarifa': 'Tipo de tarifa',
             'estado': 'Estado',
         }
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
-            'tipo_tarifa': forms.Select(attrs={'class': 'form-select'}),
             'estado': forms.Select(attrs={'class': 'form-select'}),
         }
         error_messages = {
@@ -71,15 +55,12 @@ class PerfilOperativoForm(forms.ModelForm):
                 'required': 'Indica la fecha de nacimiento.',
                 'invalid': 'Escribe una fecha válida.',
             },
-            'tipo_tarifa': {'required': 'Selecciona si la tarifa es por hora o por evento.'},
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Campos obligatorios del perfil operativo.
         self.fields['fecha_nacimiento'].required = True
-        self.fields['tipo_tarifa'].required = True
-        self.fields['tipo_tarifa'].choices = [('', 'Selecciona…')] + list(Actor.TipoTarifa.choices)
 
         opciones = list(GENEROS)
         actual = (self.instance.genero or '').strip()
@@ -101,16 +82,6 @@ class PerfilOperativoForm(forms.ModelForm):
             raise forms.ValidationError('Revisa la fecha de nacimiento: la edad resultante es demasiado alta.')
         return fecha
 
-    def clean_tarifa(self):
-        tarifa = self.cleaned_data.get('tarifa')
-        if tarifa is None:
-            return tarifa
-        if tarifa < 0:
-            raise forms.ValidationError('La tarifa no puede ser negativa.')
-        if tarifa == 0:
-            raise forms.ValidationError('La tarifa debe ser mayor que cero.')
-        return tarifa
-
     def full_clean(self):
         super().full_clean()
         # Resalta en rojo los campos con error.
@@ -122,7 +93,7 @@ class PerfilOperativoForm(forms.ModelForm):
 
 
 def _perfil_completo(actor):
-    return bool(actor.fecha_nacimiento and actor.genero and actor.tarifa and actor.tipo_tarifa)
+    return bool(actor.fecha_nacimiento and actor.genero)
 
 
 def _fecha_hace(anios, hoy):
@@ -245,20 +216,6 @@ def _simulaciones_pendientes(actor):
     ).exclude(solicitud__estado=Solicitud.Estado.CANCELADA).count()
 
 
-def _actualizar_historial_tarifas(actor, tarifa, tipo, hoy):
-    """Mantiene el historial: cierra la tarifa anterior y abre la nueva."""
-    vigente = actor.historial_tarifas.filter(vigente_hasta__isnull=True).first()
-    if vigente and vigente.monto == tarifa and vigente.tipo_tarifa == tipo:
-        return
-    if vigente:
-        if vigente.vigente_desde >= hoy:
-            vigente.delete()  # cambio el mismo día: se reemplaza
-        else:
-            vigente.vigente_hasta = hoy - datetime.timedelta(days=1)
-            vigente.save()
-    TarifaActor.objects.create(actor=actor, monto=tarifa, tipo_tarifa=tipo, vigente_desde=hoy)
-
-
 @modulo_requerido('perfil_actores')
 def editar_perfil_actor_view(request, actor_id):
     from .actor_propio import resumen_fisico
@@ -271,8 +228,6 @@ def editar_perfil_actor_view(request, actor_id):
         antes = {
             'fecha_nacimiento': previo.fecha_nacimiento,
             'genero': previo.genero,
-            'tarifa': previo.tarifa,
-            'tipo_tarifa': previo.tipo_tarifa,
             'estado': previo.estado,
             'habilidades': ', '.join(sorted(h.nombre for h in previo.habilidades.all())),
         }
@@ -283,8 +238,6 @@ def editar_perfil_actor_view(request, actor_id):
                 despues = {
                     'fecha_nacimiento': actor.fecha_nacimiento,
                     'genero': actor.genero,
-                    'tarifa': actor.tarifa,
-                    'tipo_tarifa': actor.tipo_tarifa,
                     'estado': actor.estado,
                     'habilidades': ', '.join(sorted(h.nombre for h in actor.habilidades.all())),
                 }
@@ -294,9 +247,6 @@ def editar_perfil_actor_view(request, actor_id):
                     if str(antes[campo]) != str(despues[campo])
                 ]
                 if cambios:
-                    if 'tarifa' in {c[0] for c in cambios} or 'tipo_tarifa' in {c[0] for c in cambios}:
-                        _actualizar_historial_tarifas(
-                            actor, actor.tarifa, actor.tipo_tarifa, timezone.localdate())
                     registrar_cambios(
                         actor.usuario, 'Perfil operativo del actor actualizado', cambios,
                         realizado_por=request.user, ip_origen=_ip(request),

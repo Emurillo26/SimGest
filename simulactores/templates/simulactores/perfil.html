@@ -144,16 +144,6 @@
               {{ actor_form.genero }}
               {% for e in actor_form.genero.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
             </div>
-            <div>
-              <label class="form-label" for="{{ actor_form.tarifa.id_for_label }}">{{ actor_form.tarifa.label }}</label>
-              {{ actor_form.tarifa }}
-              {% for e in actor_form.tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
-            <div>
-              <label class="form-label" for="{{ actor_form.tipo_tarifa.id_for_label }}">{{ actor_form.tipo_tarifa.label }}</label>
-              {{ actor_form.tipo_tarifa }}
-              {% for e in actor_form.tipo_tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-            </div>
           </div></div>
         </section>
 

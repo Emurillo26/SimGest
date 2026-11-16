@@ -4,12 +4,11 @@ Pruebas automáticas de HU-37 (perfil operativo del actor).
 Cómo correrlas:  python manage.py test simulactores.tests_perfil_actor
 """
 import datetime
-from decimal import Decimal
 
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Actor, Asignacion, Bitacora, Habilidad, Rol, TarifaActor, Usuario
+from .models import Actor, Asignacion, Bitacora, Habilidad, Rol, Usuario
 from .tests import BaseSprint2
 
 
@@ -32,8 +31,6 @@ class BasePerfilActor(BaseSprint2):
             'fecha_nacimiento': '1995-04-12',
             'genero': 'Femenino',
             'habilidades': [self.hab1.pk, self.hab2.pk],
-            'tarifa': '15000.50',
-            'tipo_tarifa': 'Por Hora',
             'estado': 'Activo',
         }
         datos.update(extra)
@@ -55,8 +52,6 @@ class HU37ActualizacionExitosaTests(BasePerfilActor):
         self.actor.refresh_from_db()
         self.assertEqual(self.actor.fecha_nacimiento, datetime.date(1995, 4, 12))
         self.assertEqual(self.actor.genero, 'Femenino')
-        self.assertEqual(self.actor.tarifa, Decimal('15000.50'))
-        self.assertEqual(self.actor.tipo_tarifa, 'Por Hora')
         self.assertEqual(set(self.actor.habilidades.all()), {self.hab1, self.hab2})
 
     def test_se_puede_pasar_a_inactivo_y_se_refleja_en_la_lista(self):
@@ -74,8 +69,8 @@ class HU37ActualizacionExitosaTests(BasePerfilActor):
     def test_queda_en_la_bitacora(self):
         self.client.post(self.url, self.datos())
         self.assertTrue(Bitacora.objects.filter(
-            accion='Perfil operativo del actor actualizado', campo_modificado='tarifa',
-            valor_nuevo='15000.50').exists())
+            accion='Perfil operativo del actor actualizado', campo_modificado='genero',
+            valor_nuevo='Femenino').exists())
 
     def test_sin_cambios_no_escribe_bitacora(self):
         self.client.post(self.url, self.datos())
@@ -85,18 +80,13 @@ class HU37ActualizacionExitosaTests(BasePerfilActor):
         self.assertEqual(
             Bitacora.objects.filter(accion='Perfil operativo del actor actualizado').count(), total)
 
-    def test_cambiar_la_tarifa_actualiza_el_historial(self):
-        self.client.post(self.url, self.datos(tarifa='10000'))
-        self.assertEqual(self.actor.historial_tarifas.count(), 1)
-        TarifaActor.objects.filter(actor=self.actor).update(
-            vigente_desde=timezone.localdate() - datetime.timedelta(days=30))
-        self.client.post(self.url, self.datos(tarifa='12000'))
-        historial = self.actor.historial_tarifas.order_by('vigente_desde')
-        self.assertEqual(historial.count(), 2)
-        self.assertEqual(historial[0].monto, Decimal('10000'))
-        self.assertIsNotNone(historial[0].vigente_hasta)
-        self.assertEqual(historial[1].monto, Decimal('12000'))
-        self.assertIsNone(historial[1].vigente_hasta)
+    def test_el_perfil_no_tiene_campos_de_tarifa_y_los_ignora(self):
+        r = self.client.get(self.url)
+        self.assertNotContains(r, 'Tipo de tarifa')
+        self.client.post(self.url, self.datos(tarifa='99999', tipo_tarifa='Por Evento'))
+        self.actor.refresh_from_db()
+        self.assertIsNone(self.actor.tarifa)
+        self.assertIsNone(self.actor.tipo_tarifa)
 
     def test_la_pagina_de_edicion_muestra_el_resumen_de_disponibilidad(self):
         r = self.client.get(self.url)
@@ -110,32 +100,14 @@ class HU37DatosInvalidosTests(BasePerfilActor):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Revisa los campos marcados en rojo')
         self.actor.refresh_from_db()
-        self.assertIsNone(self.actor.tarifa)
+        self.assertIsNone(self.actor.fecha_nacimiento)
         self.assertFalse(Bitacora.objects.filter(accion='Perfil operativo del actor actualizado').exists())
-
-    def test_tarifa_negativa_se_rechaza(self):
-        r = self.client.post(self.url, self.datos(tarifa='-500'))
-        self.assertContains(r, 'no puede ser negativa')
-        self.assertContains(r, 'is-invalid')
-        self.assert_no_guarda(r)
-
-    def test_tarifa_no_numerica_se_rechaza(self):
-        r = self.client.post(self.url, self.datos(tarifa='mucho'))
-        self.assertContains(r, 'debe ser un número')
-        self.assert_no_guarda(r)
-
-    def test_tarifa_cero_se_rechaza(self):
-        r = self.client.post(self.url, self.datos(tarifa='0'))
-        self.assertContains(r, 'mayor que cero')
-        self.assert_no_guarda(r)
 
     def test_campos_obligatorios_vacios(self):
         r = self.client.post(self.url, self.datos(
-            fecha_nacimiento='', genero='', tarifa='', tipo_tarifa=''))
+            fecha_nacimiento='', genero=''))
         self.assertContains(r, 'Indica la fecha de nacimiento')
         self.assertContains(r, 'Selecciona el género')
-        self.assertContains(r, 'Indica la tarifa')
-        self.assertContains(r, 'por hora o por evento')
         self.assert_no_guarda(r)
 
     def test_fecha_de_nacimiento_futura(self):
@@ -151,8 +123,9 @@ class HU37DatosInvalidosTests(BasePerfilActor):
         self.assert_no_guarda(r)
 
     def test_un_error_no_guarda_ninguno_de_los_otros_cambios(self):
-        r = self.client.post(self.url, self.datos(tarifa='-1', genero='Otro', estado='Inactivo'))
-        self.assertContains(r, 'no puede ser negativa')
+        futura = (timezone.localdate() + datetime.timedelta(days=30)).isoformat()
+        r = self.client.post(self.url, self.datos(fecha_nacimiento=futura, genero='Otro', estado='Inactivo'))
+        self.assertContains(r, 'no puede ser futura')
         self.actor.refresh_from_db()
         self.assertIsNone(self.actor.genero)
         self.assertEqual(self.actor.estado, 'Activo')
@@ -165,7 +138,7 @@ class HU37PermisosTests(BasePerfilActor):
         r = self.client.post(self.url, self.datos())
         self.assertNotEqual(r.status_code, 200)
         self.actor.refresh_from_db()
-        self.assertIsNone(self.actor.tarifa)
+        self.assertIsNone(self.actor.genero)
 
     def test_el_cliente_no_entra_a_la_lista(self):
         self.client.force_login(self.cliente)

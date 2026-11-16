@@ -17,7 +17,7 @@
   <div class="flex-fill panel-columna">
     <main class="panel-contenido">
       <header class="cabecera-pagina">
-        <div><h1>Gestión de actores</h1><p>Administra el registro de actores, sus habilidades, tarifa y estado.</p></div>
+        <div><h1>Gestión de actores</h1><p>Administra el registro de actores, sus habilidades y estado.</p></div>
       </header>
 
       {% if messages %}
@@ -62,7 +62,7 @@
         <div class="table-responsive">
           <table class="table align-middle">
             <thead>
-              <tr><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Tarifa</th><th>Estado</th><th></th></tr>
+              <tr><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Estado</th><th></th></tr>
             </thead>
             <tbody>
               {% for f in filas %}
@@ -73,7 +73,6 @@
                 <td>{{ f.edad|default_if_none:"—" }}</td>
                 <td>{{ f.actor.genero|default:"—" }}</td>
                 <td>{% for h in f.habilidades %}<span class="chip-habilidad">{{ h }}</span>{% empty %}—{% endfor %}</td>
-                <td>{% if f.actor.tarifa %}₡{{ f.actor.tarifa|floatformat:2 }}<div class="panel-sub">{{ f.actor.tipo_tarifa|default:"" }}</div>{% else %}—{% endif %}</td>
                 <td><span class="chip-estado {% if f.actor.estado == 'Activo' %}activo{% else %}inactivo{% endif %}">{{ f.actor.estado }}</span></td>
                 <td class="text-end text-nowrap">
                   <a href="{% url 'simulactores:historial_actor' f.actor.pk %}" class="btn btn-sm btn-ver">Historial</a>

@@ -32,7 +32,6 @@ class BasePerfilPropio(BaseSprint2):
         datos = {
             'nombre': 'Actor Propio', 'telefono': '8888-0000',
             'fecha_nacimiento': '1996-05-20', 'genero': 'Femenino',
-            'tarifa': '12000.50', 'tipo_tarifa': 'Por Hora',
             'habilidades': [self.hab1.pk, self.hab2.pk],
             'estatura_cm': '168', 'peso_kg': '60.5',
             'color_cabello': 'Negro', 'color_ojos': 'Café oscuro',
@@ -98,14 +97,15 @@ class PerfilPropioGuardadoTests(BasePerfilPropio):
         self.assertEqual(
             Bitacora.objects.filter(accion='Perfil de actor actualizado por el actor').count(), total)
 
-    def test_el_actor_guarda_su_tarifa_y_queda_en_el_historial(self):
-        self.client.post(self.url, self.datos())
+    def test_el_actor_no_ve_ni_puede_cambiar_la_tarifa(self):
+        r = self.client.get(self.url)
+        self.assertNotContains(r, 'Tipo de tarifa')
+        self.assertNotContains(r, 'Tarifa (')
+        self.client.post(self.url, self.datos(tarifa='99999', tipo_tarifa='Por Evento'))
         self.actor.refresh_from_db()
-        self.assertEqual(self.actor.tarifa, Decimal('12000.50'))
-        self.assertEqual(self.actor.tipo_tarifa, 'Por Hora')
-        self.assertEqual(self.actor.historial_tarifas.count(), 1)
-        self.assertTrue(Bitacora.objects.filter(
-            accion='Perfil de actor actualizado por el actor', campo_modificado='tarifa').exists())
+        self.assertIsNone(self.actor.tarifa)
+        self.assertIsNone(self.actor.tipo_tarifa)
+        self.assertEqual(self.actor.historial_tarifas.count(), 0)
 
     def test_no_puede_cambiar_su_estado(self):
         self.client.post(self.url, self.datos(estado='Inactivo'))
@@ -168,17 +168,6 @@ class PerfilPropioValidacionTests(BasePerfilPropio):
         self.usuario_actor.refresh_from_db()
         self.assertEqual(self.usuario_actor.nombre, 'Actor Propio')
 
-
-    def test_tarifa_obligatoria_negativa_y_cero(self):
-        for valor, texto in (('', 'Indica tu tarifa'), ('-5', 'no puede ser negativa'), ('0', 'mayor que cero')):
-            r = self.client.post(self.url, self.datos(tarifa=valor))
-            self.assertContains(r, texto)
-        self.actor.refresh_from_db()
-        self.assertIsNone(self.actor.tarifa)
-
-    def test_tipo_de_tarifa_obligatorio(self):
-        r = self.client.post(self.url, self.datos(tipo_tarifa=''))
-        self.assertContains(r, 'por hora o por evento')
 
 
 class PerfilPropioOtrosRolesTests(BasePerfilPropio):

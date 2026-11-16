@@ -62,17 +62,6 @@
             {{ form.estado }}
             {% for e in form.estado.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
           </div>
-                <div></div>
-                <div>
-            <label class="form-label" for="{{ form.tarifa.id_for_label }}">{{ form.tarifa.label }} (₡) *</label>
-            {{ form.tarifa }}
-            {% for e in form.tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-          </div>
-                <div>
-            <label class="form-label" for="{{ form.tipo_tarifa.id_for_label }}">{{ form.tipo_tarifa.label }} *</label>
-            {{ form.tipo_tarifa }}
-            {% for e in form.tipo_tarifa.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}
-          </div>
               </div>
             </section>
 

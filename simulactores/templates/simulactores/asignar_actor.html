@@ -65,7 +65,7 @@
           <div class="table-responsive">
             <table class="table align-middle">
               <thead>
-                <tr><th></th><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Disponibilidad</th><th>Tarifa</th></tr>
+                <tr><th></th><th>Actor</th><th>Edad</th><th>Género</th><th>Habilidades</th><th>Disponibilidad</th></tr>
               </thead>
               <tbody>
                 {% for f in filas %}
@@ -88,7 +88,6 @@
                       <div class="actor-motivo">{{ f.motivo }}</div>
                     {% endif %}
                   </td>
-                  <td>{% if f.actor.tarifa %}₡{{ f.actor.tarifa|floatformat:"0" }}{% if f.actor.tipo_tarifa %}<small class="d-block text-muted">{{ f.actor.get_tipo_tarifa_display }}</small>{% endif %}{% else %}—{% endif %}</td>
                 </tr>
                 {% endfor %}
               </tbody>
