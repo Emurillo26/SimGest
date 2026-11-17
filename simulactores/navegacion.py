@@ -37,7 +37,7 @@ MENU_LATERAL = [
         'url_name': 'simulactores:pagos_admin',
     },
     {
-        'modulo': 'pagos_actores',
+        'modulo': 'tarifas_modalidad',
         'seccion': 'tarifas_modalidad',
         'etiqueta': 'Tarifas',
         'url_name': 'simulactores:tarifas_modalidad',

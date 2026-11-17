@@ -143,6 +143,8 @@ def home_view(request):
         return redirect('simulactores:dashboard_administrador')
     if rol == 'Actor':
         return redirect('simulactores:dashboard_actor')
+    if rol == 'Contador':
+        return redirect('simulactores:pagos_admin')
 
     return redirect('simulactores:perfil')
 

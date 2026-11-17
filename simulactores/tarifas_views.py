@@ -29,7 +29,7 @@ class TarifasModalidadForm(forms.Form):
     presencial = _campo('Tarifa por hora, modalidad presencial (₡)')
 
 
-@modulo_requerido('pagos_actores')
+@modulo_requerido('tarifas_modalidad')
 def tarifas_modalidad_view(request):
     actuales = {t.modalidad: t.monto_hora for t in TarifaModalidad.objects.all()}
 
