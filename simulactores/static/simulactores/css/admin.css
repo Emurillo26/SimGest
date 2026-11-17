@@ -22,6 +22,10 @@
 .filtros-actores .campo-edad { max-width: 110px; }
 .filtros-actores label.etq { display: block; font-size: .8rem; font-weight: 600; margin-bottom: 4px; }
 .filtros-habilidades { flex: 1 1 100%; }
+.filtros-fisicos { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+.filtros-fisicos .campo { min-width: 120px; }
+.filtros-fisicos .campo-edad { max-width: 110px; }
+.filtros-fisicos label.etq { display: block; font-size: .8rem; font-weight: 600; margin-bottom: 4px; }
 .filtros-habilidades ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .filtros-habilidades label { margin-left: 6px; font-size: .9rem; }
 .caja-tabla { padding-left: 22px; padding-right: 22px; }

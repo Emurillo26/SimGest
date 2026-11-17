@@ -50,6 +50,16 @@
             <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
             <a href="{% url 'simulactores:actores_admin' %}" class="btn btn-claro btn-pildora">Limpiar</a>
           </div>
+          <div class="filtros-fisicos">
+            <div class="campo campo-edad"><label class="etq" for="{{ filtro.estatura_min.id_for_label }}">Estatura desde (cm)</label>{{ filtro.estatura_min }}{% for e in filtro.estatura_min.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}</div>
+            <div class="campo campo-edad"><label class="etq" for="{{ filtro.estatura_max.id_for_label }}">Estatura hasta (cm)</label>{{ filtro.estatura_max }}{% for e in filtro.estatura_max.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.color_cabello.id_for_label }}">Cabello</label>{{ filtro.color_cabello }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.color_ojos.id_for_label }}">Ojos</label>{{ filtro.color_ojos }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.contextura.id_for_label }}">Contextura</label>{{ filtro.contextura }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.tono_piel.id_for_label }}">Tono de piel</label>{{ filtro.tono_piel }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.talla_ropa.id_for_label }}">Talla de ropa</label>{{ filtro.talla_ropa }}</div>
+            <div class="campo campo-edad"><label class="etq" for="{{ filtro.talla_calzado.id_for_label }}">Calzado</label>{{ filtro.talla_calzado }}{% for e in filtro.talla_calzado.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}</div>
+          </div>
           {% if filtro.habilidades.field.queryset %}
           <div class="filtros-habilidades">
             <label class="etq">Habilidades (debe tener todas las marcadas)</label>

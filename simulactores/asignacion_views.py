@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import asignacion_service as servicio
 from .asignacion_service import AsignacionError
+from .filtros_fisicos import FiltroFisicoForm
 from .models import Solicitud
 from .permisos import modulo_requerido
 
@@ -88,13 +89,24 @@ def reasignar_actor_view(request, solicitud_uuid):
 def _pantalla(request, solicitud, modo, vigentes=()):
     # Al reasignar, el actor que sale no se vuelve a ofrecer.
     salientes = [a.actor_id for a in vigentes]
-    filas = servicio.candidatos(solicitud, excluir_actor_ids=salientes)
+    filtro = FiltroFisicoForm(request.GET or None)
+    filtrando = False
+    filtro_aplicado = None
+    if filtro.is_bound:
+        if filtro.is_valid():
+            filtro_aplicado = filtro
+            filtrando = filtro.hay_criterios_fisicos()
+        else:
+            messages.error(request, 'Revisa los filtros: hay datos que no son válidos.')
+    filas = servicio.candidatos(solicitud, excluir_actor_ids=salientes, filtro=filtro_aplicado)
     hay_disponibles = any(f['disponible'] for f in filas)
     rechazos = servicio.rechazos(solicitud)
     return render(request, 'simulactores/asignar_actor.html', {
         'solicitud': solicitud,
         'modo': modo,
         'filas': filas,
+        'filtro': filtro,
+        'filtrando': filtrando,
         'hay_disponibles': hay_disponibles,
         'mensaje_sin_actores': servicio.MENSAJE_SIN_ACTORES,
         'vigentes': vigentes,

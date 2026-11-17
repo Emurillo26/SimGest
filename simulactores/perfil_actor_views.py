@@ -11,6 +11,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from .filtros_fisicos import CaracteristicasFisicasMixin
 from .habilidades import HabilidadesField, guardar_habilidades, nombres_de
 from .asignacion_service import ESTADOS_VIGENTES, edad_de
 from .models import Actor, Asignacion, Disponibilidad, Habilidad, Solicitud
@@ -108,7 +109,7 @@ def _fecha_hace(anios, hoy):
         return hoy.replace(year=hoy.year - anios, day=28)
 
 
-class FiltroActoresForm(forms.Form):
+class FiltroActoresForm(CaracteristicasFisicasMixin):
     """HU-36: filtros por perfil (rango de edad, género, habilidades y estado)."""
 
     edad_min = forms.IntegerField(
@@ -160,13 +161,14 @@ class FiltroActoresForm(forms.Form):
             queryset = queryset.filter(estado=datos['estado'])
         for habilidad in datos.get('habilidades') or []:
             queryset = queryset.filter(habilidades=habilidad)  # debe tener todas las elegidas
-        return queryset
+        return self.filtrar_fisico(queryset)
 
     def hay_criterios(self):
         d = self.cleaned_data
         return (
             d.get('edad_min') is not None or d.get('edad_max') is not None
             or bool(d.get('genero')) or bool(d.get('estado')) or bool(d.get('habilidades'))
+            or self.hay_criterios_fisicos()
         )
 
 

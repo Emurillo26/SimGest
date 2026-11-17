@@ -46,6 +46,25 @@
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.6-3.2 3-4.9 6-4.9s5.4 1.7 6 4.9"/><circle cx="17" cy="9.5" r="2.5"/><path d="M17 14.8c2.2.2 3.7 1.6 4.2 4"/></svg>{{ solicitud.cantidad_interpretes }} requerido{{ solicitud.cantidad_interpretes|pluralize }}</span>
       </section>
 
+      <section class="caja">
+        <form method="get" class="filtros-actores">
+          <div class="filtros-fisicos">
+            <div class="campo campo-edad"><label class="etq" for="{{ filtro.estatura_min.id_for_label }}">Estatura desde (cm)</label>{{ filtro.estatura_min }}{% for e in filtro.estatura_min.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}</div>
+            <div class="campo campo-edad"><label class="etq" for="{{ filtro.estatura_max.id_for_label }}">Estatura hasta (cm)</label>{{ filtro.estatura_max }}{% for e in filtro.estatura_max.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.color_cabello.id_for_label }}">Cabello</label>{{ filtro.color_cabello }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.color_ojos.id_for_label }}">Ojos</label>{{ filtro.color_ojos }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.contextura.id_for_label }}">Contextura</label>{{ filtro.contextura }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.tono_piel.id_for_label }}">Tono de piel</label>{{ filtro.tono_piel }}</div>
+            <div class="campo"><label class="etq" for="{{ filtro.talla_ropa.id_for_label }}">Talla de ropa</label>{{ filtro.talla_ropa }}</div>
+            <div class="campo campo-edad"><label class="etq" for="{{ filtro.talla_calzado.id_for_label }}">Calzado</label>{{ filtro.talla_calzado }}{% for e in filtro.talla_calzado.errors %}<div class="campo-error">{{ e }}</div>{% endfor %}</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-granate btn-pildora">Filtrar</button>
+            <a href="{{ request.path }}" class="btn btn-claro btn-pildora">Limpiar</a>
+          </div>
+        </form>
+      </section>
+
       <form method="post" class="caja caja-tabla">
         {% csrf_token %}
 
@@ -102,9 +121,15 @@
             <div class="panel-vacio-icono" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>
             </div>
+            {% if filtrando and not filas %}
+            <strong>Ningún actor cumple esas características</strong>
+            <p>Prueba quitando algún filtro.</p>
+            <a href="{{ request.path }}" class="btn btn-claro btn-pildora mt-3">Limpiar filtros</a>
+            {% else %}
             <strong>No hay actores disponibles</strong>
             <p>Ningún actor puede cubrir el {{ solicitud.fecha_evento|date:"d/m/Y" }} de {{ solicitud.hora_inicio|time:"H:i" }} a {{ solicitud.hora_fin|time:"H:i" }}. Revisa fechas alternativas para esta simulación.{% if rechazos %} Recuerda que quien rechazó la simulación no se vuelve a ofrecer.{% endif %}</p>
             <a href="{% url 'simulactores:solicitud_admin_detalle' solicitud.uuid %}" class="btn btn-claro btn-pildora mt-3">Volver a la solicitud</a>
+            {% endif %}
           </div>
         {% endif %}
       </form>

@@ -104,7 +104,7 @@ def edad_de(actor):
     return hoy.year - nac.year - ((hoy.month, hoy.day) < (nac.month, nac.day))
 
 
-def candidatos(solicitud, excluir_actor_ids=()):
+def candidatos(solicitud, excluir_actor_ids=(), filtro=None):
     """Actores activos con su veredicto de disponibilidad para la solicitud.
 
     No se ofrecen los que ya cubren la solicitud ni los que la rechazaron.
@@ -121,6 +121,8 @@ def candidatos(solicitud, excluir_actor_ids=()):
         .select_related('usuario').prefetch_related('habilidades')
         .order_by('usuario__nombre')
     )
+    if filtro is not None:
+        actores = filtro.filtrar_fisico(actores)
     for actor in actores:
         veredicto = validar_disponibilidad(actor, solicitud)
         filas.append({
