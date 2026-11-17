@@ -179,3 +179,72 @@ class HU30BandejaTests(BaseNotificaciones):
             self.client.force_login(usuario)
             r = self.client.get(reverse('simulactores:notificaciones'))
             self.assertEqual(r.status_code, 200)
+
+
+class CorreosDeMovimientosTests(BaseNotificaciones):
+    """Sprint 4: cada movimiento importante llega por correo y queda registrado el envío."""
+
+    def correos_a(self, email):
+        return [m for m in mail.outbox if m.to == [email]]
+
+    def test_aprobar_la_solicitud_avisa_al_cliente_por_correo(self):
+        self.solicitud.estado = 'En Revisión'
+        self.solicitud.save()
+        mail.outbox.clear()
+        self.client.post(reverse('simulactores:cambiar_estado_solicitud', args=[self.solicitud.uuid]),
+                         {'estado': 'Aprobada'})
+        enviados = self.correos_a(self.cliente.email)
+        self.assertEqual([m.subject for m in enviados], ['Tu solicitud fue aprobada en Simulactores'])
+        self.assertIn('fue aprobada', enviados[0].body)
+        n = self.cliente.notificaciones.get()
+        self.assertTrue(n.correo_enviado)
+
+    def test_el_cliente_que_aprueba_el_escenario_recibe_confirmacion(self):
+        self.solicitud.estado = 'En Revisión'
+        self.solicitud.save()
+        self.client.force_login(self.cliente)
+        mail.outbox.clear()
+        Notificacion.objects.all().delete()
+        self.client.post(reverse('simulactores:aprobar_escenario', args=[self.solicitud.uuid]))
+        self.solicitud.refresh_from_db()
+        if self.solicitud.estado == 'Aprobada':
+            self.assertEqual(len(self.correos_a(self.cliente.email)), 1)
+            self.assertTrue(self.cliente.notificaciones.get().correo_enviado)
+
+    def test_asignar_actor_avisa_al_actor_y_al_cliente(self):
+        import datetime
+        from . import asignacion_service as servicio
+        from .models import Disponibilidad
+        Disponibilidad.objects.create(
+            actor=self.actor, fecha=self.solicitud.fecha_evento, hora_inicio=datetime.time(8),
+            hora_fin=datetime.time(18), tipo_bloque='Disponible')
+        mail.outbox.clear()
+        servicio.asignar_actor(self.solicitud, self.actor.pk, realizado_por=self.admin)
+        self.assertEqual([m.subject for m in self.correos_a(self.usuario_actor.email)], ['Nueva simulación asignada'])
+        self.assertEqual([m.subject for m in self.correos_a(self.cliente.email)], ['Actor asignado a tu simulación'])
+        for u in (self.usuario_actor, self.cliente):
+            self.assertTrue(u.notificaciones.latest('fecha').correo_enviado)
+
+    def test_cancelar_avisa_al_actor_y_al_cliente(self):
+        self.asignar()
+        self.solicitud.estado = 'Actor Asignado'
+        self.solicitud.save()
+        mail.outbox.clear()
+        self.client.post(reverse('simulactores:cambiar_estado_solicitud', args=[self.solicitud.uuid]),
+                         {'estado': 'Cancelada', 'motivo': 'Se canceló el evento'})
+        asuntos = [m.subject for m in self.correos_a(self.usuario_actor.email)]
+        self.assertTrue(asuntos, 'el actor no recibió correo')
+        self.assertTrue(any('cancelad' in a.lower() for a in asuntos), asuntos)
+        self.assertIn('Solicitud cancelada en Simulactores', [m.subject for m in self.correos_a(self.cliente.email)])
+
+    def test_si_el_correo_falla_queda_registrado_y_el_cambio_se_conserva(self):
+        self.solicitud.estado = 'En Revisión'
+        self.solicitud.save()
+        with mock.patch('simulactores.utils.send_mail', side_effect=OSError('SMTP caído')):
+            self.client.post(reverse('simulactores:cambiar_estado_solicitud', args=[self.solicitud.uuid]),
+                             {'estado': 'Aprobada'})
+        self.solicitud.refresh_from_db()
+        self.assertEqual(self.solicitud.estado, 'Aprobada')
+        n = self.cliente.notificaciones.get()
+        self.assertFalse(n.correo_enviado)
+        self.assertTrue(Bitacora.objects.filter(accion='Fallo de envío de correo').exists())

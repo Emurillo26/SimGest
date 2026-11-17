@@ -29,6 +29,7 @@ from .models import (
 from . import asignacion_service
 from .actor_propio import PerfilActorForm, valores_actor
 from .permisos import modulo_requerido
+from .signals import _resumen as _resumen_solicitud
 from .utils import notificar, registrar_cambios
 
 # Token firmado para el enlace de confirmación de correo (sin migraciones nuevas)
@@ -690,6 +691,7 @@ def cambiar_estado_solicitud_view(request, solicitud_uuid):
         messages.error(request, 'Primero propón un escenario: sin escenario la solicitud no puede pasar a ese estado.')
         return destino
 
+    actores_a_avisar = []
     with transaction.atomic():
         solicitud.estado = nuevo_estado
         cambios = [('estado', estado_anterior, nuevo_estado)]
@@ -698,6 +700,12 @@ def cambiar_estado_solicitud_view(request, solicitud_uuid):
             solicitud.motivo_cancelacion = motivo
             cambios.append(('motivo_cancelacion', None, motivo))
             # "Libera los recursos asignados": los actores asignados quedan liberados.
+
+            actores_a_avisar = [
+                a.actor.usuario for a in solicitud.asignaciones.filter(
+                    estado__in=[Asignacion.Estado.PENDIENTE, Asignacion.Estado.CONFIRMADA]
+                ).select_related('actor__usuario')
+            ]
             liberadas = solicitud.asignaciones.exclude(
                 estado__in=[Asignacion.Estado.EJECUTADA, Asignacion.Estado.CANCELADA]
             ).update(estado=Asignacion.Estado.CANCELADA)
@@ -716,6 +724,12 @@ def cambiar_estado_solicitud_view(request, solicitud_uuid):
             f'Motivo: {motivo}'
         )
         asunto = 'Solicitud cancelada en Simulactores'
+    elif nuevo_estado == Solicitud.Estado.APROBADA:
+        mensaje = (
+            f'Tu solicitud {solicitud.numero_solicitud} fue aprobada. '
+            'En breve te asignaremos un actor y te avisaremos.'
+        )
+        asunto = 'Tu solicitud fue aprobada en Simulactores'
     else:
         mensaje = (
             f'El estado de tu solicitud {solicitud.numero_solicitud} cambió de '
@@ -723,6 +737,13 @@ def cambiar_estado_solicitud_view(request, solicitud_uuid):
         )
         asunto = 'Tu solicitud cambió de estado en Simulactores'
     notificar(solicitud.cliente, mensaje, asunto=asunto)
+    for usuario_actor in actores_a_avisar:
+        notificar(
+            usuario_actor,
+            f'La simulación {_resumen_solicitud(solicitud)} fue cancelada. Ya no debes asistir.',
+            asunto='Simulación cancelada',
+            enlace=reverse('simulactores:dashboard_actor'),
+        )
 
     messages.success(request, f'Estado actualizado a «{nuevo_estado}». El cliente fue notificado.')
     return destino
@@ -979,6 +1000,11 @@ def aprobar_escenario_view(request, solicitud_uuid):
         [('estado', estado_anterior, solicitud.estado)],
         realizado_por=request.user, ip_origen=_ip_del_request(request),
     )
+    notificar(
+        request.user,
+        f'Tu solicitud {solicitud.numero_solicitud} quedó aprobada. En breve te asignaremos un actor y te avisaremos.',
+        asunto='Tu solicitud fue aprobada en Simulactores',
+    )
     for admin_usuario in Usuario.objects.filter(rol__nombre='Administrador', estado='Activo'):
         notificar(
             admin_usuario,
@@ -1063,6 +1089,11 @@ def cancelar_solicitud_view(request, solicitud_uuid):
                 request.user, 'Cancelación de solicitud',
                 [('estado', estado_anterior, solicitud.estado)],
                 realizado_por=request.user, ip_origen=_ip_del_request(request),
+            )
+            notificar(
+                request.user,
+                f'Cancelaste la solicitud {solicitud.numero_solicitud}. La fecha quedó libre nuevamente.',
+                asunto='Solicitud cancelada en Simulactores',
             )
             for admin_usuario in Usuario.objects.filter(rol__nombre='Administrador', estado='Activo'):
                 notificar(
