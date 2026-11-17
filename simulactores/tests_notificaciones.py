@@ -182,7 +182,7 @@ class HU30BandejaTests(BaseNotificaciones):
 
 
 class CorreosDeMovimientosTests(BaseNotificaciones):
-    """Sprint 4: cada movimiento importante llega por correo y queda registrado el envío."""
+
 
     def correos_a(self, email):
         return [m for m in mail.outbox if m.to == [email]]

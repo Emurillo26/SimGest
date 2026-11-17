@@ -2,6 +2,7 @@ import calendar
 import datetime
 
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import redirect, render
@@ -100,14 +101,18 @@ def dashboard_actor_view(request):
             ).count(),
         }
 
+    proxima = asignaciones.first() if actor else None
+    pagina = Paginator(asignaciones, 10).get_page(request.GET.get('pagina'))
+
     return render(
         request,
         'simulactores/dashboard_actor.html',
         {
             'actor': actor,
-            'asignaciones': asignaciones,
+            'asignaciones': pagina,
+            'pagina': pagina,
             'resumen': resumen,
-            'proxima': asignaciones.first() if actor else None,
+            'proxima': proxima,
             'realizadas': realizadas,
             'asignadas_mes': del_mes,
         }

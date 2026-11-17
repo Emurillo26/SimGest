@@ -62,6 +62,7 @@
                   </a>
                 {% endfor %}
               </div>
+              {% include 'simulactores/_paginacion.html' %}
             {% else %}
               <div class="vacio-grande"><strong>No tienes solicitudes activas</strong><p>Crea una nueva solicitud o revisa tu historial.</p><a href="{% url 'simulactores:crear_solicitud' %}" class="btn btn-granate btn-pildora">Nueva solicitud</a></div>
             {% endif %}

@@ -835,8 +835,10 @@ def dashboard_cliente_view(request):
         'historial': completadas + canceladas,
     }
 
+    pagina = Paginator(activas, 10).get_page(request.GET.get('pagina'))
     return render(request, 'simulactores/dashboard_cliente.html', {
-        'solicitudes': activas,
+        'solicitudes': pagina,
+        'pagina': pagina,
         'resumen': resumen,
         'indicador': indicador,
         'recientes': request.user.notificaciones.order_by('-fecha', '-id_notificacion')[:3],
