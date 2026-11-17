@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import Csv, config
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,12 +22,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p2s$!w(zbbkg1%$rpd$i79v-f_f5@!@co3mi&143e4v)y6-1=q'
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-p2s$!w(zbbkg1%$rpd$i79v-f_f5@!@co3mi&143e4v)y6-1=q',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
+
+# Detrás de Nginx: Django confía en el esquema que reenvía el proxy.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_HTTPS = config('USE_HTTPS', default=False, cast=bool)
+SESSION_COOKIE_SECURE = USE_HTTPS
+CSRF_COOKIE_SECURE = USE_HTTPS
 
 
 # -------------------------------------------------------------------
@@ -168,6 +178,7 @@ USE_TZ = True
 # -------------------------------------------------------------------
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Archivos que suben los usuarios (fotos de perfil)
 MEDIA_URL = '/media/'
