@@ -38,7 +38,7 @@
 
         {% if messages %}
           {% for message in messages %}
-            <div class="alert alert-danger py-2" role="alert">
+            <div class="alert {% if message.level_tag == 'warning' %}alert-warning{% else %}alert-danger{% endif %} py-2" role="alert">
               {{ message }}
             </div>
           {% endfor %}

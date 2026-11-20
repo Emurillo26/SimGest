@@ -89,11 +89,16 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'simulactores.middleware.CierreSesionPorInactividadMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 
 ROOT_URLCONF = 'simgest.urls'
+
+
+# Minutos sin actividad antes de cerrar la sesión (todos los roles).
+INACTIVITY_TIMEOUT_MINUTES = config('INACTIVITY_TIMEOUT_MINUTES', default=30, cast=int)
 
 
 # -------------------------------------------------------------------
